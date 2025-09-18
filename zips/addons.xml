@@ -1,12 +1,12 @@
 <addons>
-ï»¿<addon id="repository.barclay" name="Barclay Repository" version="1.0.1" provider-name="Barclay">
+﻿<addon id="repository.barclay" name="Barclay Repository" version="1.0.1" provider-name="Barclay">
   <extension point="xbmc.addon.repository" name="Barclay Repository">
     <info compressed="false">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml</info>
     <checksum>https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml.md5</checksum>
     <datadir zip="true">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/</datadir>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Offizielles Repository fÃƒÂ¼r die Barclay Video-Addons.</summary>
+    <summary>Offizielles Repository fÃ¼r die Barclay Video-Addons.</summary>
     <description>Installiere dieses Repository, um die Addons zu erhalten und automatisch zu aktualisieren.</description>
     <platform>all</platform>
     <assets>
@@ -64,9 +64,9 @@
 	<extension point="xbmc.addon.metadata">
 		<summary lang="de">xStream</summary>
 		<summary lang="en_GB">xStream</summary>
-		<description lang="de">xStream ist ein Video-Addon fÃ¼r Kodi. xStream dient als Suchmaschine fÃ¼r Filme und Serien auf verschiedenen Webseiten.</description>
+		<description lang="de">xStream ist ein Video-Addon für Kodi. xStream dient als Suchmaschine für Filme und Serien auf verschiedenen Webseiten.</description>
 		<description lang="en_GB">xStream is a video add-on for Kodi. xStream serves as a search engine for films and series on various websites.</description>
-		<disclaimer lang="de">Sie kÃ¶nnen dieses Video Addon gerne verwenden. Der bereitgestellte Inhalt der Webseiten steht in keinem Bezug zu xStream oder den Entwicklern! Weitere Informationen finden Sie in unserer Wiki und FaQ.</disclaimer>
+		<disclaimer lang="de">Sie können dieses Video Addon gerne verwenden. Der bereitgestellte Inhalt der Webseiten steht in keinem Bezug zu xStream oder den Entwicklern! Weitere Informationen finden Sie in unserer Wiki und FaQ.</disclaimer>
 		<disclaimer lang="en_GB">You are welcome to use this video addon. The content provided on the websites has no connection to xStream or the developers! For more information, see our Wiki and FaQ.</disclaimer>
 		<language>de en</language>
 		<platform>all</platform>
@@ -90,7 +90,7 @@
     <datadir zip="true">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/</datadir>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Offizielles Repository fÃ¼r die Barclay Video-Addons.</summary>
+    <summary>Offizielles Repository für die Barclay Video-Addons.</summary>
     <description>Installiere dieses Repository, um die Addons zu erhalten und automatisch zu aktualisieren.</description>
     <platform>all</platform>
     <assets>
@@ -99,14 +99,14 @@
   </extension>
 </addon>
 
-ï»¿<addon id="repository.barclay" name="Barclay Repository" version="1.0.1" provider-name="Barclay">
+<addon id="repository.barclay" name="Barclay Repository" version="1.0.1" provider-name="Barclay">
   <extension point="xbmc.addon.repository" name="Barclay Repository">
     <info compressed="false">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml</info>
     <checksum>https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml.md5</checksum>
     <datadir zip="true">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/</datadir>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Offizielles Repository fÃƒÂ¼r die Barclay Video-Addons.</summary>
+    <summary>Offizielles Repository fÃ¼r die Barclay Video-Addons.</summary>
     <description>Installiere dieses Repository, um die Addons zu erhalten und automatisch zu aktualisieren.</description>
     <platform>all</platform>
     <assets>
@@ -117,4 +117,3 @@
 
 
 </addons>
-

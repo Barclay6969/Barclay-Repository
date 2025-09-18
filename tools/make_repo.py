@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 import os, zipfile, hashlib, xml.etree.ElementTree as ET
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -24,7 +24,7 @@ def gather_entries():
                     with zipfile.ZipFile(zp, "r") as zf:
                         for n in zf.namelist():
                             if n.endswith("addon.xml"):
-                                entries.append(zf.read(n).decode("utf-8", errors="ignore"))
+                                entries.append(zf.read(n).decode("utf-8", errors="ignore").lstrip("\ufeff"))
                                 break
                 except Exception:
                     pass
@@ -57,3 +57,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
