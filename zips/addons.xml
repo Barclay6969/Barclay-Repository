@@ -1,5 +1,5 @@
 <addons>
-﻿<addon id="repository.barclay" name="Barclay Repository" version="1.0.1" provider-name="Barclay">
+<addon id="repository.barclay" name="Barclay Repository" version="1.0.1" provider-name="Barclay">
   <extension point="xbmc.addon.repository" name="Barclay Repository">
     <info compressed="false">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml</info>
     <checksum>https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml.md5</checksum>
@@ -114,6 +114,6 @@
     </assets>
   </extension>
 </addon>
-
+
 
 </addons>
