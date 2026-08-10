@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="repository.barclay" name="Barclay Repository" version="1.0.2" provider-name="Barclay">
+<addon id="repository.barclay" name="Barclay Repository" version="1.0.3" provider-name="Barclay">
   <extension point="xbmc.addon.repository" name="Barclay Repository">
     <dir>
       <info compressed="false">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml</info>
