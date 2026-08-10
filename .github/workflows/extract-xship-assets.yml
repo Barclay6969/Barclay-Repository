@@ -159,3 +159,5 @@ jobs:
           git add -A branding zips/plugin.video.xship zips/addons.xml zips/addons.xml.md5 .xship-stage || true
           git commit -m "Update xShip package and repository metadata"
           git push
+
+# manual trigger 2026-08-10
