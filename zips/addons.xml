@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
+<addon id="repository.barclay" name="Barclay Repository" version="1.0.2" provider-name="Barclay">
+  <extension point="xbmc.addon.repository" name="Barclay Repository">
+    <dir>
+      <info compressed="false">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml</info>
+      <checksum>https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml.md5</checksum>
+      <datadir zip="true">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/</datadir>
+    </dir>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Kusi's Repo für xShip</summary>
+    <description>Kusi's Repo für xShip.</description>
+    <platform>all</platform>
+    <assets>
+      <icon>resources/icon.png</icon>
+    </assets>
+  </extension>
+</addon>
+
 <addon id="plugin.video.xship" version="2025.08.11" name="[B]xShip[/B]" provider-name="Michaz">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
@@ -20,28 +38,10 @@
         <summary lang="de_DE">xShip: Der Fake</summary>
         <summary lang="en_GB">xShip: The Fake</summary>
         <assets>
-            <icon>resources/icon.png</icon>
-            <fanart>resources/fanart.jpg</fanart>
-            <banner>resources/media/banner.png</banner>
-        </assets>
+			<icon>resources/icon.png</icon>
+			<fanart>resources/fanart.jpg</fanart>
+			<banner>resources/media/banner.png</banner>
+		</assets>
     </extension>
-</addon>
-
-<addon id="repository.barclay" name="Barclay Repository" version="1.0.2" provider-name="Barclay">
-  <extension point="xbmc.addon.repository" name="Barclay Repository">
-    <dir>
-      <info compressed="false">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml</info>
-      <checksum>https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml.md5</checksum>
-      <datadir zip="true">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/</datadir>
-    </dir>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Kusi's Repo für xShip</summary>
-    <description>Kusi's Repo für xShip.</description>
-    <platform>all</platform>
-    <assets>
-      <icon>resources/icon.png</icon>
-    </assets>
-  </extension>
 </addon>
 </addons>
