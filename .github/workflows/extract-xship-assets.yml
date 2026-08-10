@@ -5,6 +5,7 @@ on:
     paths:
       - 'zips/plugin.video.xship/*.zip'
       - '.xship-stage/**'
+      - 'addons/repository.barclay/**'
       - '.github/workflows/extract-xship-assets.yml'
   workflow_dispatch:
 
