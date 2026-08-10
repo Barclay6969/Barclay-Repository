@@ -1,8 +1,9 @@
-name: Extract xShip repository artwork
+name: Build xShip repository metadata
 
 on:
   push:
     paths:
+      - 'zips/plugin.video.xship/*.zip'
       - '.github/workflows/extract-xship-assets.yml'
   workflow_dispatch:
 
@@ -10,55 +11,90 @@ permissions:
   contents: write
 
 jobs:
-  extract-artwork:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract xShip artwork
-        shell: bash
+      - name: Normalize xShip package and rebuild feed
+        shell: python
         run: |
-          set -euo pipefail
-          ZIP="zips/plugin.video.xship/plugin.video.xship-2025.08.11.zip"
-          TMP="$(mktemp -d)"
-          unzip -q "$ZIP" -d "$TMP"
+          import hashlib
+          import pathlib
+          import re
+          import shutil
+          import zipfile
+          import xml.etree.ElementTree as ET
 
-          ROOT="$TMP/plugin.video.xship"
-          mkdir -p zips/plugin.video.xship/resources/media
+          root = pathlib.Path('.')
+          xdir = root / 'zips' / 'plugin.video.xship'
+          zips = sorted(xdir.glob('*.zip'))
+          if not zips:
+              raise SystemExit('No xShip ZIP found')
 
-          # Support both the current xShip layout (resources/media/*)
-          # and older packages that kept icon/fanart directly in resources/.
-          if [ -f "$ROOT/resources/media/icon.png" ]; then
-            cp "$ROOT/resources/media/icon.png" zips/plugin.video.xship/resources/icon.png
-          elif [ -f "$ROOT/resources/icon.png" ]; then
-            cp "$ROOT/resources/icon.png" zips/plugin.video.xship/resources/icon.png
-          else
-            echo "xShip icon.png not found in ZIP" >&2
-            exit 1
-          fi
+          # Use the ZIP whose internal addon.xml reports the highest version string.
+          packages = []
+          for zp in zips:
+              try:
+                  with zipfile.ZipFile(zp) as zf:
+                      addon_name = next(n for n in zf.namelist() if n.endswith('/addon.xml') or n == 'addon.xml')
+                      xml_bytes = zf.read(addon_name)
+                      addon = ET.fromstring(xml_bytes)
+                      if addon.attrib.get('id') == 'plugin.video.xship':
+                          packages.append((addon.attrib.get('version','0'), zp, addon_name, xml_bytes, addon))
+              except Exception:
+                  pass
+          if not packages:
+              raise SystemExit('No valid plugin.video.xship package found')
 
-          if [ -f "$ROOT/resources/media/fanart.jpg" ]; then
-            cp "$ROOT/resources/media/fanart.jpg" zips/plugin.video.xship/resources/fanart.jpg
-          elif [ -f "$ROOT/resources/fanart.jpg" ]; then
-            cp "$ROOT/resources/fanart.jpg" zips/plugin.video.xship/resources/fanart.jpg
-          fi
+          version, zp, addon_name, xml_bytes, addon = sorted(packages, key=lambda x: x[0])[-1]
+          canonical = xdir / f'plugin.video.xship-{version}.zip'
+          if zp != canonical:
+              shutil.copy2(zp, canonical)
 
-          if [ -f "$ROOT/resources/media/banner.png" ]; then
-            cp "$ROOT/resources/media/banner.png" zips/plugin.video.xship/resources/media/banner.png
-          elif [ -f "$ROOT/resources/banner.png" ]; then
-            cp "$ROOT/resources/banner.png" zips/plugin.video.xship/resources/media/banner.png
-          fi
+          # Remove obsolete differently named xShip ZIPs so Kodi sees one canonical package per current version.
+          for old in xdir.glob('*.zip'):
+              if old != canonical:
+                  old.unlink()
 
-      - name: Commit artwork
+          # Extract all artwork exactly where addon.xml says it lives.
+          with zipfile.ZipFile(canonical) as zf:
+              prefix = addon_name[:-len('addon.xml')]
+              for asset in addon.findall('.//assets/*'):
+                  rel = (asset.text or '').strip()
+                  if not rel:
+                      continue
+                  member = prefix + rel
+                  try:
+                      data = zf.read(member)
+                  except KeyError:
+                      continue
+                  out = xdir / rel
+                  out.parent.mkdir(parents=True, exist_ok=True)
+                  out.write_bytes(data)
+
+          # Build a clean addons.xml from the repository addon.xml + xShip addon.xml.
+          repo_xml = (root / 'addons' / 'repository.barclay' / 'addon.xml').read_text(encoding='utf-8-sig').strip()
+          xship_xml = xml_bytes.decode('utf-8-sig').strip()
+          xship_xml = re.sub(r'^<\?xml[^>]*\?>\s*', '', xship_xml)
+          repo_xml = re.sub(r'^<\?xml[^>]*\?>\s*', '', repo_xml)
+          feed = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<addons>\n' + repo_xml + '\n\n' + xship_xml + '\n</addons>\n'
+          feed_path = root / 'zips' / 'addons.xml'
+          feed_path.write_text(feed, encoding='utf-8', newline='\n')
+          (root / 'zips' / 'addons.xml.md5').write_text(hashlib.md5(feed.encode('utf-8')).hexdigest() + '\n', encoding='ascii', newline='\n')
+
+          print(f'xShip repository normalized to version {version}')
+
+      - name: Commit generated repository files
         shell: bash
         run: |
           if git diff --quiet && [ -z "$(git status --porcelain)" ]; then
-            echo "No artwork changes to commit."
+            echo "No changes to commit."
             exit 0
           fi
           git config user.name "Barclay Repo Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add zips/plugin.video.xship/resources
-          git commit -m "Add xShip artwork for repository browser"
+          git add zips/plugin.video.xship zips/addons.xml zips/addons.xml.md5
+          git commit -m "Rebuild xShip repository metadata"
           git push
