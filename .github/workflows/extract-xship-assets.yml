@@ -1,4 +1,4 @@
-name: Build xShip repository metadata
+name: Build Kusi xShip repository
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
             cat .xship-stage/part-* | base64 -d > zips/plugin.video.xship/xship-upload.zip
           fi
 
-      - name: Normalize xShip package, preserve branding and rebuild feed
+      - name: Normalize packages and rebuild repository
         shell: python
         run: |
           import hashlib
@@ -45,7 +45,7 @@ jobs:
           brand_icon = brand_dir / 'xship-icon.png'
           brand_dir.mkdir(parents=True, exist_ok=True)
 
-          # First run: preserve the currently used xShip icon as the permanent branding icon.
+          # Preserve the currently used xShip icon as permanent branding.
           if not brand_icon.exists():
               for candidate in (
                   xdir / 'resources' / 'icon.png',
@@ -73,19 +73,15 @@ jobs:
           if not packages:
               raise SystemExit('No valid plugin.video.xship package found')
 
-          # Highest version contained in addon.xml wins.
           version, source_zip, addon_name, xml_bytes, addon = sorted(packages, key=lambda x: x[0])[-1]
           canonical = xdir / f'plugin.video.xship-{version}.zip'
 
-          # Find the icon path declared by this xShip version.
           icon_rel = None
           for asset in addon.findall('.//assets/icon'):
               if asset.text and asset.text.strip():
                   icon_rel = asset.text.strip()
                   break
 
-          # Build the canonical ZIP. If a permanent branding icon exists, inject it
-          # into the exact icon path declared by the new xShip addon.xml.
           with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tf:
               temp_zip = pathlib.Path(tf.name)
 
@@ -101,25 +97,20 @@ jobs:
                   zout.writestr(icon_member, brand_icon.read_bytes())
 
           shutil.move(str(temp_zip), canonical)
-
-          # Keep only the current package.
           for old in xdir.glob('*.zip'):
               if old != canonical:
                   old.unlink()
 
-          # Re-read metadata from the final canonical package.
           with zipfile.ZipFile(canonical) as zf:
               addon_name = next(n for n in zf.namelist() if n.endswith('/addon.xml') or n == 'addon.xml')
               xml_bytes = zf.read(addon_name)
               addon = ET.fromstring(xml_bytes)
               prefix = addon_name[:-len('addon.xml')]
 
-              # Remove generated artwork from the previous version.
               for child in list(xdir.iterdir()):
                   if child.is_dir():
                       shutil.rmtree(child)
 
-              # Expose every declared artwork asset separately for Kodi's repo browser.
               for asset in addon.findall('.//assets/*'):
                   rel = (asset.text or '').strip()
                   if not rel:
@@ -133,8 +124,22 @@ jobs:
                   out.parent.mkdir(parents=True, exist_ok=True)
                   out.write_bytes(data)
 
-          # Rebuild addons.xml from the repository addon and the final xShip addon.xml.
-          repo_xml = (root / 'addons' / 'repository.barclay' / 'addon.xml').read_text(encoding='utf-8-sig').strip()
+          # Build the repository add-on ZIP too, so Kodi can update the repo definition.
+          repo_src = root / 'addons' / 'repository.barclay'
+          repo_root = ET.fromstring((repo_src / 'addon.xml').read_text(encoding='utf-8-sig'))
+          repo_version = repo_root.attrib['version']
+          repo_out = root / 'zips' / 'repository.barclay'
+          repo_out.mkdir(parents=True, exist_ok=True)
+          for old in repo_out.glob('repository.barclay-*.zip'):
+              old.unlink()
+          repo_zip = repo_out / f'repository.barclay-{repo_version}.zip'
+          with zipfile.ZipFile(repo_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
+              for path in repo_src.rglob('*'):
+                  if path.is_file():
+                      arc = pathlib.Path('repository.barclay') / path.relative_to(repo_src)
+                      zf.write(path, arc.as_posix())
+
+          repo_xml = (repo_src / 'addon.xml').read_text(encoding='utf-8-sig').strip()
           xship_xml = xml_bytes.decode('utf-8-sig').strip()
           xship_xml = re.sub(r'^<\?xml[^>]*\?>\s*', '', xship_xml)
           repo_xml = re.sub(r'^<\?xml[^>]*\?>\s*', '', repo_xml)
@@ -142,10 +147,8 @@ jobs:
           (root / 'zips' / 'addons.xml').write_text(feed, encoding='utf-8', newline='\n')
           (root / 'zips' / 'addons.xml.md5').write_text(hashlib.md5(feed.encode('utf-8')).hexdigest() + '\n', encoding='ascii', newline='\n')
 
-          # Remove temporary upload chunks after a successful build.
           shutil.rmtree(root / '.xship-stage', ignore_errors=True)
-
-          print(f'xShip repository normalized to version {version}; branding preserved={brand_icon.exists()}')
+          print(f'xShip {version}; repository {repo_version}; branding preserved={brand_icon.exists()}')
 
       - name: Commit generated repository files
         shell: bash
@@ -156,8 +159,6 @@ jobs:
           fi
           git config user.name "Barclay Repo Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add -A branding zips/plugin.video.xship zips/addons.xml zips/addons.xml.md5 .xship-stage || true
-          git commit -m "Update xShip package and repository metadata"
+          git add -A branding zips/plugin.video.xship zips/repository.barclay zips/addons.xml zips/addons.xml.md5 .xship-stage || true
+          git commit -m "Build Kusi xShip repository"
           git push
-
-# manual trigger 2026-08-10
