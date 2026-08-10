@@ -1,0 +1,64 @@
+name: Extract xShip repository artwork
+
+on:
+  push:
+    paths:
+      - '.github/workflows/extract-xship-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract-artwork:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract xShip artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP="zips/plugin.video.xship/plugin.video.xship-2025.08.11.zip"
+          TMP="$(mktemp -d)"
+          unzip -q "$ZIP" -d "$TMP"
+
+          ROOT="$TMP/plugin.video.xship"
+          mkdir -p zips/plugin.video.xship/resources/media
+
+          # Support both the current xShip layout (resources/media/*)
+          # and older packages that kept icon/fanart directly in resources/.
+          if [ -f "$ROOT/resources/media/icon.png" ]; then
+            cp "$ROOT/resources/media/icon.png" zips/plugin.video.xship/resources/icon.png
+          elif [ -f "$ROOT/resources/icon.png" ]; then
+            cp "$ROOT/resources/icon.png" zips/plugin.video.xship/resources/icon.png
+          else
+            echo "xShip icon.png not found in ZIP" >&2
+            exit 1
+          fi
+
+          if [ -f "$ROOT/resources/media/fanart.jpg" ]; then
+            cp "$ROOT/resources/media/fanart.jpg" zips/plugin.video.xship/resources/fanart.jpg
+          elif [ -f "$ROOT/resources/fanart.jpg" ]; then
+            cp "$ROOT/resources/fanart.jpg" zips/plugin.video.xship/resources/fanart.jpg
+          fi
+
+          if [ -f "$ROOT/resources/media/banner.png" ]; then
+            cp "$ROOT/resources/media/banner.png" zips/plugin.video.xship/resources/media/banner.png
+          elif [ -f "$ROOT/resources/banner.png" ]; then
+            cp "$ROOT/resources/banner.png" zips/plugin.video.xship/resources/media/banner.png
+          fi
+
+      - name: Commit artwork
+        shell: bash
+        run: |
+          if git diff --quiet && [ -z "$(git status --porcelain)" ]; then
+            echo "No artwork changes to commit."
+            exit 0
+          fi
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add zips/plugin.video.xship/resources
+          git commit -m "Add xShip artwork for repository browser"
+          git push
