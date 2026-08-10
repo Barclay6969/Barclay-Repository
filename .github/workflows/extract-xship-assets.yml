@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'zips/plugin.video.xship/*.zip'
+      - 'zips/plugin.video.xship/resources/icon.png'
       - '.xship-stage/**'
       - 'addons/repository.barclay/**'
       - '.github/workflows/extract-xship-assets.yml'
@@ -43,16 +44,17 @@ jobs:
           xdir = root / 'zips' / 'plugin.video.xship'
           brand_dir = root / 'branding'
           brand_icon = brand_dir / 'xship-icon.png'
+          repo_icon = xdir / 'resources' / 'icon.png'
           brand_dir.mkdir(parents=True, exist_ok=True)
 
-          if not brand_icon.exists():
-              for candidate in (
-                  xdir / 'resources' / 'icon.png',
-                  xdir / 'resources' / 'media' / 'icon.png',
-              ):
-                  if candidate.exists():
-                      shutil.copy2(candidate, brand_icon)
-                      break
+          # The visible repository icon is the authoritative xShip branding source.
+          # If it exists, always sync it to the permanent branding copy.
+          if repo_icon.exists():
+              shutil.copy2(repo_icon, brand_icon)
+          elif not brand_icon.exists():
+              candidate = xdir / 'resources' / 'media' / 'icon.png'
+              if candidate.exists():
+                  shutil.copy2(candidate, brand_icon)
 
           zips = sorted(xdir.glob('*.zip'))
           if not zips:
@@ -160,5 +162,3 @@ jobs:
           git add -A branding zips/plugin.video.xship zips/repository.barclay zips/addons.xml zips/addons.xml.md5 .xship-stage || true
           git commit -m "Build Kusi xShip repository"
           git push
-
-# rebuild trigger 2026-08-10 14:12
