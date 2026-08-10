@@ -45,7 +45,6 @@ jobs:
           brand_icon = brand_dir / 'xship-icon.png'
           brand_dir.mkdir(parents=True, exist_ok=True)
 
-          # Preserve the currently used xShip icon as permanent branding.
           if not brand_icon.exists():
               for candidate in (
                   xdir / 'resources' / 'icon.png',
@@ -124,7 +123,6 @@ jobs:
                   out.parent.mkdir(parents=True, exist_ok=True)
                   out.write_bytes(data)
 
-          # Build the repository add-on ZIP too, so Kodi can update the repo definition.
           repo_src = root / 'addons' / 'repository.barclay'
           repo_root = ET.fromstring((repo_src / 'addon.xml').read_text(encoding='utf-8-sig'))
           repo_version = repo_root.attrib['version']
@@ -162,3 +160,5 @@ jobs:
           git add -A branding zips/plugin.video.xship zips/repository.barclay zips/addons.xml zips/addons.xml.md5 .xship-stage || true
           git commit -m "Build Kusi xShip repository"
           git push
+
+# rebuild trigger 2026-08-10 14:12
