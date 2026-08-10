@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - 'zips/plugin.video.xship/*.zip'
-      - '.xship-upload/**'
       - '.github/workflows/extract-xship-assets.yml'
   workflow_dispatch:
 
@@ -17,23 +16,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Reassemble uploaded xShip ZIP when present
-        shell: bash
-        run: |
-          set -euo pipefail
-          if compgen -G '.xship-upload/part-*' > /dev/null; then
-            cat .xship-upload/part-* | base64 -d > /tmp/xship-upload.zip
-            python - <<'PY'
-          import zipfile
-          p='/tmp/xship-upload.zip'
-          with zipfile.ZipFile(p) as z:
-              if not any(n.endswith('/addon.xml') or n == 'addon.xml' for n in z.namelist()):
-                  raise SystemExit('Uploaded file is not a valid Kodi addon ZIP')
-          PY
-            mkdir -p zips/plugin.video.xship
-            cp /tmp/xship-upload.zip zips/plugin.video.xship/xship-upload.zip
-          fi
 
       - name: Normalize xShip package and rebuild feed
         shell: python
@@ -59,23 +41,24 @@ jobs:
                       xml_bytes = zf.read(addon_name)
                       addon = ET.fromstring(xml_bytes)
                       if addon.attrib.get('id') == 'plugin.video.xship':
-                          packages.append((addon.attrib.get('version','0'), zp, addon_name, xml_bytes, addon))
+                          packages.append((addon.attrib.get('version', '0'), zp, addon_name, xml_bytes, addon))
               except Exception:
                   pass
           if not packages:
               raise SystemExit('No valid plugin.video.xship package found')
 
+          # Highest version contained in addon.xml wins. The filename is generated from it.
           version, zp, addon_name, xml_bytes, addon = sorted(packages, key=lambda x: x[0])[-1]
           canonical = xdir / f'plugin.video.xship-{version}.zip'
           if zp != canonical:
               shutil.copy2(zp, canonical)
 
+          # Keep only the current package.
           for old in xdir.glob('*.zip'):
               if old != canonical:
                   old.unlink()
 
-          # Clear generated artwork from previous versions, then copy the artwork
-          # using exactly the relative paths declared by xShip's own addon.xml.
+          # Rebuild artwork exactly according to the paths declared by xShip itself.
           for child in list(xdir.iterdir()):
               if child.is_dir():
                   shutil.rmtree(child)
@@ -95,20 +78,16 @@ jobs:
                   out.parent.mkdir(parents=True, exist_ok=True)
                   out.write_bytes(data)
 
+          # Rebuild the Kodi repository index and matching MD5 checksum.
           repo_xml = (root / 'addons' / 'repository.barclay' / 'addon.xml').read_text(encoding='utf-8-sig').strip()
           xship_xml = xml_bytes.decode('utf-8-sig').strip()
           xship_xml = re.sub(r'^<\?xml[^>]*\?>\s*', '', xship_xml)
           repo_xml = re.sub(r'^<\?xml[^>]*\?>\s*', '', repo_xml)
           feed = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<addons>\n' + repo_xml + '\n\n' + xship_xml + '\n</addons>\n'
-          feed_path = root / 'zips' / 'addons.xml'
-          feed_path.write_text(feed, encoding='utf-8', newline='\n')
+          (root / 'zips' / 'addons.xml').write_text(feed, encoding='utf-8', newline='\n')
           (root / 'zips' / 'addons.xml.md5').write_text(hashlib.md5(feed.encode('utf-8')).hexdigest() + '\n', encoding='ascii', newline='\n')
 
           print(f'xShip repository normalized to version {version}')
-
-      - name: Remove temporary upload chunks
-        shell: bash
-        run: rm -rf .xship-upload
 
       - name: Commit generated repository files
         shell: bash
@@ -119,6 +98,6 @@ jobs:
           fi
           git config user.name "Barclay Repo Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add -A zips/plugin.video.xship zips/addons.xml zips/addons.xml.md5 .xship-upload || true
-          git commit -m "Update xShip package and repository metadata"
+          git add -A zips/plugin.video.xship zips/addons.xml zips/addons.xml.md5
+          git commit -m "Rebuild xShip repository metadata"
           git push
