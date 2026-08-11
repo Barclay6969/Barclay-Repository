@@ -1,0 +1,105 @@
+name: Patch xShip SerienStream title matching
+
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-serienstream-title.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch SerienStream and build xShip 2026.07.03
+        shell: python
+        run: |
+          import hashlib
+          import pathlib
+          import re
+          import shutil
+          import tempfile
+          import zipfile
+          import xml.etree.ElementTree as ET
+
+          root = pathlib.Path('.')
+          xdir = root / 'zips' / 'plugin.video.xship'
+          old_zip = xdir / 'plugin.video.xship-2026.07.02.zip'
+          new_version = '2026.07.03'
+          new_zip = xdir / f'plugin.video.xship-{new_version}.zip'
+
+          if new_zip.exists():
+              print(f'{new_zip.name} already exists; nothing to do')
+              raise SystemExit(0)
+          if not old_zip.exists():
+              raise SystemExit(f'Missing source package: {old_zip}')
+
+          patched = False
+          addon_xml_bytes = None
+
+          with zipfile.ZipFile(old_zip, 'r') as zin, zipfile.ZipFile(new_zip, 'w', zipfile.ZIP_DEFLATED) as zout:
+              for item in zin.infolist():
+                  data = zin.read(item.filename)
+                  lower = item.filename.lower()
+
+                  if lower.endswith('/serienstream.py') or lower == 'serienstream.py':
+                      text = data.decode('utf-8')
+                      needle = 't = set(cleantitle.get(i) for i in titles if i)'
+                      if needle not in text:
+                          raise SystemExit(f'Expected title matching line not found in {item.filename}')
+                      replacement = """base_titles = [i for i in titles if i]\n            expanded_titles = list(base_titles)\n            for _title in base_titles:\n                for _sep in (' – ', ' — ', ' - ', ': '):\n                    if _sep in _title:\n                        _short = _title.split(_sep, 1)[0].strip()\n                        if _short and _short not in expanded_titles:\n                            expanded_titles.append(_short)\n            t = set(cleantitle.get(i) for i in expanded_titles if i)"""
+                      text = text.replace(needle, replacement, 1)
+                      data = text.encode('utf-8')
+                      patched = True
+                      print(f'Patched {item.filename}')
+
+                  if lower.endswith('/addon.xml') or lower == 'addon.xml':
+                      try:
+                          addon = ET.fromstring(data)
+                      except Exception:
+                          addon = None
+                      if addon is not None and addon.attrib.get('id') == 'plugin.video.xship':
+                          addon.attrib['version'] = new_version
+                          data = ET.tostring(addon, encoding='utf-8', xml_declaration=True)
+                          addon_xml_bytes = data
+                          print(f'Updated addon.xml to {new_version}')
+
+                  zout.writestr(item, data)
+
+          if not patched:
+              new_zip.unlink(missing_ok=True)
+              raise SystemExit('serienstream.py not found')
+          if addon_xml_bytes is None:
+              new_zip.unlink(missing_ok=True)
+              raise SystemExit('plugin.video.xship addon.xml not found')
+
+          old_zip.unlink()
+
+          # Keep repository feed in sync.
+          repo_src = root / 'addons' / 'repository.barclay' / 'addon.xml'
+          repo_xml = repo_src.read_text(encoding='utf-8-sig').strip()
+          xship_xml = addon_xml_bytes.decode('utf-8-sig').strip()
+          repo_xml = re.sub(r'^<\?xml[^>]*\?>\s*', '', repo_xml)
+          xship_xml = re.sub(r'^<\?xml[^>]*\?>\s*', '', xship_xml)
+          feed = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<addons>\n' + repo_xml + '\n\n' + xship_xml + '\n</addons>\n'
+          (root / 'zips' / 'addons.xml').write_text(feed, encoding='utf-8', newline='\n')
+          (root / 'zips' / 'addons.xml.md5').write_text(hashlib.md5(feed.encode('utf-8')).hexdigest() + '\n', encoding='ascii', newline='\n')
+
+          print(f'Created {new_zip}')
+
+      - name: Commit patched package
+        shell: bash
+        run: |
+          if git diff --quiet && [ -z "$(git status --porcelain)" ]; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add zips/plugin.video.xship zips/addons.xml zips/addons.xml.md5
+          git commit -m "Fix SerienStream subtitle title matching in xShip 2026.07.03"
+          git push
