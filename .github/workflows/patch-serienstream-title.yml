@@ -45,7 +45,7 @@ jobs:
                   lower = item.filename.lower()
 
                   if lower.endswith('/serienstream.py') or lower == 'serienstream.py':
-                      text = data.decode('utf-8')
+                      text = data.decode('utf-8').replace('\r\n', '\n')
 
                       old_block = """        try:\n            t = []\n            for i in titles:\n                if i:\n                    t.extend(_all_variants(i))\n            t = list(set([x for x in t if x]))\n"""
                       new_block = """        try:\n            search_titles = []\n            for i in titles:\n                if not i:\n                    continue\n                if i not in search_titles:\n                    search_titles.append(i)\n                for _sep in (' – ', ' — ', ' - ', ': '):\n                    if _sep in i:\n                        _short = i.split(_sep, 1)[0].strip()\n                        if _short and _short not in search_titles:\n                            search_titles.append(_short)\n\n            t = []\n            for i in search_titles:\n                if i:\n                    t.extend(_all_variants(i))\n            t = list(set([x for x in t if x]))\n"""
