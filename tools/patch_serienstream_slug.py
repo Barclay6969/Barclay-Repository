@@ -6,8 +6,8 @@ import xml.etree.ElementTree as ET
 
 root = pathlib.Path('.')
 xdir = root / 'zips' / 'plugin.video.xship'
-old_zip = xdir / 'plugin.video.xship-2026.07.07.zip'
-new_version = '2026.07.08'
+old_zip = xdir / 'plugin.video.xship-2026.07.08.zip'
+new_version = '2026.07.09'
 new_zip = xdir / f'plugin.video.xship-{new_version}.zip'
 
 if new_zip.exists():
@@ -19,80 +19,29 @@ if not old_zip.exists():
 patched = False
 addon_xml_bytes = None
 
-resolver_replacement = r'''    def _get_http_session(self):
+internal_helper = r'''    def _is_serienstream_url(self, url):
         try:
-            session = getattr(self, '_http_session', None)
-            if session is not None:
-                return session
-
-            import requests
-            requests.packages.urllib3.disable_warnings()
-            session = requests.Session()
-            session.headers.update({
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-            })
-            self._http_session = session
-            return session
+            parsed = urlparse(str(url).split('|', 1)[0])
+            host = (parsed.netloc or '').split(':', 1)[0].lower()
+            domains = set([
+                SITE_DOMAIN,
+                (self.domain or SITE_DOMAIN).lower(),
+                'serienstream.to',
+                '186.2.175.5'
+            ])
+            return host in domains or any(host.endswith('.' + domain) for domain in domains if domain != '186.2.175.5')
         except:
-            return None
+            return False
 
-    def _extract_bridge_target(self, html, base_url):
-        if not html:
-            return None
-        try:
-            text = html_unescape(str(html)).replace('\\/', '/')
-            text = text.replace('\\u002F', '/').replace('\\u003A', ':')
+'''
 
-            candidates = []
-            patterns = [
-                r'<iframe[^>]+src=["\']([^"\']+)',
-                r'(?:window\.)?location(?:\.href)?\s*=\s*["\']([^"\']+)',
-                r'["\'](?:url|src|href)["\']\s*:\s*["\']([^"\']+)',
-                r'(?:url|src|href)\s*=\s*["\']([^"\']+)',
-                r'postMessage\(\s*["\'](https?://[^"\']+)',
-            ]
-            for pattern in patterns:
-                candidates.extend(re.findall(pattern, text, re.IGNORECASE | re.DOTALL))
-
-            # Last resort for bridge pages that embed the hoster URL directly in JS.
-            candidates.extend(re.findall(r'https?://[^\s"\'<>]+', text, re.IGNORECASE))
-
-            seen = set()
-            for candidate in candidates:
-                candidate = html_unescape(candidate).replace('\\/', '/').strip()
-                if not candidate or candidate in seen:
-                    continue
-                seen.add(candidate)
-
-                target = urljoin(base_url, candidate)
-                if not target or not target.startswith(('http://', 'https://')):
-                    continue
-                if self._is_serienstream_url(target):
-                    # Internal bridge hops are allowed and will be followed by
-                    # _resolve_with_session().
-                    return target
-
-                lower = target.lower().split('?', 1)[0]
-                if lower.endswith(('.js', '.css', '.png', '.jpg', '.jpeg', '.svg', '.ico', '.woff', '.woff2')):
-                    continue
-
-                if log_utils:
-                    logger.info('SerienStream - Bridge target: %s' % target[:100])
-                return target
-        except Exception as e:
-            if log_utils:
-                logger.info('SerienStream - Bridge parse error: %s' % str(e))
-        return None
-
-    def _resolve_with_session(self, url, referer):
+resolver = r'''    def _resolve_with_session(self, url, referer):
         session = self._get_http_session()
         if session is None:
             return None
 
         try:
-            # Seed the same HTTP session with the episode page first. SerienStream's
-            # /r?t= bridge can depend on cookies/session state from that page.
+            # Seed the same HTTP session with the episode page first.
             if referer and referer != url:
                 try:
                     session.get(
@@ -105,94 +54,82 @@ resolver_replacement = r'''    def _get_http_session(self):
                 except:
                     pass
 
-            current = url
-            current_referer = referer
-            for _hop in range(4):
-                response = session.get(
-                    current,
-                    headers={'Referer': current_referer},
-                    allow_redirects=True,
-                    verify=False,
-                    timeout=10
-                )
-                final_url = response.url or current
+            # Try the original /r?t= token on every currently known SerienStream
+            # entry host. A redirect to a bare SerienStream homepage is an internal
+            # bridge/fallback, never a playable result.
+            parsed_start = urlparse(url)
+            request_path = parsed_start.path or '/'
+            if parsed_start.query:
+                request_path += '?' + parsed_start.query
 
-                if log_utils:
-                    logger.info('SerienStream - Session resolve hop %d: %s' % (_hop + 1, final_url[:100]))
+            start_urls = [url]
+            if request_path.startswith('/r?') or request_path.startswith('/r/') or request_path == '/r':
+                for base in ('https://serienstream.to', 'http://186.2.175.5'):
+                    candidate = base + request_path
+                    if candidate not in start_urls:
+                        start_urls.append(candidate)
 
-                if final_url and not self._is_serienstream_url(final_url):
-                    return final_url
+            for start_url in start_urls:
+                current = start_url
+                current_referer = referer
+                visited = set()
 
-                bridge_target = self._extract_bridge_target(response.text, final_url)
-                if bridge_target:
-                    if not self._is_serienstream_url(bridge_target):
-                        return bridge_target
-                    if bridge_target != current:
-                        current_referer = final_url
-                        current = bridge_target
-                        continue
+                for _hop in range(6):
+                    if current in visited:
+                        break
+                    visited.add(current)
 
-                if not self._is_frame_bridge(response.text):
-                    location = response.headers.get('Location')
-                    target = self._external_redirect_target(final_url, location)
-                    if target:
-                        return target
-                break
+                    response = session.get(
+                        current,
+                        headers={'Referer': current_referer},
+                        allow_redirects=True,
+                        verify=False,
+                        timeout=10
+                    )
+                    final_url = response.url or current
+
+                    if log_utils:
+                        logger.info('SerienStream - Session resolve hop %d: %s' % (_hop + 1, final_url[:100]))
+
+                    # Only an external host is a valid resolver result.
+                    if final_url and not self._is_serienstream_url(final_url):
+                        return final_url
+
+                    bridge_target = self._extract_bridge_target(response.text, final_url)
+                    if bridge_target:
+                        if not self._is_serienstream_url(bridge_target):
+                            return bridge_target
+
+                        # Never hand a bare internal homepage to Kodi. Follow only
+                        # meaningful internal bridge paths; otherwise try the same
+                        # encrypted /r?t= token on the next known SerienStream host.
+                        parsed_target = urlparse(bridge_target)
+                        if parsed_target.path not in ('', '/'):
+                            if bridge_target != current:
+                                current_referer = final_url
+                                current = bridge_target
+                                continue
+                        elif log_utils:
+                            logger.info('SerienStream - Ignoring internal homepage bridge: %s' % bridge_target[:100])
+
+                    # If allow_redirects collapsed the request to an internal root,
+                    # stop this host and retry the original token on the next host.
+                    parsed_final = urlparse(final_url)
+                    if self._is_serienstream_url(final_url) and parsed_final.path in ('', '/'):
+                        if log_utils:
+                            logger.info('SerienStream - Internal homepage reached; trying alternate SerienStream host')
+                        break
+
+                    if not self._is_frame_bridge(response.text):
+                        location = response.headers.get('Location')
+                        target = self._external_redirect_target(final_url, location)
+                        if target:
+                            return target
+                    break
         except Exception as e:
             if log_utils:
                 logger.info('SerienStream - Session resolve error: %s' % str(e))
         return None
-
-    def resolve(self, url):
-        try:
-            if log_utils:
-                logger.info('SerienStream - Resolving: %s' % url[:80])
-
-            referer = getattr(self, 'episode_referer', self.base_link)
-            internal_redirect = self._is_internal_redirect_url(url)
-
-            # 2026.07.08: use one persistent requests.Session, seed it with the
-            # episode page, then follow redirects/bridge hops. This mirrors the
-            # working Lastship approach and preserves cookies plus Referer.
-            resolved = self._resolve_with_session(url, referer)
-            if resolved:
-                if log_utils:
-                    logger.info('SerienStream - Resolved via persistent session: %s' % resolved[:100])
-                return resolved
-
-            # Keep cRequestHandler as a compatibility fallback, but parse a frame
-            # bridge instead of discarding it immediately.
-            try:
-                oRequest = cRequestHandler(url, caching=False, ignoreErrors=True)
-                oRequest.addHeaderEntry('User-Agent', 'Mozilla/5.0')
-                oRequest.addHeaderEntry('Referer', referer)
-                response_html = oRequest.request()
-                final_url = oRequest.getRealUrl()
-
-                if final_url and final_url != url and not self._is_serienstream_url(final_url):
-                    if log_utils:
-                        logger.info('SerienStream - Resolved via cRequestHandler: %s' % final_url[:100])
-                    return final_url
-
-                bridge_target = self._extract_bridge_target(response_html, final_url or url)
-                if bridge_target and not self._is_serienstream_url(bridge_target):
-                    return bridge_target
-            except:
-                pass
-
-            if internal_redirect:
-                if log_utils:
-                    logger.info('SerienStream - Internal redirect unresolved after session+bridge handling')
-                return None
-
-            if log_utils:
-                logger.info('SerienStream - Could not resolve, returning original URL')
-            return url
-
-        except Exception as e:
-            if log_utils:
-                logger.info('SerienStream - Resolve error: %s' % str(e))
-            return None if self._is_internal_redirect_url(url) else url
 
 '''
 
@@ -203,13 +140,19 @@ with zipfile.ZipFile(old_zip, 'r') as zin, zipfile.ZipFile(new_zip, 'w', zipfile
 
         if lower.endswith('/serienstream.py') or lower == 'serienstream.py':
             text = data.decode('utf-8').replace('\r\n', '\n')
-            pattern = r'    def _resolve_http_redirect\(self, url, referer\):[\s\S]*?(?=    @staticmethod\n    def _getLogin\(\):)'
-            text, count = re.subn(pattern, lambda _m: resolver_replacement, text, count=1)
-            if count != 1:
-                raise SystemExit(f'Expected SerienStream resolver block not found in {item.filename}')
+
+            pattern_internal = r'    def _is_serienstream_url\(self, url\):[\s\S]*?(?=    def _is_internal_redirect_url\(self, url\):)'
+            text, count1 = re.subn(pattern_internal, lambda _m: internal_helper, text, count=1)
+
+            pattern_resolver = r'    def _resolve_with_session\(self, url, referer\):[\s\S]*?(?=    def resolve\(self, url\):)'
+            text, count2 = re.subn(pattern_resolver, lambda _m: resolver, text, count=1)
+
+            if count1 != 1 or count2 != 1:
+                raise SystemExit(f'Expected SerienStream 0.8 resolver blocks not found in {item.filename}: {count1}/{count2}')
+
             data = text.encode('utf-8')
             patched = True
-            print(f'Patched persistent session/frame bridge resolver in {item.filename}')
+            print(f'Patched internal-domain filtering and alternate /r token retries in {item.filename}')
 
         if lower.endswith('/addon.xml') or lower == 'addon.xml':
             try:
