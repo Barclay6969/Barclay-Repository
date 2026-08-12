@@ -6,8 +6,8 @@ import xml.etree.ElementTree as ET
 
 root = pathlib.Path('.')
 xdir = root / 'zips' / 'plugin.video.xship'
-old_zip = xdir / 'plugin.video.xship-2026.07.03.zip'
-new_version = '2026.07.04'
+old_zip = xdir / 'plugin.video.xship-2026.07.04.zip'
+new_version = '2026.07.05'
 new_zip = xdir / f'plugin.video.xship-{new_version}.zip'
 
 if new_zip.exists():
@@ -26,51 +26,37 @@ with zipfile.ZipFile(old_zip, 'r') as zin, zipfile.ZipFile(new_zip, 'w', zipfile
 
         if lower.endswith('/serienstream.py') or lower == 'serienstream.py':
             text = data.decode('utf-8').replace('\r\n', '\n')
+            before = text
 
-            old_block = """            for i in aLinks:
-                url = i['source']
-                self.run2(url, year, season=season, episode=episode, hostDict=hostDict, imdb=imdb)
-"""
-            new_block = """            for i in aLinks:
-                url = i['source']
-                self.run2(url, year, season=season, episode=episode, hostDict=hostDict, imdb=imdb)
-                if self.sources:
-                    break
+            # Use serienstream.cx as primary domain. Keep .to references as fallback
+            # where the scraper already contains an explicit alternate-domain list.
+            text = text.replace('https://serienstream.to', 'https://serienstream.cx')
+            text = text.replace("'serienstream.to'", "'serienstream.cx'")
+            text = text.replace('"serienstream.to"', '"serienstream.cx"')
 
-            if not self.sources:
-                if log_utils:
-                    logger.info('SerienStream - No sources after search, trying direct title slugs')
+            # If an alternate/base domain list exists, retain .to as fallback.
+            for marker in [
+                "['https://serienstream.cx']",
+                "('https://serienstream.cx',)",
+                "['serienstream.cx']",
+                "('serienstream.cx',)",
+            ]:
+                if marker in text:
+                    if marker.startswith("['https"):
+                        text = text.replace(marker, "['https://serienstream.cx', 'https://serienstream.to']")
+                    elif marker.startswith("('https"):
+                        text = text.replace(marker, "('https://serienstream.cx', 'https://serienstream.to')")
+                    elif marker.startswith("['serien"):
+                        text = text.replace(marker, "['serienstream.cx', 'serienstream.to']")
+                    else:
+                        text = text.replace(marker, "('serienstream.cx', 'serienstream.to')")
 
-                for _title in search_titles:
-                    if not _title:
-                        continue
-                    try:
-                        _slug = html_unescape(_title).lower()
-                        _slug = _slug.replace(u'ä', 'ae').replace(u'ö', 'oe').replace(u'ü', 'ue').replace(u'ß', 'ss')
-                        _slug = re.sub(r'[^a-z0-9]+', '-', _slug).strip('-')
-                        if not _slug:
-                            continue
+            if text == before:
+                raise SystemExit(f'No serienstream.to domain reference found in {item.filename}')
 
-                        _direct_url = '/serie/stream/' + _slug
-                        if log_utils:
-                            logger.info('SerienStream - Direct slug fallback: %s' % _direct_url)
-
-                        self.run2(_direct_url, year, season=season, episode=episode, hostDict=hostDict, imdb=imdb)
-                        if self.sources:
-                            if log_utils:
-                                logger.info('SerienStream - Direct slug fallback successful: %s' % _direct_url)
-                            break
-                    except Exception as e:
-                        if log_utils:
-                            logger.info('SerienStream - Direct slug fallback error: %s' % str(e))
-"""
-
-            if old_block not in text:
-                raise SystemExit(f'Expected run2 block not found in {item.filename}')
-            text = text.replace(old_block, new_block, 1)
             data = text.encode('utf-8')
             patched = True
-            print(f'Patched {item.filename}')
+            print(f'Changed primary SerienStream domain to serienstream.cx in {item.filename}')
 
         if lower.endswith('/addon.xml') or lower == 'addon.xml':
             try:
