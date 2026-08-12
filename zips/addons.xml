@@ -23,7 +23,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.xship" version="2026.07.13" name="xShip" provider-name="Kusi (Barclay)">
+<addon id="plugin.video.xship" version="2026.07.14" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
         <import addon="xbmc.python" version="3.0.0" />
         <import addon="script.module.requests" />
