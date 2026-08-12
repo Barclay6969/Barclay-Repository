@@ -6,8 +6,9 @@ import xml.etree.ElementTree as ET
 
 root = pathlib.Path('.')
 xdir = root / 'zips' / 'plugin.video.xship'
-old_zip = xdir / 'plugin.video.xship-2026.07.09.zip'
-new_version = '2026.07.10'
+# Rebase on 0.7 so none of the experimental 0.8-0.10 bridge/token logic survives.
+old_zip = xdir / 'plugin.video.xship-2026.07.07.zip'
+new_version = '2026.07.11'
 new_zip = xdir / f'plugin.video.xship-{new_version}.zip'
 
 if new_zip.exists():
@@ -19,43 +20,84 @@ if not old_zip.exists():
 patched = False
 addon_xml_bytes = None
 
-# 0.10: keep .cx for search/discovery, but refresh the episode page on
-# serienstream.to before parsing hoster buttons. /r?t= tokens are encrypted and
-# must be used on the host that generated them; copying a .cx token to .to/IP
-# only redirects to the homepage.
-episode_refresh = r'''            sHtmlContent = self._request_page(full_url)
+# Lastship's working principle:
+# - one SerienStream base domain for discovery, episode page and /r?t= token
+# - one persistent requests.Session
+# - resolve data-play-url with the episode page as Referer
+# - let requests follow redirects and return response.url
+resolver_replacement = r'''    def _get_http_session(self):
+        try:
+            session = getattr(self, '_http_session', None)
+            if session is not None:
+                return session
 
-            # 2026.07.10: SerienStream redirect tokens are host-specific. Search
-            # and title matching can stay on .cx, but obtain fresh data-play-url
-            # values from the same episode path on serienstream.to (the domain
-            # used by the working Lastship implementation). If that page is not
-            # usable, keep the original .cx page as a safe fallback.
+            import requests
+            requests.packages.urllib3.disable_warnings()
+            session = requests.Session()
+            session.headers.update({
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            })
+            self._http_session = session
+            return session
+        except:
+            return None
+
+    def resolve(self, url):
+        try:
+            if log_utils:
+                logger.info('SerienStream - Lastship-style resolving: %s' % url[:100])
+
+            session = self._get_http_session()
+            if session is None:
+                return None
+
+            referer = getattr(self, 'episode_referer', None) or getattr(self, 'base_link', 'https://serienstream.to')
+            headers = {
+                'Referer': referer,
+                'Upgrade-Insecure-Requests': '1'
+            }
+
+            response = session.get(
+                url,
+                headers=headers,
+                timeout=10,
+                allow_redirects=True,
+                verify=False
+            )
+            final_url = response.url or url
+
+            if log_utils:
+                logger.info('SerienStream - Lastship-style final URL: %s' % final_url[:120])
+
+            # A fall-back to the SerienStream homepage is not a video URL.
             try:
-                parsed_episode = urlparse(full_url)
-                alt_full_url = 'https://serienstream.to' + (parsed_episode.path or '/')
-                if parsed_episode.query:
-                    alt_full_url += '?' + parsed_episode.query
+                from urllib.parse import urlparse
+                host = (urlparse(final_url).hostname or '').lower()
+                path = urlparse(final_url).path or '/'
+                if host in ('serienstream.to', 'serienstream.cx', '186.2.175.5') and path in ('', '/'):
+                    if log_utils:
+                        logger.info('SerienStream - Lastship-style resolve ended on internal homepage')
+                    return None
+            except:
+                pass
 
-                session = self._get_http_session()
-                if session is not None:
-                    alt_response = session.get(
-                        alt_full_url,
-                        headers={'Referer': 'https://serienstream.to'},
-                        allow_redirects=True,
-                        verify=False,
-                        timeout=10
-                    )
-                    alt_html = alt_response.text or ''
-                    if alt_response.status_code == 200 and self._has_stream_links(alt_html):
-                        sHtmlContent = alt_html
-                        full_url = alt_full_url
-                        if log_utils:
-                            logger.info('SerienStream - Using fresh .to episode tokens: %s' % full_url)
-                    elif log_utils:
-                        logger.info('SerienStream - .to episode refresh unavailable; keeping .cx tokens')
-            except Exception as e:
-                if log_utils:
-                    logger.info('SerienStream - .to episode refresh error: %s' % str(e))
+            # Mirror Lastship's VOE normalization.
+            try:
+                if 'voe' in final_url.lower() and 'voe.sx' not in final_url.lower():
+                    from urllib.parse import urlparse
+                    parsed = urlparse(final_url)
+                    if parsed.netloc:
+                        final_url = final_url.replace(parsed.netloc, 'voe.sx', 1)
+            except:
+                pass
+
+            return final_url
+
+        except Exception as e:
+            if log_utils:
+                logger.info('SerienStream - Lastship-style resolve error: %s' % str(e))
+            return None
+
 '''
 
 with zipfile.ZipFile(old_zip, 'r') as zin, zipfile.ZipFile(new_zip, 'w', zipfile.ZIP_DEFLATED) as zout:
@@ -65,16 +107,21 @@ with zipfile.ZipFile(old_zip, 'r') as zin, zipfile.ZipFile(new_zip, 'w', zipfile
 
         if lower.endswith('/serienstream.py') or lower == 'serienstream.py':
             text = data.decode('utf-8').replace('\r\n', '\n')
-            needle = "            sHtmlContent = self._request_page(full_url)\n"
-            if needle not in text:
-                raise SystemExit(f'Expected episode request line not found in {item.filename}')
-            if 'Using fresh .to episode tokens' in text:
-                raise SystemExit(f'0.10 episode refresh already present in {item.filename}')
 
-            text = text.replace(needle, episode_refresh, 1)
+            # Use the same base domain throughout, exactly like the supplied
+            # Lastship scraper does. Do not mix .cx-generated tokens with .to.
+            text = text.replace('serienstream.cx', 'serienstream.to')
+
+            # Replace xShip's old HTTP/bridge resolver block with the minimal
+            # Lastship-style resolver. 0.7 has this block directly before _getLogin.
+            pattern = r'    def _resolve_http_redirect\(self, url, referer\):[\s\S]*?(?=    @staticmethod\n    def _getLogin\(\):)'
+            text, count = re.subn(pattern, lambda _m: resolver_replacement, text, count=1)
+            if count != 1:
+                raise SystemExit(f'Expected SerienStream resolver block not found in {item.filename}')
+
             data = text.encode('utf-8')
             patched = True
-            print(f'Patched fresh serienstream.to episode-token refresh in {item.filename}')
+            print(f'Applied Lastship-style single-domain/session resolver to {item.filename}')
 
         if lower.endswith('/addon.xml') or lower == 'addon.xml':
             try:
