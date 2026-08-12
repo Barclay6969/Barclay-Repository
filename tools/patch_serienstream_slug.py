@@ -6,8 +6,8 @@ import xml.etree.ElementTree as ET
 
 root = pathlib.Path('.')
 xdir = root / 'zips' / 'plugin.video.xship'
-old_zip = xdir / 'plugin.video.xship-2026.07.07.zip'
-new_version = '2026.07.13'
+old_zip = xdir / 'plugin.video.xship-2026.07.13.zip'
+new_version = '2026.07.14'
 new_zip = xdir / f'plugin.video.xship-{new_version}.zip'
 
 if new_zip.exists():
@@ -16,162 +16,106 @@ if new_zip.exists():
 if not old_zip.exists():
     raise SystemExit(f'Missing source package: {old_zip}')
 
-patched = False
 addon_xml_bytes = None
-
-# Exact Lastship principle ported to xShip's scraper interface:
-# - serienstream.to is the single base domain
-# - NO login attempt/requirement
-# - one requests.Session for search, episode page and data-play-url redirect
-# - episode URL is the Referer for the redirect request
-# - allow requests to follow redirects and use response.url as hoster URL
-# - no custom frame-bridge/token/domain rewriting logic
-
-request_page_replacement = r'''    def _get_http_session(self):
-        session = getattr(self, '_http_session', None)
-        if session is not None:
-            return session
-        try:
-            import requests
-            requests.packages.urllib3.disable_warnings()
-            session = requests.Session()
-            session.headers.update({
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            })
-            self._http_session = session
-            return session
-        except Exception as e:
-            if log_utils:
-                logger.info('SerienStream - Session init error: %s' % str(e))
-            return None
-
-    def _request_page(self, full_url):
-        session = self._get_http_session()
-        if session is None:
-            return ''
-        try:
-            response = session.get(full_url, timeout=12, allow_redirects=True, verify=False)
-            response.raise_for_status()
-            return response.text or ''
-        except Exception as e:
-            if log_utils:
-                logger.info('SerienStream - Session page error: %s | %s' % (str(e), full_url))
-            return ''
-
-'''
-
-resolver_replacement = r'''    def resolve(self, url):
-        try:
-            if log_utils:
-                logger.info('SerienStream - Lastship resolve: %s' % url[:100])
-
-            session = self._get_http_session()
-            if session is None:
-                return None
-
-            referer = getattr(self, 'episode_referer', None) or self.base_link
-            headers = {
-                'Referer': referer,
-                'Upgrade-Insecure-Requests': '1'
-            }
-
-            response = session.get(
-                url,
-                headers=headers,
-                timeout=10,
-                allow_redirects=True,
-                verify=False
-            )
-            final_url = response.url or url
-
-            if log_utils:
-                logger.info('SerienStream - Lastship final URL: %s' % final_url[:120])
-
-            # Lastship normalises VOE domains to voe.sx.
-            try:
-                parsed = urlparse(final_url)
-                host = (parsed.netloc or '').lower()
-                if 'voe' in host and host != 'voe.sx':
-                    final_url = final_url.replace(parsed.netloc, 'voe.sx', 1)
-            except:
-                pass
-
-            # Never hand an internal homepage to Kodi as a video URL.
-            try:
-                parsed = urlparse(final_url)
-                host = (parsed.hostname or '').lower()
-                path = parsed.path or '/'
-                if host in ('serienstream.to', 'serienstream.cx', '186.2.175.5') and path in ('', '/'):
-                    if log_utils:
-                        logger.info('SerienStream - Lastship resolve ended on internal homepage')
-                    return None
-            except:
-                pass
-
-            return final_url
-
-        except Exception as e:
-            if log_utils:
-                logger.info('SerienStream - Lastship resolve error: %s' % str(e))
-            return None
-
-'''
+patched_sources = False
 
 with zipfile.ZipFile(old_zip, 'r') as zin, zipfile.ZipFile(new_zip, 'w', zipfile.ZIP_DEFLATED) as zout:
     for item in zin.infolist():
         data = zin.read(item.filename)
         lower = item.filename.lower()
 
-        if lower.endswith('/serienstream.py') or lower == 'serienstream.py':
+        if lower.endswith('/resources/lib/sources.py'):
             text = data.decode('utf-8').replace('\r\n', '\n')
 
-            # Single Lastship base domain. Do not mix tokens across domains.
-            text = re.sub(r"SITE_DOMAIN\s*=\s*['\"][^'\"]+['\"]", "SITE_DOMAIN = 'serienstream.to'", text, count=1)
-            text = re.sub(r"LEGACY_DOMAINS\s*=\s*set\([^\n]+\)", "LEGACY_DOMAINS = set(['serienstream.cx'])", text, count=1)
+            # xVault-compatible VOE direct resolver dependencies.
+            if 'import base64\n' not in text:
+                text = text.replace('import sys\n', 'import sys\nimport base64\n', 1)
+            if 'from html import unescape as html_unescape' not in text:
+                text = text.replace('import re,json,random,time\n', 'import re,json,random,time\nfrom html import unescape as html_unescape\nfrom urllib.parse import urlencode, urljoin, urlparse\n', 1)
 
-            # Remove xShip's mandatory/login attempt. Lastship does not login.
-            login_pattern = r'''            login, password = self\._getLogin\(\)\n[\s\S]*?            aLinks = \[\]\n'''
-            login_repl = "            if log_utils:\n                logger.info('SerienStream - Lastship flow: no login required')\n\n            aLinks = []\n"
-            text, login_count = re.subn(login_pattern, login_repl, text, count=1)
-            if login_count != 1:
-                raise SystemExit(f'Could not remove login gate in {item.filename}')
+            # Never delete a valid scraper source only because MediaInfo cannot probe
+            # a protected/redirect URL before the provider resolver has run.
+            old = """            else:\n                log_utils.log('[BG-Probe] Keine MediaInfo: %s / %s' % (provider, source_name), log_utils.LOGWARNING)\n                return\n            source.update({'info': info})\n        except:\n            return\n        source.update({'_probe': probe})\n        self.sources_new.append(source)"""
+            new = """            else:\n                log_utils.log('[BG-Probe] Keine MediaInfo, Quelle bleibt erhalten: %s / %s' % (provider, source_name), log_utils.LOGWARNING)\n                probe = {'width': resolution, 'height': resolution}\n                if prioHoster != 999:\n                    info = source.get('info', '') + '| Keine Auflösung'\n            source.update({'info': info})\n        except Exception as e:\n            log_utils.log('[BG-Probe] Fehler, Quelle bleibt erhalten: %s / %s / %s' % (source.get('provider'), source.get('source'), str(e)), log_utils.LOGWARNING)\n            probe = {'width': 0, 'height': 0}\n        source.update({'_probe': probe})\n        self.sources_new.append(source)"""
+            if old not in text:
+                raise SystemExit('BG-probe anchor not found')
+            text = text.replace(old, new, 1)
 
-            # Search pages must use the SAME requests.Session as episode + redirect.
-            imdb_req_pattern = r'''                    oRequest = cRequestHandler\(imdb_search_url\)\n                    oRequest\.addHeaderEntry\('User-Agent', 'Mozilla/5\.0'\)\n                    sHtmlContent = oRequest\.request\(\)'''
-            text, imdb_count = re.subn(imdb_req_pattern, "                    sHtmlContent = self._request_page(imdb_search_url)", text, count=1)
-            if imdb_count != 1:
-                raise SystemExit(f'Could not patch IMDB search request in {item.filename}')
+            # xVault playback path: try VOE direct resolution before ResolveURL.
+            old = """            if not direct == True:\n                try:\n                    hmf = resolver.HostedMediaFile(url=url, include_disabled=True, include_universal=False, include_popups=False)\n                    if not hmf.valid_url():\n                        hmf = resolver.HostedMediaFile(url=url, include_disabled=True, include_universal=False, include_popups=True)\n                    if hmf.valid_url():\n                        url = hmf.resolve()\n                        if url == False or url == None or url == '': url = None  # raise Exception()\n                except:\n                    url = None"""
+            new = """            if not direct == True:\n                voe_url = self._resolveVoeDirect(url, item)\n                if voe_url:\n                    url = voe_url\n                else:\n                    try:\n                        hmf = resolver.HostedMediaFile(url=url, include_disabled=True, include_universal=False, include_popups=False)\n                        if not hmf.valid_url():\n                            hmf = resolver.HostedMediaFile(url=url, include_disabled=True, include_universal=False, include_popups=True)\n                        if hmf.valid_url():\n                            url = hmf.resolve()\n                            if url == False or url == None or url == '': url = None\n                    except:\n                        url = None"""
+            if old not in text:
+                raise SystemExit('ResolveURL anchor not found')
+            text = text.replace(old, new, 1)
 
-            title_req_pattern = r'''                        oRequest = cRequestHandler\(search_url\)\n                        oRequest\.addHeaderEntry\('User-Agent', 'Mozilla/5\.0'\)\n                        sHtmlContent = oRequest\.request\(\)'''
-            text, title_count = re.subn(title_req_pattern, "                        sHtmlContent = self._request_page(search_url)", text, count=1)
-            if title_count != 1:
-                raise SystemExit(f'Could not patch title search request in {item.filename}')
+            helper = r'''
+    def _resolveVoeDirect(self, url, item):
+        try:
+            if not url:
+                return None
+            if 'voe' not in str(item.get('source', '')).lower() and 'voe' not in urlparse(str(url).split('|', 1)[0]).netloc.lower():
+                return None
+            import requests
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            }
+            page_url = str(url).split('|', 1)[0]
+            response = requests.get(page_url, headers=headers, timeout=12, allow_redirects=True)
+            html = response.text or ''
+            real_url = response.url
+            for _ in range(3):
+                redirect = re.search(r"window\.location\.href\s*=\s*'([^']+)'", html)
+                if not redirect:
+                    break
+                page_url = urljoin(real_url, html_unescape(redirect.group(1)))
+                response = requests.get(page_url, headers=headers, timeout=12, allow_redirects=True)
+                html = response.text or ''
+                real_url = response.url
+            packed = re.search(r'json">\["([^"]+)"\]</script>\s*<script\s+src="([^"]+)', html)
+            if not packed:
+                return None
+            script_url = urljoin(real_url, html_unescape(packed.group(2)))
+            script = requests.get(script_url, headers=headers, timeout=12).text or ''
+            repl = re.search(r"(\[(?:'\W{2}'[,]?){1,9}\])", script)
+            if not repl:
+                return None
+            data = self._decodeVoePayload(packed.group(1), repl.group(1))
+            media_url = data.get('direct_access_url') or data.get('source') or data.get('file')
+            if not media_url:
+                return None
+            stream_headers = urlencode({'User-Agent': headers['User-Agent'], 'Referer': real_url})
+            log_utils.log('VOE direkt aufgeloest: Provider %s / %s' % (item.get('provider'), item.get('source')), log_utils.LOGINFO)
+            return '%s|%s' % (media_url, stream_headers)
+        except Exception as e:
+            log_utils.log('VOE Direktaufloesung fehlgeschlagen: %s' % str(e), log_utils.LOGWARNING)
+            return None
 
-            # Episode/season pages all flow through _request_page already. Replace it
-            # with the persistent Lastship-style session implementation.
-            request_pattern = r'''    def _request_page\(self, full_url\):[\s\S]*?(?=    @staticmethod\n    def _parse_stream_link_buttons)'''
-            text, request_count = re.subn(request_pattern, lambda _m: request_page_replacement, text, count=1)
-            if request_count != 1:
-                raise SystemExit(f'Could not replace _request_page in {item.filename}')
+    def _decodeVoePayload(self, encoded, replacements):
+        tokens = [re.escape(token) for token in replacements[2:-2].split("','")]
+        text = ''
+        for char in encoded:
+            value = ord(char)
+            if 64 < value < 91:
+                value = (value - 52) % 26 + 65
+            elif 96 < value < 123:
+                value = (value - 84) % 26 + 97
+            text += chr(value)
+        for token in tokens:
+            text = re.sub(token, '', text)
+        step = base64.b64decode(text).decode('utf-8', errors='replace')
+        step = ''.join(chr(ord(char) - 3) for char in step)
+        return json.loads(base64.b64decode(step[::-1]).decode('utf-8', errors='replace'))
 
-            # Remove ALL xShip bridge/redirect resolver experiments. Keep helper
-            # methods above them untouched; replace only resolver implementation.
-            resolver_pattern = r'''    def _resolve_http_redirect\(self, url, referer\):[\s\S]*?(?=    @staticmethod\n    def _getLogin\(\):)'''
-            text, resolver_count = re.subn(resolver_pattern, lambda _m: resolver_replacement, text, count=1)
-            if resolver_count != 1:
-                raise SystemExit(f'Could not replace resolver in {item.filename}')
-
-            # Ensure session exists on the source instance before first request.
-            init_anchor = "        self.credentials_checked = False\n"
-            if init_anchor not in text:
-                raise SystemExit(f'Could not find __init__ anchor in {item.filename}')
-            text = text.replace(init_anchor, init_anchor + "        self._http_session = None\n", 1)
-
-            # Compile the generated scraper before packaging it.
+'''
+            anchor = '    def sourcesDialog(self, items):\n'
+            if anchor not in text:
+                raise SystemExit('sourcesDialog anchor not found')
+            text = text.replace(anchor, helper + anchor, 1)
             compile(text, item.filename, 'exec')
             data = text.encode('utf-8')
-            patched = True
-            print(f'Applied exact Lastship session flow to {item.filename}')
+            patched_sources = True
+            print('Patched xShip playback layer in sources.py')
 
         if lower.endswith('/addon.xml') or lower == 'addon.xml':
             try:
@@ -182,13 +126,12 @@ with zipfile.ZipFile(old_zip, 'r') as zin, zipfile.ZipFile(new_zip, 'w', zipfile
                 addon.attrib['version'] = new_version
                 data = ET.tostring(addon, encoding='utf-8', xml_declaration=True)
                 addon_xml_bytes = data
-                print(f'Updated addon.xml to {new_version}')
 
         zout.writestr(item, data)
 
-if not patched:
+if not patched_sources:
     new_zip.unlink(missing_ok=True)
-    raise SystemExit('serienstream.py not patched')
+    raise SystemExit('sources.py not patched')
 if addon_xml_bytes is None:
     new_zip.unlink(missing_ok=True)
     raise SystemExit('plugin.video.xship addon.xml not found')
@@ -201,5 +144,4 @@ xship_xml = re.sub(r'^<\?xml[^>]*\?>\s*', '', xship_xml)
 feed = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<addons>\n' + repo_xml + '\n\n' + xship_xml + '\n</addons>\n'
 (root / 'zips' / 'addons.xml').write_text(feed, encoding='utf-8', newline='\n')
 (root / 'zips' / 'addons.xml.md5').write_text(hashlib.md5(feed.encode('utf-8')).hexdigest() + '\n', encoding='ascii', newline='\n')
-
 print(f'Created {new_zip}')
