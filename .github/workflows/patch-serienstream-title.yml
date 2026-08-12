@@ -1,4 +1,4 @@
-name: Patch xShip SerienStream direct slug fallback
+name: Patch xShip SerienStream resolver
 
 on:
   push:
@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build patched xShip
+      - name: Inspect or build xShip SerienStream patch
         run: python tools/patch_serienstream_slug.py
-      - name: Commit patched package
+      - name: Commit generated output
         run: |
           if git diff --quiet && [ -z "$(git status --porcelain)" ]; then
             echo "No changes to commit."
@@ -25,6 +25,6 @@ jobs:
           fi
           git config user.name "Barclay Repo Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add zips/plugin.video.xship zips/addons.xml zips/addons.xml.md5
-          git commit -m "Add SerienStream direct slug fallback in xShip 2026.07.04"
+          git add tools/serienstream_2026.07.07_extracted.py zips/plugin.video.xship zips/addons.xml zips/addons.xml.md5 2>/dev/null || true
+          git commit -m "Capture xShip 2026.07.07 SerienStream scraper" || exit 0
           git push
