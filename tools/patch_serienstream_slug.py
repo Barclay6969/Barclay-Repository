@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 
 root = pathlib.Path('.')
 xdir = root / 'zips' / 'plugin.video.xship'
-old_zip = xdir / 'plugin.video.xship-2026.07.04.zip'
+old_zip = xdir / 'plugin.video.xship-2026.07.06.zip'
 new_version = '2026.07.07'
 new_zip = xdir / f'plugin.video.xship-{new_version}.zip'
 
@@ -28,23 +28,31 @@ with zipfile.ZipFile(old_zip, 'r') as zin, zipfile.ZipFile(new_zip, 'w', zipfile
             text = data.decode('utf-8').replace('\r\n', '\n')
             before = text
 
-            # Start from the known-good 2026.07.04 scraper. Change only the
-            # ordinary page/search domain to .cx. Keep the original hoster and
-            # redirect-resolution logic untouched.
+            # Keep .cx as the page/search entry domain.
             text = text.replace("SITE_DOMAIN = 'serienstream.to'", "SITE_DOMAIN = 'serienstream.cx'", 1)
 
-            # Preserve .to as the legacy/internal host if the scraper already
-            # defines it. Remove obsolete s.to only; do not add the direct IP to
-            # hoster/redirect recognition because that broke playback in .06.
-            text = re.sub(
-                r"LEGACY_DOMAINS\s*=\s*set\(([^\n]+)\)",
+            # Roll back the .06 multi-domain redirect changes that broke hoster playback.
+            text = text.replace(
+                "LEGACY_DOMAINS = set(['serienstream.to', '186.2.175.5'])",
                 "LEGACY_DOMAINS = set(['serienstream.to'])",
-                text,
-                count=1
+                1
+            )
+            text = text.replace(
+                "domains = set([SITE_DOMAIN, (self.domain or SITE_DOMAIN).lower(), 'serienstream.to', '186.2.175.5'])",
+                "domains = set([SITE_DOMAIN, (self.domain or SITE_DOMAIN).lower()])",
+                1
             )
 
-            # Optional page-level fallback list only. This list is deliberately
-            # not wired into hoster redirect detection.
+            # Remove the .06 base_links block from redirect handling.
+            text = text.replace("""        self.base_link = 'https://' + self.domain
+        self.base_links = [
+            'https://serienstream.cx',
+            'https://serienstream.to',
+            'http://186.2.175.5'
+        ]
+""", "        self.base_link = 'https://' + self.domain\n", 1)
+
+            # Keep page fallbacks as metadata only; do not use them for hoster redirects.
             marker = "        self.base_link = 'https://' + self.domain\n"
             replacement = """        self.base_link = 'https://' + self.domain
         self.page_fallback_links = [
@@ -53,15 +61,15 @@ with zipfile.ZipFile(old_zip, 'r') as zin, zipfile.ZipFile(new_zip, 'w', zipfile
             'http://186.2.175.5'
         ]
 """
-            if marker in text:
+            if marker in text and 'self.page_fallback_links' not in text:
                 text = text.replace(marker, replacement, 1)
 
             if text == before:
-                raise SystemExit(f'No safe SerienStream domain change applied in {item.filename}')
+                raise SystemExit(f'No rollback change applied in {item.filename}')
 
             data = text.encode('utf-8')
             patched = True
-            print(f'Changed only SerienStream entry domain to .cx in {item.filename}')
+            print(f'Rolled back multi-domain redirect handling in {item.filename}')
 
         if lower.endswith('/addon.xml') or lower == 'addon.xml':
             try:
@@ -83,7 +91,6 @@ if addon_xml_bytes is None:
     new_zip.unlink(missing_ok=True)
     raise SystemExit('plugin.video.xship addon.xml not found')
 
-# Keep previous versions in the repository for rollback/testing.
 repo_src = root / 'addons' / 'repository.barclay' / 'addon.xml'
 repo_xml = repo_src.read_text(encoding='utf-8-sig').strip()
 xship_xml = addon_xml_bytes.decode('utf-8-sig').strip()
