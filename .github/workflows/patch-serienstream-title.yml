@@ -1,4 +1,4 @@
-name: Patch xShip SerienStream subtitle title search
+name: Patch xShip SerienStream direct slug fallback
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build xShip 2026.07.03 with subtitle fallback
+      - name: Build xShip 2026.07.04 with direct slug fallback
         shell: python
         run: |
           import hashlib
@@ -26,8 +26,8 @@ jobs:
 
           root = pathlib.Path('.')
           xdir = root / 'zips' / 'plugin.video.xship'
-          old_zip = xdir / 'plugin.video.xship-2026.07.02.zip'
-          new_version = '2026.07.03'
+          old_zip = xdir / 'plugin.video.xship-2026.07.03.zip'
+          new_version = '2026.07.04'
           new_zip = xdir / f'plugin.video.xship-{new_version}.zip'
 
           if new_zip.exists():
@@ -47,19 +47,51 @@ jobs:
                   if lower.endswith('/serienstream.py') or lower == 'serienstream.py':
                       text = data.decode('utf-8').replace('\r\n', '\n')
 
-                      old_block = """        try:\n            t = []\n            for i in titles:\n                if i:\n                    t.extend(_all_variants(i))\n            t = list(set([x for x in t if x]))\n"""
-                      new_block = """        try:\n            search_titles = []\n            for i in titles:\n                if not i:\n                    continue\n                if i not in search_titles:\n                    search_titles.append(i)\n                for _sep in (' – ', ' — ', ' - ', ': '):\n                    if _sep in i:\n                        _short = i.split(_sep, 1)[0].strip()\n                        if _short and _short not in search_titles:\n                            search_titles.append(_short)\n\n            t = []\n            for i in search_titles:\n                if i:\n                    t.extend(_all_variants(i))\n            t = list(set([x for x in t if x]))\n"""
+                      old_block = """            for i in aLinks:
+                url = i['source']
+                self.run2(url, year, season=season, episode=episode, hostDict=hostDict, imdb=imdb)
+"""
+                      new_block = """            for i in aLinks:
+                url = i['source']
+                self.run2(url, year, season=season, episode=episode, hostDict=hostDict, imdb=imdb)
+                if self.sources:
+                    break
+
+            # Final fallback: bypass SerienStream search and try the canonical
+            # /serie/stream/<slug> URL generated from all known title variants.
+            # This covers cases where the site's search endpoint does not return
+            # a valid result although the series itself exists.
+            if not self.sources:
+                if log_utils:
+                    logger.info('SerienStream - No sources after search, trying direct title slugs')
+
+                for _title in search_titles:
+                    if not _title:
+                        continue
+                    try:
+                        _slug = html_unescape(_title).lower()
+                        _slug = _slug.replace(u'ä', 'ae').replace(u'ö', 'oe').replace(u'ü', 'ue').replace(u'ß', 'ss')
+                        _slug = re.sub(r'[^a-z0-9]+', '-', _slug).strip('-')
+                        if not _slug:
+                            continue
+
+                        _direct_url = '/serie/stream/' + _slug
+                        if log_utils:
+                            logger.info('SerienStream - Direct slug fallback: %s' % _direct_url)
+
+                        self.run2(_direct_url, year, season=season, episode=episode, hostDict=hostDict, imdb=imdb)
+                        if self.sources:
+                            if log_utils:
+                                logger.info('SerienStream - Direct slug fallback successful: %s' % _direct_url)
+                            break
+                    except Exception as e:
+                        if log_utils:
+                            logger.info('SerienStream - Direct slug fallback error: %s' % str(e))
+"""
 
                       if old_block not in text:
-                          raise SystemExit(f'Expected title variant block not found in {item.filename}')
+                          raise SystemExit(f'Expected run2 block not found in {item.filename}')
                       text = text.replace(old_block, new_block, 1)
-
-                      old_loop = '                for title in titles:\n'
-                      new_loop = '                for title in search_titles:\n'
-                      if old_loop not in text:
-                          raise SystemExit(f'Expected title search loop not found in {item.filename}')
-                      text = text.replace(old_loop, new_loop, 1)
-
                       data = text.encode('utf-8')
                       patched = True
                       print(f'Patched {item.filename}')
@@ -107,5 +139,5 @@ jobs:
           git config user.name "Barclay Repo Bot"
           git config user.email "actions@users.noreply.github.com"
           git add zips/plugin.video.xship zips/addons.xml zips/addons.xml.md5
-          git commit -m "Fix SerienStream subtitle title search in xShip 2026.07.03"
+          git commit -m "Add SerienStream direct slug fallback in xShip 2026.07.04"
           git push
