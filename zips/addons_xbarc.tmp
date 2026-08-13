@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addons>
+<addon id="repository.barclay" name="Barclay Repository" version="1.0.4" provider-name="Barclay">
+  <extension point="xbmc.addon.repository" name="Barclay Repository">
+    <dir>
+      <info compressed="false">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml</info>
+      <checksum>https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/addons.xml.md5</checksum>
+      <datadir zip="true">https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/zips/</datadir>
+    </dir>
+    <dir>
+      <info compressed="false">https://raw.githubusercontent.com/Gujal00/smrzips/master/addons.xml</info>
+      <checksum>https://raw.githubusercontent.com/Gujal00/smrzips/master/addons.xml.md5</checksum>
+      <datadir zip="true">https://raw.githubusercontent.com/Gujal00/smrzips/master/zips/</datadir>
+    </dir>
+  </extension>
+  <extension point="xbmc.addon.metadata"><summary>Kusi's Repo für xShip</summary><description>Kusi's Repo für xShip und xBarc.</description><platform>all</platform><assets><icon>resources/icon.png</icon></assets></extension>
+</addon>
+<addon id="plugin.video.xship" version="2026.07.20" name="xShip" provider-name="Kusi (Barclay)"><requires><import addon="xbmc.python" version="3.0.0" /><import addon="script.module.requests" /><import addon="script.module.six" /><import addon="script.module.resolveurl" version="5.1.100" /><import addon="script.module.pydevd" optional="true" /></requires><extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension><extension point="xbmc.service" library="service.py" start="startup" /><extension point="xbmc.addon.metadata"><summary>Modded by Kusi (Barclay)</summary><platform>all</platform><assets><icon>resources/icon_barclay.png</icon><fanart>resources/media/fanart.jpg</fanart></assets></extension></addon>
+<addon id="plugin.video.xbarc" version="2026.08.13.1" name="xBarc" provider-name="Kusi (Barclay)"><requires><import addon="xbmc.python" version="3.0.0" /><import addon="script.module.requests" /><import addon="script.module.six" /><import addon="script.module.resolveurl" version="5.1.100" /><import addon="script.module.pydevd" optional="true" /></requires><extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension><extension point="xbmc.service" library="service.py" start="startup" /><extension point="xbmc.addon.metadata"><summary>xBarc Test</summary><platform>all</platform><assets><icon>resources/icon.png</icon></assets></extension></addon>
+</addons>
