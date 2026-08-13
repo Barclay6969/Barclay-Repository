@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.xbarc" name="xBarc" version="2026.08.13.1" provider-name="Kusi (Barclay)">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0" />
+    <import addon="script.module.requests" />
+    <import addon="script.module.resolveurl" version="5.1.100" />
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="de_DE">xBarc - Vixstream/FILMO Test</summary>
+    <description lang="de_DE">Isoliertes Test-Addon fuer Vixstream und FILMO. Vixstream verarbeitet HLS inklusive lokalem AES-Key-Fallback.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
