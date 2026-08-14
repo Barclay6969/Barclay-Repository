@@ -1,0 +1,112 @@
+name: Build xShip 2026.07.22
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-2026.07.22.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch 2026.07.21 hosts.sort migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.07.21.zip'
+          OUT='zips/plugin.video.xship/plugin.video.xship-2026.07.22.zip'
+          WORK="$RUNNER_TEMP/xship022"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          test -f "$ROOT/addon.xml"
+          test -f "$ROOT/service.py"
+
+          ROOT="$ROOT" python3 - <<'PY'
+          import os, re, pathlib
+          root = pathlib.Path(os.environ['ROOT'])
+
+          p = root / 'addon.xml'
+          s = p.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")2026\.07\.21("\s+name="xShip")', r'\g<1>2026.07.22\2', s, count=1)
+          if n != 1:
+              raise SystemExit('xShip 2026.07.21 version not found')
+          p.write_text(s, encoding='utf-8', newline='\n')
+
+          p = root / 'service.py'
+          s = p.read_text(encoding='utf-8')
+          marker = '# BARCLAY_HOSTS_SORT_MIGRATION_20260722'
+          if marker not in s:
+              migration = r'''
+
+          # BARCLAY_HOSTS_SORT_MIGRATION_20260722
+          def _barclay_hosts_sort_migration_20260722():
+              """Einmalig Provider-Prioritaet auch bei bestehenden Installationen setzen."""
+              migration_key = 'barclay.settings.migration.hostssort.20260722'
+              try:
+                  if getSetting(migration_key) == 'done':
+                      return
+                  setSetting('hosts.sort', '2')
+                  setSetting(migration_key, 'done')
+                  if isLogger:
+                      logger.info('[service]: Barclay hosts.sort migration 20260722 completed')
+              except Exception as exc:
+                  if isLogger:
+                      logger.warning('[service]: Barclay hosts.sort migration 20260722 failed: %s' % str(exc))
+          '''
+              anchor = 'if __name__ == "__main__":\n'
+              if anchor not in s:
+                  raise SystemExit('service main anchor not found')
+              s = s.replace(anchor, migration + '\n\n' + anchor, 1)
+              call_anchor = '    _barclay_settings_migration_20260721()\n'
+              if call_anchor not in s:
+                  raise SystemExit('20260721 migration call anchor not found')
+              s = s.replace(call_anchor, call_anchor + '    _barclay_hosts_sort_migration_20260722()\n', 1)
+          p.write_text(s, encoding='utf-8', newline='\n')
+          PY
+
+          grep -q 'version="2026.07.22"' "$ROOT/addon.xml"
+          grep -q 'BARCLAY_HOSTS_SORT_MIGRATION_20260722' "$ROOT/service.py"
+          grep -q "setSetting('hosts.sort', '2')" "$ROOT/service.py"
+          python3 -m py_compile "$ROOT/service.py"
+
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+
+      - name: Update repository metadata and checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, hashlib
+          p = Path('zips/addons.xml')
+          s = p.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")2026\.07\.21(")', r'\g<1>2026.07.22\2', s, count=1)
+          if n != 1:
+              raise SystemExit('xShip 2026.07.21 metadata entry not found')
+          p.write_text(s, encoding='utf-8', newline='\n')
+          md5 = hashlib.md5(p.read_bytes()).hexdigest()
+          Path('zips/addons.xml.md5').write_text(md5 + '\n', encoding='ascii')
+          print('addons.xml md5:', md5)
+          PY
+
+      - name: Commit 2026.07.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add zips/plugin.video.xship/plugin.video.xship-2026.07.22.zip zips/addons.xml zips/addons.xml.md5
+          git diff --cached --quiet && exit 0
+          git commit -m 'Build xShip 2026.07.22 hosts.sort migration fix'
+          git push
