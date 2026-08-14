@@ -1,0 +1,73 @@
+name: Build xShip Vixstream local test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-vixstream-localtest.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build local Vixstream test from 2026.07.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.07.22.zip'
+          WORK="$RUNNER_TEMP/xship-vix-test"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          export ROOT
+
+          python3 - <<'PY'
+          import os, re, pathlib
+          root = pathlib.Path(os.environ['ROOT'])
+
+          # Local test gets a higher version so Kodi can install it over 2026.07.22.
+          addon = root / 'addon.xml'
+          s = addon.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")', r'\g<1>2026.07.23\2', s, count=1)
+          if n != 1:
+              raise SystemExit('addon version not found')
+          addon.write_text(s, encoding='utf-8', newline='\n')
+
+          vix = root / 'scrapers' / 'scrapers_source' / 'de' / 'vixstream.py'
+          s = vix.read_text(encoding='utf-8')
+
+          old = '''        url_match = re.search(r"url\\s*:\\s*['\\\"]([^'\\\"]+/playlist/\\d+)['\\\"]", html)\n\n        if not (token_match and expires_match and url_match):\n            logger.error('[%s] Playlist-Parameter unvollstaendig: token=%s expires=%s url=%s' % (\n                SITE_NAME, bool(token_match), bool(expires_match), bool(url_match)\n            ))\n            return None, None, None\n\n        playlist_url = '%s?token=%s&expires=%s&h=1&lang=%s' % (\n            url_match.group(1), token_match.group(1), expires_match.group(1), stream_language\n        )'''
+
+          new = '''        url_match = re.search(r"url\\s*:\\s*['\\\"]([^'\\\"]+/playlist/\\d+)['\\\"]", html)\n\n        # VixSrc 2026-08: the embed no longer necessarily exposes a literal\n        # `url: .../playlist/<id>` value. The browser now derives the master\n        # playlist from the numeric embed id while token/expires are still\n        # present in the embed HTML. Keep the old path first and only fall\n        # back to the derived VixSrc playlist when `url` is absent.\n        playlist_base = url_match.group(1) if url_match else None\n        if not playlist_base:\n            embed_id_match = re.search(r'/embed/(\\d+)', embed_url)\n            if embed_id_match:\n                playlist_base = re.sub(\n                    r'/embed/\\d+(?:\\?.*)?$',\n                    '/playlist/%s' % embed_id_match.group(1),\n                    embed_url\n                )\n                logger.info('[%s] Playlist-URL aus Embed-ID abgeleitet: %s' % (SITE_NAME, playlist_base))\n\n        if not (token_match and expires_match and playlist_base):\n            logger.error('[%s] Playlist-Parameter unvollstaendig: token=%s expires=%s url=%s' % (\n                SITE_NAME, bool(token_match), bool(expires_match), bool(playlist_base)\n            ))\n            return None, None, None\n\n        playlist_url = '%s?b=1&token=%s&expires=%s&h=1&lang=%s' % (\n            playlist_base, token_match.group(1), expires_match.group(1), stream_language\n        )'''
+
+          if old not in s:
+              raise SystemExit('expected Vixstream playlist block not found')
+          s = s.replace(old, new, 1)
+          vix.write_text(s, encoding='utf-8', newline='\n')
+          PY
+
+          grep -q 'version="2026.07.23"' "$ROOT/addon.xml"
+          grep -q 'Playlist-URL aus Embed-ID abgeleitet' "$ROOT/scrapers/scrapers_source/de/vixstream.py"
+          python3 -m py_compile "$ROOT/scrapers/scrapers_source/de/vixstream.py"
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET, os
+          ET.parse(os.path.join(os.environ['ROOT'], 'addon.xml'))
+          PY
+
+          OUT="$RUNNER_TEMP/plugin.video.xship-2026.07.23-VIXTEST.zip"
+          (cd "$WORK" && zip -qr "$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+          cp "$OUT" "$GITHUB_WORKSPACE/plugin.video.xship-2026.07.23-VIXTEST.zip"
+
+      - name: Upload local test ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: xship-vixstream-localtest
+          path: plugin.video.xship-2026.07.23-VIXTEST.zip
+          if-no-files-found: error
