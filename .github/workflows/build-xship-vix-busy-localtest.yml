@@ -1,0 +1,120 @@
+name: Build xShip Vix+Busy local test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-vix-busy-localtest.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build local test from 2026.07.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.07.22.zip'
+          WORK="$RUNNER_TEMP/xship-vix-busy-test"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          export ROOT
+
+          python3 - <<'PY'
+          import os, re, pathlib
+          root = pathlib.Path(os.environ['ROOT'])
+
+          # Local test version only; repository metadata stays untouched.
+          addon = root / 'addon.xml'
+          s = addon.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")', r'\g<1>2026.07.24\2', s, count=1)
+          if n != 1:
+              raise SystemExit('addon version not found')
+          addon.write_text(s, encoding='utf-8', newline='\n')
+
+          # --- Vixstream: keep old resolver first, add new derived-playlist fallback. ---
+          vix = root / 'scrapers' / 'scrapers_source' / 'de' / 'vixstream.py'
+          s = vix.read_text(encoding='utf-8')
+          old = '''        url_match = re.search(r"url\\s*:\\s*['\\\"]([^'\\\"]+/playlist/\\d+)['\\\"]", html)\n\n        if not (token_match and expires_match and url_match):\n            logger.error('[%s] Playlist-Parameter unvollstaendig: token=%s expires=%s url=%s' % (\n                SITE_NAME, bool(token_match), bool(expires_match), bool(url_match)\n            ))\n            return None, None, None\n\n        playlist_url = '%s?token=%s&expires=%s&h=1&lang=%s' % (\n            url_match.group(1), token_match.group(1), expires_match.group(1), stream_language\n        )'''
+          new = '''        url_match = re.search(r"url\\s*:\\s*['\\\"]([^'\\\"]+/playlist/\\d+)['\\\"]", html)\n\n        # Prefer the legacy VixSrc playlist URL when present.\n        playlist_base = url_match.group(1) if url_match else None\n\n        # 2026-08 fallback: VixSrc may omit the literal `url:` value while\n        # token/expires remain present. In that case derive /playlist/<id>\n        # from the numeric /embed/<id> URL observed in the working browser flow.\n        if not playlist_base:\n            embed_id_match = re.search(r'/embed/(\\d+)', embed_url)\n            if embed_id_match:\n                playlist_base = re.sub(\n                    r'/embed/\\d+(?:\\?.*)?$',\n                    '/playlist/%s' % embed_id_match.group(1),\n                    embed_url\n                )\n                logger.info('[%s] Playlist-URL aus Embed-ID abgeleitet: %s' % (SITE_NAME, playlist_base))\n\n        if not (token_match and expires_match and playlist_base):\n            logger.error('[%s] Playlist-Parameter unvollstaendig: token=%s expires=%s url=%s' % (\n                SITE_NAME, bool(token_match), bool(expires_match), bool(playlist_base)\n            ))\n            return None, None, None\n\n        # b=1 is required by the current VixSrc browser flow and is tolerated\n        # by the fallback path. The legacy path is still selected first above.\n        playlist_url = '%s?b=1&token=%s&expires=%s&h=1&lang=%s' % (\n            playlist_base, token_match.group(1), expires_match.group(1), stream_language\n        )'''
+          if old not in s:
+              raise SystemExit('expected Vixstream playlist block not found')
+          s = s.replace(old, new, 1)
+          vix.write_text(s, encoding='utf-8', newline='\n')
+
+          # --- Busy indicator: bridge the gap between resolver dialog and actual AV start. ---
+          src = root / 'resources' / 'lib' / 'sources.py'
+          s = src.read_text(encoding='utf-8')
+
+          # Dialog selection path: show native Kodi busy circle immediately after
+          # the resolver progress dialog closes successfully and keep it active
+          # while player().run() hands the URL to Kodi.
+          needle = '''                    try: progressDialog.close()\n                    except: pass\n\n                    control.execute('Dialog.Close(virtualkeyboard)')\n                    control.execute('Dialog.Close(yesnoDialog)')\n                    return self.url'''
+          repl = '''                    try: progressDialog.close()\n                    except: pass\n\n                    control.execute('Dialog.Close(virtualkeyboard)')\n                    control.execute('Dialog.Close(yesnoDialog)')\n                    if not control.visible(): control.busy()\n                    return self.url'''
+          if needle not in s:
+              raise SystemExit('sourcesDialog success block not found')
+          s = s.replace(needle, repl, 1)
+
+          # Direct/autoplay path.
+          needle = '''        try: progressDialog.close()\n        except: pass\n\n        return u\n\n    def errorForSources(self):'''
+          repl = '''        try: progressDialog.close()\n        except: pass\n\n        if u is not None and not control.visible(): control.busy()\n        return u\n\n    def errorForSources(self):'''
+          if needle not in s:
+              raise SystemExit('sourcesDirect close block not found')
+          s = s.replace(needle, repl, 1)
+
+          # Directory/playItem path.
+          needle = '''            from resources.lib.player import player\n            player().run(title, self.url, meta)'''
+          repl = '''            if not control.visible(): control.busy()\n            from resources.lib.player import player\n            player().run(title, self.url, meta)'''
+          if needle not in s:
+              raise SystemExit('playItem player block not found')
+          s = s.replace(needle, repl, 1)
+          src.write_text(s, encoding='utf-8', newline='\n')
+
+          # Player: close busy on real AV start (existing Dialog.Close(all,true)
+          # already does this) and explicitly close it on playback errors or
+          # internal player exceptions so the spinner cannot remain stuck.
+          player = root / 'resources' / 'lib' / 'player.py'
+          s = player.read_text(encoding='utf-8')
+
+          old_exc = '''        except:\n            return\n\n\n    def keepPlaybackAlive(self):'''
+          new_exc = '''        except:\n            try:\n                if control.visible(): control.idle()\n            except:\n                pass\n            return\n\n\n    def keepPlaybackAlive(self):'''
+          if old_exc not in s:
+              raise SystemExit('player run exception block not found')
+          s = s.replace(old_exc, new_exc, 1)
+
+          anchor = '''    def onPlayBackStopped(self):\n'''
+          callback = '''    def onPlayBackError(self):\n        if self.isdebug: log_utils.log('onPlayBackError - closing busy dialog', log_utils.LOGINFO)\n        try:\n            if control.visible(): control.idle()\n        except:\n            pass\n        self.streamFinished = True\n\n'''
+          if anchor not in s:
+              raise SystemExit('onPlayBackStopped anchor not found')
+          s = s.replace(anchor, callback + anchor, 1)
+          player.write_text(s, encoding='utf-8', newline='\n')
+          PY
+
+          grep -q 'version="2026.07.24"' "$ROOT/addon.xml"
+          grep -q 'Playlist-URL aus Embed-ID abgeleitet' "$ROOT/scrapers/scrapers_source/de/vixstream.py"
+          grep -q 'if not control.visible(): control.busy()' "$ROOT/resources/lib/sources.py"
+          grep -q 'def onPlayBackError' "$ROOT/resources/lib/player.py"
+          python3 -m py_compile "$ROOT/scrapers/scrapers_source/de/vixstream.py" "$ROOT/resources/lib/sources.py" "$ROOT/resources/lib/player.py"
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET, os
+          ET.parse(os.path.join(os.environ['ROOT'], 'addon.xml'))
+          PY
+
+          OUT="$RUNNER_TEMP/plugin.video.xship-2026.07.24-VIX-BUSY-TEST.zip"
+          (cd "$WORK" && zip -qr "$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+          cp "$OUT" "$GITHUB_WORKSPACE/plugin.video.xship-2026.07.24-VIX-BUSY-TEST.zip"
+
+      - name: Upload local test ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: xship-vix-busy-localtest
+          path: plugin.video.xship-2026.07.24-VIX-BUSY-TEST.zip
+          if-no-files-found: error
