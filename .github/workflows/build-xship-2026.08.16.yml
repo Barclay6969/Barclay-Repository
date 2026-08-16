@@ -1,0 +1,86 @@
+name: Build xShip 2026.08.16
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-2026.08.16.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build xShip 2026.08.16
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.07.25.zip'
+          OUT='zips/plugin.video.xship/plugin.video.xship-2026.08.16.zip'
+          WORK="$RUNNER_TEMP/xship-2026.08.16"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+
+          python3 - "$ROOT" <<'PY'
+          from pathlib import Path
+          import sys
+
+          root = Path(sys.argv[1])
+
+          addon = root / 'addon.xml'
+          text = addon.read_text(encoding='utf-8')
+          old = 'version="2026.07.25"'
+          new = 'version="2026.08.16"'
+          if old not in text:
+              raise SystemExit('Old xShip version not found in addon.xml')
+          addon.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          mega = root / 'scrapers/scrapers_source/de/megakino.py'
+          text = mega.read_text(encoding='utf-8')
+          if "SITE_DOMAIN = 'megakino14.com'" not in text:
+              raise SystemExit('megakino14.com not found in megakino.py')
+          mega.write_text(text.replace("SITE_DOMAIN = 'megakino14.com'", "SITE_DOMAIN = 'megakino15.com'", 1), encoding='utf-8')
+
+          settings = root / 'resources/settings.xml'
+          text = settings.read_text(encoding='utf-8')
+          if 'default="megakino14.com"' not in text:
+              raise SystemExit('megakino14.com not found in settings.xml')
+          settings.write_text(text.replace('default="megakino14.com"', 'default="megakino15.com"', 1), encoding='utf-8')
+          PY
+
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import xml.etree.ElementTree as ET
+
+          p = Path('zips/addons.xml')
+          text = p.read_text(encoding='utf-8')
+          old = 'id="plugin.video.xship" version="2026.07.25"'
+          new = 'id="plugin.video.xship" version="2026.08.16"'
+          if old not in text:
+              raise SystemExit('Old xShip version not found in addons.xml')
+          text = text.replace(old, new, 1)
+          p.write_text(text, encoding='utf-8')
+          ET.parse(p)
+          Path('zips/addons.xml.md5').write_text(hashlib.md5(p.read_bytes()).hexdigest() + '\n', encoding='ascii')
+          PY
+
+          unzip -p "$OUT" plugin.video.xship/addon.xml | grep 'version="2026.08.16"'
+          unzip -p "$OUT" plugin.video.xship/scrapers/scrapers_source/de/megakino.py | grep "SITE_DOMAIN = 'megakino15.com'"
+          unzip -p "$OUT" plugin.video.xship/resources/settings.xml | grep 'default="megakino15.com"'
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT" zips/addons.xml zips/addons.xml.md5
+          git commit -m 'Release xShip 2026.08.16 MegaKino domain update'
+          git push
