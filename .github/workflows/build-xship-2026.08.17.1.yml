@@ -18,6 +18,10 @@ jobs:
 
       - name: Build xShip 2026.08.17.1
         shell: bash
+        env:
+          HELPER_B64: IyAtKi0gY29kaW5nOiB1dGYtOCAtKi0KaW1wb3J0IGpzb24KaW1wb3J0IG9zCmltcG9ydCByZQoKaW1wb3J0IHhibWMKaW1wb3J0IHhibWNhZGRvbgppbXBvcnQgeGJtY3ZmcwoKX0FERE9OID0geGJtY2FkZG9uLkFkZG9uKCkKCmRlZiBfbG9nKG1zZyk6CiAgICB0cnk6CiAgICAgICAgeGJtYy5sb2coJ1t4U2hpcCBEb21haW5TeW5jXSAlcycgJSBtc2csIHhibWMuTE9HSU5GTykKICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgcGFzcwoKZGVmIF9yZWFkX3N0YXRlKHBhdGgpOgogICAgdHJ5OgogICAgICAgIGlmIHhibWN2ZnMuZXhpc3RzKHBhdGgpOgogICAgICAgICAgICBmID0geGJtY3Zmcy5GaWxlKHBhdGgpCiAgICAgICAgICAgIHJhdyA9IGYucmVhZCgpCiAgICAgICAgICAgIGYuY2xvc2UoKQogICAgICAgICAgICBkYXRhID0ganNvbi5sb2FkcyhyYXcgb3IgJ3t9JykKICAgICAgICAgICAgcmV0dXJuIGRhdGEgaWYgaXNpbnN0YW5jZShkYXRhLCBkaWN0KSBlbHNlIHt9CiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKICAgIHJldHVybiB7fQoKZGVmIF93cml0ZV9zdGF0ZShwYXRoLCBzdGF0ZSk6CiAgICB0cnk6CiAgICAgICAgcGFyZW50ID0gb3MucGF0aC5kaXJuYW1lKHBhdGgpCiAgICAgICAgaWYgcGFyZW50IGFuZCBub3QgeGJtY3Zmcy5leGlzdHMocGFyZW50KToKICAgICAgICAgICAgeGJtY3Zmcy5ta2RpcnMocGFyZW50KQogICAgICAgIGYgPSB4Ym1jdmZzLkZpbGUocGF0aCwgJ3cnKQogICAgICAgIGYud3JpdGUoanNvbi5kdW1wcyhzdGF0ZSwgaW5kZW50PTIsIHNvcnRfa2V5cz1UcnVlKSkKICAgICAgICBmLmNsb3NlKCkKICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZXhjOgogICAgICAgIF9sb2coJ3N0YXRlIHdyaXRlIGZhaWxlZDogJXMnICUgZXhjKQoKZGVmIF9nZXRfc2l0ZV9kb21haW4ocGF0aCk6CiAgICB0cnk6CiAgICAgICAgd2l0aCBvcGVuKHBhdGgsICdyJywgZW5jb2Rpbmc9J3V0Zi04JykgYXMgZmg6CiAgICAgICAgICAgIHRleHQgPSBmaC5yZWFkKCkKICAgICAgICBtID0gcmUuc2VhcmNoKHInKD9tKV5ccypTSVRFX0RPTUFJTlxzKj1ccyooW1wnXCJdKShbXlwnXCJdKylcMScsIHRleHQpCiAgICAgICAgcmV0dXJuIG0uZ3JvdXAoMikuc3RyaXAoKSBpZiBtIGVsc2UgTm9uZQogICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICByZXR1cm4gTm9uZQoKZGVmIF9zZXRfc2l0ZV9kb21haW4ocGF0aCwgZG9tYWluKToKICAgIHRyeToKICAgICAgICB3aXRoIG9wZW4ocGF0aCwgJ3InLCBlbmNvZGluZz0ndXRmLTgnKSBhcyBmaDoKICAgICAgICAgICAgdGV4dCA9IGZoLnJlYWQoKQogICAgICAgIG5ldywgbiA9IHJlLnN1Ym4oCiAgICAgICAgICAgIHInKD9tKV4oXHMqU0lURV9ET01BSU5ccyo9XHMqKShbXCdcIl0pKFteXCdcIl0rKShcMiknLAogICAgICAgICAgICBsYW1iZGEgbTogbS5ncm91cCgxKSArIG0uZ3JvdXAoMikgKyBkb21haW4gKyBtLmdyb3VwKDQpLAogICAgICAgICAgICB0ZXh0LAogICAgICAgICAgICBjb3VudD0xLAogICAgICAgICkKICAgICAgICBpZiBuOgogICAgICAgICAgICB3aXRoIG9wZW4ocGF0aCwgJ3cnLCBlbmNvZGluZz0ndXRmLTgnKSBhcyBmaDoKICAgICAgICAgICAgICAgIGZoLndyaXRlKG5ldykKICAgICAgICAgICAgcmV0dXJuIFRydWUKICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZXhjOgogICAgICAgIF9sb2coJ3NjcmFwZXIgd3JpdGUgZmFpbGVkIGZvciAlczogJXMnICUgKHBhdGgsIGV4YykpCiAgICByZXR1cm4gRmFsc2UKCmRlZiBzeW5jX2RvbWFpbnMoKToKICAgIGFkZG9uX3BhdGggPSB4Ym1jdmZzLnRyYW5zbGF0ZVBhdGgoX0FERE9OLmdldEFkZG9uSW5mbygncGF0aCcpKQogICAgcHJvZmlsZSA9IHhibWN2ZnMudHJhbnNsYXRlUGF0aChfQURET04uZ2V0QWRkb25JbmZvKCdwcm9maWxlJykpCiAgICBzdGF0ZV9wYXRoID0gb3MucGF0aC5qb2luKHByb2ZpbGUsICdkb21haW5fc3luYy5qc29uJykKICAgIHN0YXRlID0gX3JlYWRfc3RhdGUoc3RhdGVfcGF0aCkKCiAgICBzY3JhcGVyX2RpciA9IG9zLnBhdGguam9pbihhZGRvbl9wYXRoLCAnc2NyYXBlcnMnLCAnc2NyYXBlcnNfc291cmNlJywgJ2RlJykKICAgIGlmIG5vdCBvcy5wYXRoLmlzZGlyKHNjcmFwZXJfZGlyKToKICAgICAgICByZXR1cm4KCiAgICBjaGFuZ2VkID0gRmFsc2UKICAgIGZvciBuYW1lIGluIG9zLmxpc3RkaXIoc2NyYXBlcl9kaXIpOgogICAgICAgIGlmIG5vdCBuYW1lLmVuZHN3aXRoKCcucHknKSBvciBuYW1lLnN0YXJ0c3dpdGgoJ19fJyk6CiAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgcHJvdmlkZXIgPSBuYW1lWzotM10KICAgICAgICBzY3JhcGVyX3BhdGggPSBvcy5wYXRoLmpvaW4oc2NyYXBlcl9kaXIsIG5hbWUpCiAgICAgICAgc2NyYXBlcl9kb21haW4gPSBfZ2V0X3NpdGVfZG9tYWluKHNjcmFwZXJfcGF0aCkKICAgICAgICBpZiBub3Qgc2NyYXBlcl9kb21haW46CiAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgc2V0dGluZ19pZCA9ICdwcm92aWRlci4lcy5kb21haW4nICUgcHJvdmlkZXIKICAgICAgICB0cnk6CiAgICAgICAgICAgIHVzZXJfZG9tYWluID0gKF9BRERPTi5nZXRTZXR0aW5nKHNldHRpbmdfaWQpIG9yICcnKS5zdHJpcCgpCiAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICAgICAgY29udGludWUKICAgICAgICBsYXN0X2RvbWFpbiA9IHN0cihzdGF0ZS5nZXQocHJvdmlkZXIsICcnKSBvciAnJykuc3RyaXAoKQoKICAgICAgICBpZiBwcm92aWRlciA9PSAnbWVnYWtpbm8nIGFuZCBzY3JhcGVyX2RvbWFpbiA9PSAnbWVnYWtpbm8xNS5jb20nIGFuZCB1c2VyX2RvbWFpbiA9PSAnbWVnYWtpbm8xNC5jb20nOgogICAgICAgICAgICBfQURET04uc2V0U2V0dGluZyhzZXR0aW5nX2lkLCBzY3JhcGVyX2RvbWFpbikKICAgICAgICAgICAgdXNlcl9kb21haW4gPSBzY3JhcGVyX2RvbWFpbgogICAgICAgICAgICBfbG9nKCdtZWdha2lubyBtaWdyYXRpb246IHNldHRpbmdzIC0+ICVzJyAlIHNjcmFwZXJfZG9tYWluKQoKICAgICAgICBpZiBub3QgbGFzdF9kb21haW46CiAgICAgICAgICAgIGlmIG5vdCB1c2VyX2RvbWFpbjoKICAgICAgICAgICAgICAgIF9BRERPTi5zZXRTZXR0aW5nKHNldHRpbmdfaWQsIHNjcmFwZXJfZG9tYWluKQogICAgICAgICAgICAgICAgdXNlcl9kb21haW4gPSBzY3JhcGVyX2RvbWFpbgogICAgICAgICAgICBlbGlmIHVzZXJfZG9tYWluICE9IHNjcmFwZXJfZG9tYWluOgogICAgICAgICAgICAgICAgaWYgX3NldF9zaXRlX2RvbWFpbihzY3JhcGVyX3BhdGgsIHVzZXJfZG9tYWluKToKICAgICAgICAgICAgICAgICAgICBzY3JhcGVyX2RvbWFpbiA9IHVzZXJfZG9tYWluCiAgICAgICAgICAgICAgICAgICAgX2xvZygnJXMgZmlyc3Qgc3luYzogc2NyYXBlciA8LSBzZXR0aW5ncyAoJXMpJyAlIChwcm92aWRlciwgdXNlcl9kb21haW4pKQogICAgICAgIGVsc2U6CiAgICAgICAgICAgIHNjcmFwZXJfY2hhbmdlZCA9IHNjcmFwZXJfZG9tYWluICE9IGxhc3RfZG9tYWluCiAgICAgICAgICAgIHVzZXJfY2hhbmdlZCA9IGJvb2wodXNlcl9kb21haW4pIGFuZCB1c2VyX2RvbWFpbiAhPSBsYXN0X2RvbWFpbgogICAgICAgICAgICBpZiBzY3JhcGVyX2NoYW5nZWQgYW5kIG5vdCB1c2VyX2NoYW5nZWQ6CiAgICAgICAgICAgICAgICBfQURET04uc2V0U2V0dGluZyhzZXR0aW5nX2lkLCBzY3JhcGVyX2RvbWFpbikKICAgICAgICAgICAgICAgIHVzZXJfZG9tYWluID0gc2NyYXBlcl9kb21haW4KICAgICAgICAgICAgICAgIF9sb2coJyVzIHVwZGF0ZSBzeW5jOiBzZXR0aW5ncyA8LSBzY3JhcGVyICglcyknICUgKHByb3ZpZGVyLCBzY3JhcGVyX2RvbWFpbikpCiAgICAgICAgICAgIGVsaWYgdXNlcl9jaGFuZ2VkIGFuZCBub3Qgc2NyYXBlcl9jaGFuZ2VkOgogICAgICAgICAgICAgICAgaWYgX3NldF9zaXRlX2RvbWFpbihzY3JhcGVyX3BhdGgsIHVzZXJfZG9tYWluKToKICAgICAgICAgICAgICAgICAgICBzY3JhcGVyX2RvbWFpbiA9IHVzZXJfZG9tYWluCiAgICAgICAgICAgICAgICAgICAgX2xvZygnJXMgbWFudWFsIHN5bmM6IHNjcmFwZXIgPC0gc2V0dGluZ3MgKCVzKScgJSAocHJvdmlkZXIsIHVzZXJfZG9tYWluKSkKICAgICAgICAgICAgZWxpZiBzY3JhcGVyX2NoYW5nZWQgYW5kIHVzZXJfY2hhbmdlZCBhbmQgdXNlcl9kb21haW4gIT0gc2NyYXBlcl9kb21haW46CiAgICAgICAgICAgICAgICBpZiBfc2V0X3NpdGVfZG9tYWluKHNjcmFwZXJfcGF0aCwgdXNlcl9kb21haW4pOgogICAgICAgICAgICAgICAgICAgIHNjcmFwZXJfZG9tYWluID0gdXNlcl9kb21haW4KICAgICAgICAgICAgICAgICAgICBfbG9nKCclcyBjb25mbGljdDogdXNlciBvdmVycmlkZSBwcmVzZXJ2ZWQgKCVzKScgJSAocHJvdmlkZXIsIHVzZXJfZG9tYWluKSkKCiAgICAgICAgZWZmZWN0aXZlID0gdXNlcl9kb21haW4gb3Igc2NyYXBlcl9kb21haW4KICAgICAgICBpZiBzdGF0ZS5nZXQocHJvdmlkZXIpICE9IGVmZmVjdGl2ZToKICAgICAgICAgICAgc3RhdGVbcHJvdmlkZXJdID0gZWZmZWN0aXZlCiAgICAgICAgICAgIGNoYW5nZWQgPSBUcnVlCgogICAgaWYgY2hhbmdlZCBvciBub3QgeGJtY3Zmcy5leGlzdHMoc3RhdGVfcGF0aCk6CiAgICAgICAgX3dyaXRlX3N0YXRlKHN0YXRlX3BhdGgsIHN0YXRlKQoKaWYgX19uYW1lX18gPT0gJ19fbWFpbl9fJzoKICAgIHN5bmNfZG9tYWlucygpCg==
+          PATCH_B64: ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCmltcG9ydCBvcywgcmUsIGJhc2U2NApyb290PVBhdGgob3MuZW52aXJvblsnUk9PVCddKQphZGRvbj1yb290LydhZGRvbi54bWwnCnM9YWRkb24ucmVhZF90ZXh0KGVuY29kaW5nPSd1dGYtOCcpCnMsbj1yZS5zdWJuKHIndmVyc2lvbj0iMjAyNlwuMDhcLjE3IicsICd2ZXJzaW9uPSIyMDI2LjA4LjE3LjEiJywgcywgY291bnQ9MSkKYXNzZXJ0IG49PTEKYWRkb24ud3JpdGVfdGV4dChzLGVuY29kaW5nPSd1dGYtOCcpCmhlbHBlcj1yb290LydyZXNvdXJjZXMnLydsaWInLydkb21haW5fc3luY19zdGFydHVwLnB5JwpoZWxwZXIud3JpdGVfYnl0ZXMoYmFzZTY0LmI2NGRlY29kZShvcy5lbnZpcm9uWydIRUxQRVJfQjY0J10pKQpkZWZhdWx0PXJvb3QvJ2RlZmF1bHQucHknCnNyYz1kZWZhdWx0LnJlYWRfdGV4dChlbmNvZGluZz0ndXRmLTgnKQptYXJrZXI9JyMgeFNoaXAgMjAyNi4wOC4xNy4xIHN0YXJ0dXAgZG9tYWluIHN5bmNocm9uaXphdGlvbicKaWYgbWFya2VyIG5vdCBpbiBzcmM6CiAgICBibG9jaz0iIiJcbiMgeFNoaXAgMjAyNi4wOC4xNy4xIHN0YXJ0dXAgZG9tYWluIHN5bmNocm9uaXphdGlvblxudHJ5OlxuICAgIGZyb20gcmVzb3VyY2VzLmxpYi5kb21haW5fc3luY19zdGFydHVwIGltcG9ydCBzeW5jX2RvbWFpbnMgYXMgX3hzaGlwX3N5bmNfZG9tYWluc1xuICAgIF94c2hpcF9zeW5jX2RvbWFpbnMoKVxuZXhjZXB0IEV4Y2VwdGlvbiBhcyBfeHNoaXBfZG9tYWluX3N5bmNfZXJyb3I6XG4gICAgdHJ5OlxuICAgICAgICBpbXBvcnQgeGJtY1xuICAgICAgICB4Ym1jLmxvZygnW3hTaGlwIERvbWFpblN5bmNdIHN0YXJ0dXAgc3luYyBmYWlsZWQ6ICVzJyAlIF94c2hpcF9kb21haW5fc3luY19lcnJvciwgeGJtYy5MT0dXQVJOSU5HKVxuICAgIGV4Y2VwdCBFeGNlcHRpb246XG4gICAgICAgIHBhc3NcblxuIiIiCiAgICBsaW5lcz1zcmMuc3BsaXRsaW5lcyhUcnVlKQogICAgaT0wCiAgICB3aGlsZSBpPGxlbihsaW5lcykgYW5kIChsaW5lc1tpXS5zdGFydHN3aXRoKCcjIScpIG9yICdjb2RpbmcnIGluIGxpbmVzW2ldWzo0MF0gb3IgbGluZXNbaV0uc3RyaXAoKT09JycpOgogICAgICAgIGkrPTEKICAgIHdoaWxlIGk8bGVuKGxpbmVzKSBhbmQgbGluZXNbaV0uc3RhcnRzd2l0aCgnZnJvbSBfX2Z1dHVyZV9fIGltcG9ydCcpOgogICAgICAgIGkrPTEKICAgIHNyYz0nJy5qb2luKGxpbmVzWzppXSkrYmxvY2srJycuam9pbihsaW5lc1tpOl0pCiAgICBkZWZhdWx0LndyaXRlX3RleHQoc3JjLGVuY29kaW5nPSd1dGYtOCcpCmNvbXBpbGUoZGVmYXVsdC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04Jyksc3RyKGRlZmF1bHQpLCdleGVjJykKY29tcGlsZShoZWxwZXIucmVhZF90ZXh0KGVuY29kaW5nPSd1dGYtOCcpLHN0cihoZWxwZXIpLCdleGVjJykK
+          REPO_B64: ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCmltcG9ydCBoYXNobGliLHJlCnA9UGF0aCgnemlwcy9hZGRvbnMueG1sJykKcz1wLnJlYWRfdGV4dChlbmNvZGluZz0ndXRmLTgnKQpzLG49cmUuc3VibihyJyg8YWRkb24gaWQ9InBsdWdpblwudmlkZW9cLnhzaGlwIiB2ZXJzaW9uPSIpMjAyNlwuMDhcLjE3KCIgKScsIHInXGc8MT4yMDI2LjA4LjE3LjFcMicsIHMsIGNvdW50PTEpCmFzc2VydCBuPT0xCnAud3JpdGVfdGV4dChzLGVuY29kaW5nPSd1dGYtOCcpClBhdGgoJ3ppcHMvYWRkb25zLnhtbC5tZDUnKS53cml0ZV90ZXh0KGhhc2hsaWIubWQ1KHAucmVhZF9ieXRlcygpKS5oZXhkaWdlc3QoKSsnXG4nLGVuY29kaW5nPSdhc2NpaScpCg==
         run: |
           set -euo pipefail
           BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.17.zip'
@@ -27,215 +31,16 @@ jobs:
           mkdir -p "$WORK"
           unzip -q "$BASE" -d "$WORK"
           ROOT="$WORK/plugin.video.xship"
-          export ROOT
+          export ROOT HELPER_B64
 
-          python3 - <<'PY'
-          from pathlib import Path
-          import os, re
-
-          root = Path(os.environ['ROOT'])
-
-          # bump addon version
-          addon = root / 'addon.xml'
-          text = addon.read_text(encoding='utf-8')
-          text, n = re.subn(r'version="2026\.08\.17"', 'version="2026.08.17.1"', text, count=1)
-          assert n == 1, 'addon.xml version 2026.08.17 not found'
-          addon.write_text(text, encoding='utf-8')
-
-          # Add a startup synchronizer. It runs whenever xShip itself starts, not only via service.py.
-          helper = root / 'resources' / 'lib' / 'domain_sync_startup.py'
-          helper.parent.mkdir(parents=True, exist_ok=True)
-          helper.write_text(r'''# -*- coding: utf-8 -*-
-import json
-import os
-import re
-
-import xbmc
-import xbmcaddon
-import xbmcvfs
-
-
-_ADDON = xbmcaddon.Addon()
-
-
-def _log(msg):
-    try:
-        xbmc.log('[xShip DomainSync] %s' % msg, xbmc.LOGINFO)
-    except Exception:
-        pass
-
-
-def _read_state(path):
-    try:
-        if xbmcvfs.exists(path):
-            f = xbmcvfs.File(path)
-            raw = f.read()
-            f.close()
-            data = json.loads(raw or '{}')
-            return data if isinstance(data, dict) else {}
-    except Exception:
-        pass
-    return {}
-
-
-def _write_state(path, state):
-    try:
-        parent = os.path.dirname(path)
-        if parent and not xbmcvfs.exists(parent):
-            xbmcvfs.mkdirs(parent)
-        f = xbmcvfs.File(path, 'w')
-        f.write(json.dumps(state, indent=2, sort_keys=True))
-        f.close()
-    except Exception as exc:
-        _log('state write failed: %s' % exc)
-
-
-def _get_site_domain(path):
-    try:
-        with open(path, 'r', encoding='utf-8') as fh:
-            text = fh.read()
-        m = re.search(r'(?m)^\s*SITE_DOMAIN\s*=\s*([\'\"])([^\'\"]+)\1', text)
-        return m.group(2).strip() if m else None
-    except Exception:
-        return None
-
-
-def _set_site_domain(path, domain):
-    try:
-        with open(path, 'r', encoding='utf-8') as fh:
-            text = fh.read()
-        new, n = re.subn(
-            r'(?m)^(\s*SITE_DOMAIN\s*=\s*)([\'\"])([^\'\"]+)(\2)',
-            lambda m: m.group(1) + m.group(2) + domain + m.group(4),
-            text,
-            count=1,
-        )
-        if n:
-            with open(path, 'w', encoding='utf-8') as fh:
-                fh.write(new)
-            return True
-    except Exception as exc:
-        _log('scraper write failed for %s: %s' % (path, exc))
-    return False
-
-
-def sync_domains():
-    addon_path = xbmcvfs.translatePath(_ADDON.getAddonInfo('path'))
-    profile = xbmcvfs.translatePath(_ADDON.getAddonInfo('profile'))
-    state_path = os.path.join(profile, 'domain_sync.json')
-    state = _read_state(state_path)
-
-    scraper_dir = os.path.join(addon_path, 'scrapers', 'scrapers_source', 'de')
-    if not os.path.isdir(scraper_dir):
-        return
-
-    changed = False
-    for name in os.listdir(scraper_dir):
-        if not name.endswith('.py') or name.startswith('__'):
-            continue
-
-        provider = name[:-3]
-        scraper_path = os.path.join(scraper_dir, name)
-        scraper_domain = _get_site_domain(scraper_path)
-        if not scraper_domain:
-            continue
-
-        setting_id = 'provider.%s.domain' % provider
-        try:
-            user_domain = (_ADDON.getSetting(setting_id) or '').strip()
-        except Exception:
-            continue
-
-        last_domain = str(state.get(provider, '') or '').strip()
-
-        # One-time compatibility migration for the domain change that exposed the issue.
-        if provider == 'megakino' and scraper_domain == 'megakino15.com' and user_domain == 'megakino14.com':
-            _ADDON.setSetting(setting_id, scraper_domain)
-            user_domain = scraper_domain
-            _log('megakino migration: settings -> %s' % scraper_domain)
-
-        if not last_domain:
-            # First observation: empty setting follows scraper; an explicit differing value is preserved.
-            if not user_domain:
-                _ADDON.setSetting(setting_id, scraper_domain)
-                user_domain = scraper_domain
-            elif user_domain != scraper_domain:
-                if _set_site_domain(scraper_path, user_domain):
-                    scraper_domain = user_domain
-                    _log('%s first sync: scraper <- settings (%s)' % (provider, user_domain))
-        else:
-            scraper_changed = scraper_domain != last_domain
-            user_changed = bool(user_domain) and user_domain != last_domain
-
-            if scraper_changed and not user_changed:
-                # Add-on update changed the scraper domain; follow it in Kodi settings.
-                _ADDON.setSetting(setting_id, scraper_domain)
-                user_domain = scraper_domain
-                _log('%s update sync: settings <- scraper (%s)' % (provider, scraper_domain))
-            elif user_changed and not scraper_changed:
-                # User changed the setting; write it back to the scraper.
-                if _set_site_domain(scraper_path, user_domain):
-                    scraper_domain = user_domain
-                    _log('%s manual sync: scraper <- settings (%s)' % (provider, user_domain))
-            elif scraper_changed and user_changed:
-                if user_domain != scraper_domain:
-                    # Conflict: preserve the intentional user override.
-                    if _set_site_domain(scraper_path, user_domain):
-                        scraper_domain = user_domain
-                        _log('%s conflict: user override preserved (%s)' % (provider, user_domain))
-
-        effective = user_domain or scraper_domain
-        if state.get(provider) != effective:
-            state[provider] = effective
-            changed = True
-
-    if changed or not xbmcvfs.exists(state_path):
-        _write_state(state_path, state)
-
-
-if __name__ == '__main__':
-    sync_domains()
-''', encoding='utf-8')
-
-          # Run synchronization on every normal xShip invocation.
-          default = root / 'default.py'
-          src = default.read_text(encoding='utf-8')
-          marker = '# xShip 2026.08.17.1 startup domain synchronization'
-          if marker not in src:
-              block = '''\n# xShip 2026.08.17.1 startup domain synchronization\ntry:\n    from resources.lib.domain_sync_startup import sync_domains as _xship_sync_domains\n    _xship_sync_domains()\nexcept Exception as _xship_domain_sync_error:\n    try:\n        import xbmc\n        xbmc.log('[xShip DomainSync] startup sync failed: %s' % _xship_domain_sync_error, xbmc.LOGWARNING)\n    except Exception:\n        pass\n\n'''
-              lines = src.splitlines(True)
-              insert_at = 0
-              # Keep shebang/encoding and __future__ imports at the beginning if present.
-              while insert_at < len(lines) and (lines[insert_at].startswith('#!') or 'coding' in lines[insert_at][:40] or lines[insert_at].strip() == ''):
-                  insert_at += 1
-              while insert_at < len(lines) and lines[insert_at].startswith('from __future__ import'):
-                  insert_at += 1
-              src = ''.join(lines[:insert_at]) + block + ''.join(lines[insert_at:])
-              default.write_text(src, encoding='utf-8')
-
-          # syntax checks
-          compile(default.read_text(encoding='utf-8'), str(default), 'exec')
-          compile(helper.read_text(encoding='utf-8'), str(helper), 'exec')
-          print('xShip 2026.08.17.1 startup domain sync patched successfully')
-          PY
+          echo "$PATCH_B64" | base64 -d > "$RUNNER_TEMP/patch8171.py"
+          python3 "$RUNNER_TEMP/patch8171.py"
 
           rm -f "$OUT"
           (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
 
-          python3 - <<'PY'
-          from pathlib import Path
-          import hashlib, re
-
-          p = Path('zips/addons.xml')
-          s = p.read_text(encoding='utf-8')
-          s, n = re.subn(r'(<addon id="plugin\.video\.xship" version=")2026\.08\.17(" )', r'\g<1>2026.08.17.1\2', s, count=1)
-          assert n == 1, 'xShip 2026.08.17 entry not found in addons.xml'
-          p.write_text(s, encoding='utf-8')
-
-          digest = hashlib.md5(p.read_bytes()).hexdigest()
-          Path('zips/addons.xml.md5').write_text(digest + '\n', encoding='ascii')
-          print('addons.xml md5:', digest)
-          PY
+          echo "$REPO_B64" | base64 -d > "$RUNNER_TEMP/repo8171.py"
+          python3 "$RUNNER_TEMP/repo8171.py"
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
