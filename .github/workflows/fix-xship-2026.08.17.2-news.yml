@@ -1,0 +1,93 @@
+name: Fix xShip 2026.08.17.2 news metadata
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-xship-2026.08.17.2-news.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix xShip news metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import xml.etree.ElementTree as ET
+
+          p = Path('zips/addons.xml')
+          tree = ET.parse(p)
+          root = tree.getroot()
+
+          news_text = '''2026.08.17.2
+- Changelog hinzugefügt und Kodi-Anzeige „Letzte Änderungen“ ergänzt.
+
+2026.08.17.1
+- Domain-Synchronisierung läuft nun zusätzlich bei jedem normalen xShip-Start.
+
+2026.08.17
+- Bidirektionale Provider-Domain-Synchronisierung eingeführt.
+- Scraper-Änderungen werden in die Einstellungen übernommen.
+- Manuelle Einstellungen werden zurück in den Scraper geschrieben.
+- MegaKino 14.com → 15.com Migration ergänzt.
+
+2026.08.16
+- MegaKino auf megakino15.com aktualisiert.
+
+2026.07.25
+- Vixstream- und Wiedergabe-/Busy-Fixes.
+
+2026.07.22
+- hosts.sort-Migration korrigiert.
+
+2026.07.21
+- Defaults bereinigt und inputstream.adaptive ergänzt.
+
+2026.07.14 bis 2026.07.04
+- SerienStream-Resolver, Session-Flow, Domain-Fallbacks und Hoster-Auflösung schrittweise verbessert.'''
+
+          for addon in root.findall('addon'):
+              aid = addon.get('id')
+              metadata = next((e for e in addon.findall('extension') if e.get('point') == 'xbmc.addon.metadata'), None)
+              if metadata is None:
+                  continue
+              news = metadata.find('news')
+              if aid == 'repository.barclay':
+                  if news is not None:
+                      metadata.remove(news)
+              elif aid == 'plugin.video.xship':
+                  if news is None:
+                      news = ET.SubElement(metadata, 'news')
+                  news.text = news_text
+
+          ET.indent(tree, space='  ')
+          xml = ET.tostring(root, encoding='unicode')
+          p.write_text('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + xml + '\n', encoding='utf-8')
+
+          digest = hashlib.md5(p.read_bytes()).hexdigest()
+          Path('zips/addons.xml.md5').write_text(digest + '\n', encoding='ascii')
+
+          check = ET.parse(p).getroot()
+          xship = next(a for a in check.findall('addon') if a.get('id') == 'plugin.video.xship')
+          md = next(e for e in xship.findall('extension') if e.get('point') == 'xbmc.addon.metadata')
+          assert md.find('news') is not None
+          repo = next(a for a in check.findall('addon') if a.get('id') == 'repository.barclay')
+          rmd = next(e for e in repo.findall('extension') if e.get('point') == 'xbmc.addon.metadata')
+          assert rmd.find('news') is None
+          print('xShip news metadata placement fixed')
+          PY
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add zips/addons.xml zips/addons.xml.md5
+          git commit -m 'Fix xShip 2026.08.17.2 news metadata'
+          git push
