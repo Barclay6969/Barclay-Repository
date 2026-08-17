@@ -1,0 +1,103 @@
+name: Build xShip 2026.08.17.2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-2026.08.17.2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build xShip 2026.08.17.2
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.17.1.zip'
+          OUT='zips/plugin.video.xship/plugin.video.xship-2026.08.17.2.zip'
+          WORK="$RUNNER_TEMP/xship08172"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          export ROOT
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re, xml.etree.ElementTree as ET
+
+          root = Path(os.environ['ROOT'])
+          addon = root / 'addon.xml'
+          text = addon.read_text(encoding='utf-8')
+          text, n = re.subn(r'version="2026\.08\.17\.1"', 'version="2026.08.17.2"', text, count=1)
+          assert n == 1, 'addon.xml version 2026.08.17.1 not found'
+
+          changelog = '''xShip – Changelog\n\n2026.08.17.2\n- Changelog hinzugefügt und Kodi-Metadaten für „Letzte Änderungen“ ergänzt.\n\n2026.08.17.1\n- Domain-Synchronisierung zusätzlich beim normalen xShip-Start ausgeführt.\n- Android-Boxen sind damit nicht mehr nur vom Kodi-Hintergrundservice abhängig.\n\n2026.08.17\n- Bidirektionale Domain-Synchronisierung für Provider eingeführt.\n- Änderungen aus dem Scraper werden in die xShip-Einstellungen übernommen.\n- Manuelle Domain-Änderungen in den Einstellungen werden zurück in den Scraper geschrieben.\n- Bewusste manuelle Overrides bleiben bei Konflikten erhalten.\n- Einmalige MegaKino-Migration von megakino14.com auf megakino15.com ergänzt.\n\n2026.08.16\n- MegaKino-Domain von megakino14.com auf megakino15.com aktualisiert.\n\n2026.07.25\n- Vixstream-Wiedergabe überarbeitet und stabilisiert.\n- Busy-/Warteanzeige bei der Wiedergabe verbessert.\n\n2026.07.22\n- Migration der Hoster-Sortierung (hosts.sort) korrigiert.\n\n2026.07.21\n- Standardwerte bereinigt und angepasst.\n- inputstream.adaptive als Abhängigkeit ergänzt.\n\n2026.07.14\n- Weitere Wiedergabeprobleme behoben.\n\n2026.07.13\n- SerienStream-Ablauf an den funktionierenden Lastship-Session-Flow angepasst.\n\n2026.07.12\n- SerienStream auf den zuletzt stabilen Resolver-Stand zurückgeführt.\n\n2026.07.11\n- Lastship-orientierten SerienStream-Ablauf eingebaut und Resolver-Verhalten verbessert.\n\n2026.07.10\n- SerienStream-Episodenabruf mit frischen Session-/Episode-Daten verbessert.\n\n2026.07.09\n- Interne SerienStream-Weiterleitungen gefiltert, damit nur echte Hoster verarbeitet werden.\n\n2026.07.08\n- Session-aware SerienStream-Bridge-Resolver ergänzt.\n\n2026.07.07\n- serienstream.cx als sicherer Einstieg ergänzt, ursprüngliche Hoster-Auflösung beibehalten.\n- Problematische Multi-Domain-Redirect-Änderungen wieder zurückgenommen.\n\n2026.07.06\n- Multi-Domain-Fallback für SerienStream getestet und ergänzt.\n\n2026.07.05\n- serienstream.cx als bevorzugte SerienStream-Domain gesetzt.\n\n2026.07.04\n- Direkten SerienStream-Slug-Fallback ergänzt.\n'''
+          (root / 'changelog.txt').write_text(changelog, encoding='utf-8')
+
+          latest_news = '''2026.08.17.2\n- Changelog hinzugefügt und Kodi-Anzeige „Letzte Änderungen“ ergänzt.\n\n2026.08.17.1\n- Domain-Synchronisierung läuft nun zusätzlich bei jedem normalen xShip-Start.\n\n2026.08.17\n- Bidirektionale Provider-Domain-Synchronisierung eingeführt.\n- Scraper-Änderungen werden in die Einstellungen übernommen.\n- Manuelle Einstellungen werden zurück in den Scraper geschrieben.\n- MegaKino 14.com → 15.com Migration ergänzt.\n\n2026.08.16\n- MegaKino auf megakino15.com aktualisiert.\n\n2026.07.25\n- Vixstream- und Wiedergabe-/Busy-Fixes.\n\n2026.07.22\n- hosts.sort-Migration korrigiert.\n\n2026.07.21\n- Defaults bereinigt und inputstream.adaptive ergänzt.\n\n2026.07.14 bis 2026.07.04\n- SerienStream-Resolver, Session-Flow, Domain-Fallbacks und Hoster-Auflösung schrittweise verbessert.'''
+
+          tree = ET.fromstring(text)
+          metadata = None
+          for ext in tree.findall('extension'):
+              if ext.get('point') == 'xbmc.addon.metadata':
+                  metadata = ext
+                  break
+          assert metadata is not None, 'metadata extension not found'
+          news = metadata.find('news')
+          if news is None:
+              news = ET.SubElement(metadata, 'news')
+          news.text = latest_news
+          ET.indent(tree, space='  ')
+          xml = ET.tostring(tree, encoding='unicode')
+          if text.lstrip().startswith('<?xml'):
+              xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + xml
+          addon.write_text(xml + '\n', encoding='utf-8')
+
+          # final validation
+          parsed = ET.parse(addon).getroot()
+          assert parsed.get('version') == '2026.08.17.2'
+          md = next(e for e in parsed.findall('extension') if e.get('point') == 'xbmc.addon.metadata')
+          assert md.find('news') is not None and '2026.08.17.2' in (md.find('news').text or '')
+          assert (root / 'changelog.txt').exists()
+          print('xShip 2026.08.17.2 changelog added successfully')
+          PY
+
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re
+
+          p = Path('zips/addons.xml')
+          s = p.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon id="plugin\.video\.xship" version=")2026\.08\.17\.1(" )', r'\g<1>2026.08.17.2\2', s, count=1)
+          assert n == 1, 'xShip 2026.08.17.1 entry not found in addons.xml'
+
+          # Keep repository metadata in sync with the add-on's "news" field.
+          news = '''2026.08.17.2\n- Changelog hinzugefügt und Kodi-Anzeige „Letzte Änderungen“ ergänzt.\n\n2026.08.17.1\n- Domain-Synchronisierung läuft nun zusätzlich bei jedem normalen xShip-Start.\n\n2026.08.17\n- Bidirektionale Provider-Domain-Synchronisierung eingeführt.\n- Scraper-Änderungen werden in die Einstellungen übernommen.\n- Manuelle Einstellungen werden zurück in den Scraper geschrieben.\n- MegaKino 14.com → 15.com Migration ergänzt.\n\n2026.08.16\n- MegaKino auf megakino15.com aktualisiert.\n\n2026.07.25\n- Vixstream- und Wiedergabe-/Busy-Fixes.\n\n2026.07.22\n- hosts.sort-Migration korrigiert.\n\n2026.07.21\n- Defaults bereinigt und inputstream.adaptive ergänzt.\n\n2026.07.14 bis 2026.07.04\n- SerienStream-Resolver, Session-Flow, Domain-Fallbacks und Hoster-Auflösung schrittweise verbessert.'''
+          if '<news>' not in s:
+              target = '<platform>all</platform>'
+              replacement = target + '<news>' + news.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;') + '</news>'
+              s, m = re.subn(target, replacement, s, count=1)
+              assert m == 1, 'platform tag not found for news injection'
+          p.write_text(s, encoding='utf-8')
+
+          digest = hashlib.md5(p.read_bytes()).hexdigest()
+          Path('zips/addons.xml.md5').write_text(digest + '\n', encoding='ascii')
+          print('addons.xml md5:', digest)
+          PY
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT" zips/addons.xml zips/addons.xml.md5
+          git commit -m 'Release xShip 2026.08.17.2 with changelog'
+          git push
