@@ -13,9 +13,34 @@
       <datadir zip="true">https://raw.githubusercontent.com/Gujal00/smrzips/master/zips/</datadir>
     </dir>
   </extension>
-  <extension point="xbmc.addon.metadata"><summary>Kusi's Repo für xShip</summary><description>Kusi's Repo für xShip und xBarc.</description><platform>all</platform><assets><icon>resources/icon.png</icon></assets></extension>
+  <extension point="xbmc.addon.metadata"><summary>Kusi's Repo für xShip</summary><description>Kusi's Repo für xShip und xBarc.</description><platform>all</platform><news>2026.08.17.2
+- Changelog hinzugefügt und Kodi-Anzeige „Letzte Änderungen“ ergänzt.
+
+2026.08.17.1
+- Domain-Synchronisierung läuft nun zusätzlich bei jedem normalen xShip-Start.
+
+2026.08.17
+- Bidirektionale Provider-Domain-Synchronisierung eingeführt.
+- Scraper-Änderungen werden in die Einstellungen übernommen.
+- Manuelle Einstellungen werden zurück in den Scraper geschrieben.
+- MegaKino 14.com → 15.com Migration ergänzt.
+
+2026.08.16
+- MegaKino auf megakino15.com aktualisiert.
+
+2026.07.25
+- Vixstream- und Wiedergabe-/Busy-Fixes.
+
+2026.07.22
+- hosts.sort-Migration korrigiert.
+
+2026.07.21
+- Defaults bereinigt und inputstream.adaptive ergänzt.
+
+2026.07.14 bis 2026.07.04
+- SerienStream-Resolver, Session-Flow, Domain-Fallbacks und Hoster-Auflösung schrittweise verbessert.</news><assets><icon>resources/icon.png</icon></assets></extension>
 </addon>
-<addon id="plugin.video.xship" version="2026.08.17.1" name="xShip" provider-name="Kusi (Barclay)"><requires><import addon="xbmc.python" version="3.0.0" /><import addon="script.module.requests" /><import addon="script.module.six" /><import addon="script.module.resolveurl" version="5.1.100" />
+<addon id="plugin.video.xship" version="2026.08.17.2" name="xShip" provider-name="Kusi (Barclay)"><requires><import addon="xbmc.python" version="3.0.0" /><import addon="script.module.requests" /><import addon="script.module.six" /><import addon="script.module.resolveurl" version="5.1.100" />
         <import addon="inputstream.adaptive" /><import addon="script.module.pydevd" optional="true" /></requires><extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension><extension point="xbmc.service" library="service.py" start="startup" /><extension point="xbmc.addon.metadata"><summary>Modded by Kusi (Barclay)</summary><platform>all</platform><assets><icon>resources/icon_barclay.png</icon><fanart>resources/media/fanart.jpg</fanart></assets></extension></addon>
 <addon id="plugin.video.xbarc" version="2026.08.13.1" name="xBarc" provider-name="Kusi (Barclay)"><requires><import addon="xbmc.python" version="3.0.0" /><import addon="script.module.requests" /><import addon="script.module.six" /><import addon="script.module.resolveurl" version="5.1.100" /><import addon="script.module.pydevd" optional="true" /></requires><extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension><extension point="xbmc.service" library="service.py" start="startup" /><extension point="xbmc.addon.metadata"><summary>xBarc Test</summary><platform>all</platform><assets><icon>resources/icon.png</icon></assets></extension></addon>
 </addons>
