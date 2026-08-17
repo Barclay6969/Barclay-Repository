@@ -1,0 +1,244 @@
+name: Build xShip 2026.08.17.1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-2026.08.17.1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build xShip 2026.08.17.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.17.zip'
+          OUT='zips/plugin.video.xship/plugin.video.xship-2026.08.17.1.zip'
+          WORK="$RUNNER_TEMP/xship08171"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          export ROOT
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          root = Path(os.environ['ROOT'])
+
+          # bump addon version
+          addon = root / 'addon.xml'
+          text = addon.read_text(encoding='utf-8')
+          text, n = re.subn(r'version="2026\.08\.17"', 'version="2026.08.17.1"', text, count=1)
+          assert n == 1, 'addon.xml version 2026.08.17 not found'
+          addon.write_text(text, encoding='utf-8')
+
+          # Add a startup synchronizer. It runs whenever xShip itself starts, not only via service.py.
+          helper = root / 'resources' / 'lib' / 'domain_sync_startup.py'
+          helper.parent.mkdir(parents=True, exist_ok=True)
+          helper.write_text(r'''# -*- coding: utf-8 -*-
+import json
+import os
+import re
+
+import xbmc
+import xbmcaddon
+import xbmcvfs
+
+
+_ADDON = xbmcaddon.Addon()
+
+
+def _log(msg):
+    try:
+        xbmc.log('[xShip DomainSync] %s' % msg, xbmc.LOGINFO)
+    except Exception:
+        pass
+
+
+def _read_state(path):
+    try:
+        if xbmcvfs.exists(path):
+            f = xbmcvfs.File(path)
+            raw = f.read()
+            f.close()
+            data = json.loads(raw or '{}')
+            return data if isinstance(data, dict) else {}
+    except Exception:
+        pass
+    return {}
+
+
+def _write_state(path, state):
+    try:
+        parent = os.path.dirname(path)
+        if parent and not xbmcvfs.exists(parent):
+            xbmcvfs.mkdirs(parent)
+        f = xbmcvfs.File(path, 'w')
+        f.write(json.dumps(state, indent=2, sort_keys=True))
+        f.close()
+    except Exception as exc:
+        _log('state write failed: %s' % exc)
+
+
+def _get_site_domain(path):
+    try:
+        with open(path, 'r', encoding='utf-8') as fh:
+            text = fh.read()
+        m = re.search(r'(?m)^\s*SITE_DOMAIN\s*=\s*([\'\"])([^\'\"]+)\1', text)
+        return m.group(2).strip() if m else None
+    except Exception:
+        return None
+
+
+def _set_site_domain(path, domain):
+    try:
+        with open(path, 'r', encoding='utf-8') as fh:
+            text = fh.read()
+        new, n = re.subn(
+            r'(?m)^(\s*SITE_DOMAIN\s*=\s*)([\'\"])([^\'\"]+)(\2)',
+            lambda m: m.group(1) + m.group(2) + domain + m.group(4),
+            text,
+            count=1,
+        )
+        if n:
+            with open(path, 'w', encoding='utf-8') as fh:
+                fh.write(new)
+            return True
+    except Exception as exc:
+        _log('scraper write failed for %s: %s' % (path, exc))
+    return False
+
+
+def sync_domains():
+    addon_path = xbmcvfs.translatePath(_ADDON.getAddonInfo('path'))
+    profile = xbmcvfs.translatePath(_ADDON.getAddonInfo('profile'))
+    state_path = os.path.join(profile, 'domain_sync.json')
+    state = _read_state(state_path)
+
+    scraper_dir = os.path.join(addon_path, 'scrapers', 'scrapers_source', 'de')
+    if not os.path.isdir(scraper_dir):
+        return
+
+    changed = False
+    for name in os.listdir(scraper_dir):
+        if not name.endswith('.py') or name.startswith('__'):
+            continue
+
+        provider = name[:-3]
+        scraper_path = os.path.join(scraper_dir, name)
+        scraper_domain = _get_site_domain(scraper_path)
+        if not scraper_domain:
+            continue
+
+        setting_id = 'provider.%s.domain' % provider
+        try:
+            user_domain = (_ADDON.getSetting(setting_id) or '').strip()
+        except Exception:
+            continue
+
+        last_domain = str(state.get(provider, '') or '').strip()
+
+        # One-time compatibility migration for the domain change that exposed the issue.
+        if provider == 'megakino' and scraper_domain == 'megakino15.com' and user_domain == 'megakino14.com':
+            _ADDON.setSetting(setting_id, scraper_domain)
+            user_domain = scraper_domain
+            _log('megakino migration: settings -> %s' % scraper_domain)
+
+        if not last_domain:
+            # First observation: empty setting follows scraper; an explicit differing value is preserved.
+            if not user_domain:
+                _ADDON.setSetting(setting_id, scraper_domain)
+                user_domain = scraper_domain
+            elif user_domain != scraper_domain:
+                if _set_site_domain(scraper_path, user_domain):
+                    scraper_domain = user_domain
+                    _log('%s first sync: scraper <- settings (%s)' % (provider, user_domain))
+        else:
+            scraper_changed = scraper_domain != last_domain
+            user_changed = bool(user_domain) and user_domain != last_domain
+
+            if scraper_changed and not user_changed:
+                # Add-on update changed the scraper domain; follow it in Kodi settings.
+                _ADDON.setSetting(setting_id, scraper_domain)
+                user_domain = scraper_domain
+                _log('%s update sync: settings <- scraper (%s)' % (provider, scraper_domain))
+            elif user_changed and not scraper_changed:
+                # User changed the setting; write it back to the scraper.
+                if _set_site_domain(scraper_path, user_domain):
+                    scraper_domain = user_domain
+                    _log('%s manual sync: scraper <- settings (%s)' % (provider, user_domain))
+            elif scraper_changed and user_changed:
+                if user_domain != scraper_domain:
+                    # Conflict: preserve the intentional user override.
+                    if _set_site_domain(scraper_path, user_domain):
+                        scraper_domain = user_domain
+                        _log('%s conflict: user override preserved (%s)' % (provider, user_domain))
+
+        effective = user_domain or scraper_domain
+        if state.get(provider) != effective:
+            state[provider] = effective
+            changed = True
+
+    if changed or not xbmcvfs.exists(state_path):
+        _write_state(state_path, state)
+
+
+if __name__ == '__main__':
+    sync_domains()
+''', encoding='utf-8')
+
+          # Run synchronization on every normal xShip invocation.
+          default = root / 'default.py'
+          src = default.read_text(encoding='utf-8')
+          marker = '# xShip 2026.08.17.1 startup domain synchronization'
+          if marker not in src:
+              block = '''\n# xShip 2026.08.17.1 startup domain synchronization\ntry:\n    from resources.lib.domain_sync_startup import sync_domains as _xship_sync_domains\n    _xship_sync_domains()\nexcept Exception as _xship_domain_sync_error:\n    try:\n        import xbmc\n        xbmc.log('[xShip DomainSync] startup sync failed: %s' % _xship_domain_sync_error, xbmc.LOGWARNING)\n    except Exception:\n        pass\n\n'''
+              lines = src.splitlines(True)
+              insert_at = 0
+              # Keep shebang/encoding and __future__ imports at the beginning if present.
+              while insert_at < len(lines) and (lines[insert_at].startswith('#!') or 'coding' in lines[insert_at][:40] or lines[insert_at].strip() == ''):
+                  insert_at += 1
+              while insert_at < len(lines) and lines[insert_at].startswith('from __future__ import'):
+                  insert_at += 1
+              src = ''.join(lines[:insert_at]) + block + ''.join(lines[insert_at:])
+              default.write_text(src, encoding='utf-8')
+
+          # syntax checks
+          compile(default.read_text(encoding='utf-8'), str(default), 'exec')
+          compile(helper.read_text(encoding='utf-8'), str(helper), 'exec')
+          print('xShip 2026.08.17.1 startup domain sync patched successfully')
+          PY
+
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re
+
+          p = Path('zips/addons.xml')
+          s = p.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon id="plugin\.video\.xship" version=")2026\.08\.17(" )', r'\g<1>2026.08.17.1\2', s, count=1)
+          assert n == 1, 'xShip 2026.08.17 entry not found in addons.xml'
+          p.write_text(s, encoding='utf-8')
+
+          digest = hashlib.md5(p.read_bytes()).hexdigest()
+          Path('zips/addons.xml.md5').write_text(digest + '\n', encoding='ascii')
+          print('addons.xml md5:', digest)
+          PY
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT" zips/addons.xml zips/addons.xml.md5
+          git commit -m 'Release xShip 2026.08.17.1 startup domain sync'
+          git push
