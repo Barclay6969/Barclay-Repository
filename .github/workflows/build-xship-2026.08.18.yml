@@ -2,10 +2,10 @@ name: Build xShip 2026.08.18
 
 on:
   workflow_dispatch:
-  push:
+  pull_request:
     branches: [main]
     paths:
-      - '.github/workflows/build-xship-2026.08.18.yml'
+      - '.release-xship-2026.08.18'
 
 permissions:
   contents: write
@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Build xShip 2026.08.18
         shell: bash
@@ -43,5 +45,12 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add "$OUT" zips/addons.xml zips/addons.xml.md5
-          git commit -m 'Release xShip 2026.08.18 with Filmo BYSE support'
-          git push
+
+          if [ -n "${GITHUB_HEAD_REF:-}" ]; then
+            git rm -f .release-xship-2026.08.18
+            git commit -m 'Release xShip 2026.08.18 with Filmo BYSE support'
+            git push origin HEAD:"$GITHUB_HEAD_REF"
+          else
+            git commit -m 'Release xShip 2026.08.18 with Filmo BYSE support'
+            git push
+          fi
