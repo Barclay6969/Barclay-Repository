@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.18" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.08.18.1" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,9 +42,12 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.18
-- Filmo: BYSE-Streams auf externen Hoster-Zwischenseiten werden nun erkannt.
-- BYSE-Links werden zur Wiedergabe an ResolveURL weitergereicht.
+      <news>2026.08.18.1
+- Filmo: BYSE-Unterstützung korrigiert und lokal erfolgreich getestet.
+- Externe BYSE-Links werden erkannt, ohne die bestehende Filmo-Suche oder VOE-Quellen zu beeinträchtigen.
+
+2026.08.18
+- Erste BYSE-Testversion; durch 2026.08.18.1 ersetzt.
 
 2026.08.17.2
 - Changelog hinzugefügt und Kodi-Anzeige "Letzte Änderungen" ergänzt.
