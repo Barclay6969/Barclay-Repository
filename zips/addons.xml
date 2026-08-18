@@ -15,7 +15,7 @@
     </extension>
     <extension point="xbmc.addon.metadata">
       <summary>Kusi's Repo für xShip</summary>
-      <description>Kusi's Repo für xShip und xBarc.</description>
+      <description>Kusi's Repo für xShip.</description>
       <platform>all</platform>
       <assets>
         <icon>resources/icon.png</icon>
@@ -68,26 +68,6 @@
 
 2026.07.14 bis 2026.07.04
 - SerienStream-Resolver, Session-Flow, Domain-Fallbacks und Hoster-Aufösung schrittweise verbessert.</news>
-    </extension>
-  </addon>
-  <addon id="plugin.video.xbarc" version="2026.08.13.1" name="xBarc" provider-name="Kusi (Barclay)">
-    <requires>
-      <import addon="xbmc.python" version="3.0.0" />
-      <import addon="script.module.requests" />
-      <import addon="script.module.six" />
-      <import addon="script.module.resolveurl" version="5.1.100" />
-      <import addon="script.module.pydevd" optional="true" />
-    </requires>
-    <extension point="xbmc.python.pluginsource" library="default.py">
-      <provides>video</provides>
-    </extension>
-    <extension point="xbmc.service" library="service.py" start="startup" />
-    <extension point="xbmc.addon.metadata">
-      <summary>xBarc Test</summary>
-      <platform>all</platform>
-      <assets>
-        <icon>resources/icon.png</icon>
-      </assets>
     </extension>
   </addon>
 </addons>
