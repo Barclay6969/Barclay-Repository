@@ -37,10 +37,13 @@ def patch_addon(root: Path):
     replaced = False
     for i, line in enumerate(lines):
         if "match = re.search(r'href=" in line and "redirect_html" in line:
-            if i + 1 >= len(lines):
-                raise RuntimeError("Filmo href fallback return line missing")
-            if "return unescape(match.group(1)).strip() if match else" not in lines[i + 1]:
-                raise RuntimeError("unexpected Filmo href fallback implementation")
+            return_index = None
+            for j in range(i + 1, min(i + 5, len(lines))):
+                if lines[j].lstrip().startswith("return") and "match.group(1)" in lines[j]:
+                    return_index = j
+                    break
+            if return_index is None:
+                raise RuntimeError("Filmo href fallback return using match.group(1) not found")
             indent = line[: len(line) - len(line.lstrip())]
             replacement = [
                 indent + r"""for match in re.finditer(r'(?is)<a\b[^>]*href=["\']([^"\']+)["\']', redirect_html or ''):""",
@@ -49,7 +52,7 @@ def patch_addon(root: Path):
                 indent + "        return candidate",
                 indent + "return ''",
             ]
-            lines[i : i + 2] = replacement
+            lines[i : return_index + 1] = replacement
             replaced = True
             break
     if not replaced:
