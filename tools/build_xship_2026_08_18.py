@@ -37,14 +37,16 @@ def patch_addon(root: Path):
     replaced = False
     for i, line in enumerate(lines):
         if "match = re.search(r'href=" in line and "redirect_html" in line:
-            return_index = None
-            for j in range(i + 1, min(i + 5, len(lines))):
-                if lines[j].lstrip().startswith("return") and "match.group(1)" in lines[j]:
-                    return_index = j
-                    break
-            if return_index is None:
-                raise RuntimeError("Filmo href fallback return using match.group(1) not found")
             indent = line[: len(line) - len(line.lstrip())]
+            except_index = None
+            for j in range(i + 1, len(lines)):
+                stripped = lines[j].lstrip()
+                current_indent = len(lines[j]) - len(stripped)
+                if stripped.startswith("except Exception:") and current_indent < len(indent):
+                    except_index = j
+                    break
+            if except_index is None:
+                raise RuntimeError("Filmo _mint except boundary not found")
             replacement = [
                 indent + r"""for match in re.finditer(r'(?is)<a\b[^>]*href=["\']([^"\']+)["\']', redirect_html or ''):""",
                 indent + "    candidate = unescape(match.group(1)).strip()",
@@ -52,7 +54,7 @@ def patch_addon(root: Path):
                 indent + "        return candidate",
                 indent + "return ''",
             ]
-            lines[i : return_index + 1] = replacement
+            lines[i:except_index] = replacement
             replaced = True
             break
     if not replaced:
