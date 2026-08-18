@@ -1,0 +1,169 @@
+name: Build xShip 2026.08.18
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-2026.08.18.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build xShip 2026.08.18
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.17.2.zip'
+          OUT='zips/plugin.video.xship/plugin.video.xship-2026.08.18.zip'
+          WORK="$RUNNER_TEMP/xship0818"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          export ROOT
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re, xml.etree.ElementTree as ET
+
+          root = Path(os.environ['ROOT'])
+          addon = root / 'addon.xml'
+          text = addon.read_text(encoding='utf-8')
+          text, n = re.subn(r'version="2026\.08\.17\.2"', 'version="2026.08.18"', text, count=1)
+          assert n == 1, 'addon.xml version 2026.08.17.2 not found'
+          addon.write_text(text, encoding='utf-8')
+
+          # Locate the actual German Filmo scraper inside the packaged add-on.
+          candidates = []
+          for p in root.rglob('filmo.py'):
+              try:
+                  t = p.read_text(encoding='utf-8')
+              except Exception:
+                  continue
+              if "SITE_IDENTIFIER = 'filmo'" in t and 'def _mint(' in t:
+                  candidates.append((p, t))
+          assert len(candidates) == 1, 'expected exactly one Filmo scraper, found %d' % len(candidates)
+          filmo, ftext = candidates[0]
+
+          # Old code took the first href on Filmo's external-host notice page.
+          # That first href is the canonical filmo.to URL, while the playable BYSE link
+          # is a later <a href="https://byse.../d/..."> element.
+          lines = ftext.splitlines()
+          replaced = False
+          for i, line in enumerate(lines):
+              if "match = re.search(r'href=" in line and 'redirect_html' in line:
+                  assert i + 1 < len(lines), 'Filmo href fallback return line missing'
+                  assert 'return unescape(match.group(1)).strip() if match else' in lines[i + 1], 'unexpected Filmo href fallback implementation'
+                  indent = line[:len(line) - len(line.lstrip())]
+                  replacement = [
+                      indent + "for match in re.finditer(r'(?is)<a\\b[^>]*href=[\"\\\']([^\"\\\']+)[\"\\\']', redirect_html or ''):",
+                      indent + "    candidate = unescape(match.group(1)).strip()",
+                      indent + "    if candidate.startswith(('http://', 'https://')) and self.domain.lower() not in candidate.lower():",
+                      indent + "        return candidate",
+                      indent + "return ''",
+                  ]
+                  lines[i:i+2] = replacement
+                  replaced = True
+                  break
+          assert replaced, 'Filmo external href fallback not found'
+          filmo.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+          # Regression test using the relevant structure captured in the Edge HAR:
+          # canonical Filmo href first, external BYSE anchor afterwards.
+          sample = '''<html><head><link rel="canonical" href="https://filmo.to/n/hYWQI0WBLjL82sfpqVsafXL3nxkGVnr4"></head>
+          <body><a href="https://bysezejataos.com/d/n0ligjzogspc" target="_blank">Video extern öffnen</a></body></html>'''
+          picked = ''
+          for m in re.finditer(r'(?is)<a\b[^>]*href=["\']([^"\']+)["\']', sample):
+              candidate = m.group(1).strip()
+              if candidate.startswith(('http://', 'https://')) and 'filmo.to' not in candidate.lower():
+                  picked = candidate
+                  break
+          assert picked == 'https://bysezejataos.com/d/n0ligjzogspc', picked
+
+          # Update changelog while preserving all previous entries.
+          changelog = root / 'changelog.txt'
+          entry = ('2026.08.18\n'
+                   '- Filmo: externe Hoster-Zwischenseiten werden korrekt ausgewertet.\n'
+                   '- BYSE-Streams werden erkannt und an ResolveURL übergeben.\n\n')
+          if changelog.exists():
+              c = changelog.read_text(encoding='utf-8')
+              if '2026.08.18' not in c:
+                  marker = 'xShip – Changelog\n\n'
+                  c = c.replace(marker, marker + entry, 1) if marker in c else entry + c
+                  changelog.write_text(c, encoding='utf-8')
+          else:
+              changelog.write_text('xShip – Changelog\n\n' + entry, encoding='utf-8')
+
+          # Update Kodi metadata/news in the packaged addon.xml.
+          tree = ET.parse(addon)
+          rootxml = tree.getroot()
+          assert rootxml.get('version') == '2026.08.18'
+          metadata = next((e for e in rootxml.findall('extension') if e.get('point') == 'xbmc.addon.metadata'), None)
+          assert metadata is not None, 'metadata extension not found'
+          news = metadata.find('news')
+          if news is None:
+              news = ET.SubElement(metadata, 'news')
+          old_news = news.text or ''
+          new_head = ('2026.08.18\n'
+                      '- Filmo: BYSE-Streams auf externen Hoster-Zwischenseiten werden nun erkannt.\n'
+                      '- BYSE-Links werden zur Wiedergabe an ResolveURL weitergereicht.\n\n')
+          if not old_news.startswith('2026.08.18'):
+              news.text = new_head + old_news
+          ET.indent(tree, space='  ')
+          xml = ET.tostring(rootxml, encoding='unicode')
+          addon.write_text('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + xml + '\n', encoding='utf-8')
+
+          # Syntax-check the patched scraper without importing Kodi modules.
+          compile(filmo.read_text(encoding='utf-8'), str(filmo), 'exec')
+          print('Patched:', filmo)
+          print('HAR regression target:', picked)
+          PY
+
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re
+
+          p = Path('zips/addons.xml')
+          s = p.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon id="plugin\.video\.xship" version=")2026\.08\.17\.2(" )', r'\g<1>2026.08.18\2', s, count=1)
+          assert n == 1, 'xShip 2026.08.17.2 entry not found in addons.xml'
+
+          block_re = re.compile(r'(<addon id="plugin\.video\.xship"\b.*?</addon>)', re.S)
+          bm = block_re.search(s)
+          assert bm, 'xShip addon block not found'
+          block = bm.group(1)
+          nm = re.search(r'<news>(.*?)</news>', block, re.S)
+          assert nm, 'xShip news block not found'
+          old_news = nm.group(1)
+          new_head = ('2026.08.18\n'
+                      '- Filmo: BYSE-Streams auf externen Hoster-Zwischenseiten werden nun erkannt.\n'
+                      '- BYSE-Links werden zur Wiedergabe an ResolveURL weitergereicht.\n\n')
+          if not old_news.startswith('2026.08.18'):
+              block = block[:nm.start(1)] + new_head + old_news + block[nm.end(1):]
+              s = s[:bm.start(1)] + block + s[bm.end(1):]
+          p.write_text(s, encoding='utf-8')
+
+          digest = hashlib.md5(p.read_bytes()).hexdigest()
+          Path('zips/addons.xml.md5').write_text(digest + '\n', encoding='ascii')
+          print('addons.xml md5:', digest)
+          PY
+
+          # Validate ZIP structure and release version.
+          unzip -p "$OUT" plugin.video.xship/addon.xml | grep -q 'version="2026.08.18"'
+          unzip -p "$OUT" plugin.video.xship/changelog.txt | grep -q '2026.08.18'
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT" zips/addons.xml zips/addons.xml.md5
+          git commit -m 'Release xShip 2026.08.18 with Filmo BYSE support'
+          git push
