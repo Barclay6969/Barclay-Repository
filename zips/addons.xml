@@ -48,7 +48,7 @@
 - Embed- und Playlist-URLs laufen über vixsrc.to; Film-Wiedergabe bleibt unverändert.
 
 2026.08.18.1
-- Filmo: BYSE-Unterstützung korrigiert und lokal erfolgreich getestet.
+- Filmo: BYSE als neue Stream-Quelle hinzugefügt und erfolgreich lokal getestet.
 - Externe BYSE-Links werden erkannt, ohne die bestehende Filmo-Suche oder VOE-Quellen zu beeinträchtigen.
 
 2026.08.18
