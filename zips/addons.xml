@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.18.1" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.08.19" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,7 +42,12 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.18.1
+      <news>2026.08.19
+- Vixstream/VixSrc: Serien-Wiedergabe repariert.
+- TV-Playlists werden nach aktuellem VixSrc-Verhalten ohne b=1 und ohne Origin geladen.
+- Embed- und Playlist-URLs laufen über vixsrc.to; Film-Wiedergabe bleibt unverändert.
+
+2026.08.18.1
 - Filmo: BYSE-Unterstützung korrigiert und lokal erfolgreich getestet.
 - Externe BYSE-Links werden erkannt, ohne die bestehende Filmo-Suche oder VOE-Quellen zu beeinträchtigen.
 
