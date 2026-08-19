@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.19" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.08.19.3" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,10 +42,12 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.19
-- Vixstream/VixSrc: Serien-Wiedergabe repariert.
-- TV-Playlists werden nach aktuellem VixSrc-Verhalten ohne b=1 und ohne Origin geladen.
-- Embed- und Playlist-URLs laufen über vixsrc.to; Film-Wiedergabe bleibt unverändert.
+      <news>2026.08.19.3
+- Vixstream/VixSrc: Serien-Wiedergabe stabilisiert und an das aktuelle VixSrc-Verhalten angepasst.
+- TV-Playlists mit direkter Playlist-URL werden ohne b=1 und ohne Origin geladen.
+- Bei aus der Embed-ID abgeleiteten TV-Playlists werden kompatible Request-Varianten als Fallback verwendet.
+- Embed- und Playlist-URLs werden über vixsrc.to aufgelöst; Film-Wiedergabe bleibt unverändert.
+- Erfolgreich lokal getestet mit FROM, Reacher, Supernatural sowie SerienStream.
 
 2026.08.18.1
 - Filmo: BYSE als neue Stream-Quelle hinzugefügt und erfolgreich lokal getestet.
@@ -55,7 +57,7 @@
 - Erste BYSE-Testversion; durch 2026.08.18.1 ersetzt.
 
 2026.08.17.2
-- Changelog hinzugefügt und Kodi-Anzeige "Letzte Änderungen" ergänzt.
+- Changelog hinzugefügt und Kodi-Anzeige „Letzte Änderungen“ ergänzt.
 
 2026.08.17.1
 - Domain-Synchronisierung läuft nun zusätzlich bei jedem normalen xShip-Start.
@@ -64,7 +66,7 @@
 - Bidirektionale Provider-Domain-Synchronisierung eingeführt.
 - Scraper-Änderungen werden in die Einstellungen übernommen.
 - Manuelle Einstellungen werden zurück in den Scraper geschrieben.
-- MegaKino 14.com -&gt; 15.com Migration ergänzt.
+- MegaKino 14.com → 15.com Migration ergänzt.
 
 2026.08.16
 - MegaKino auf megakino15.com aktualisiert.
@@ -79,7 +81,7 @@
 - Defaults bereinigt und inputstream.adaptive ergänzt.
 
 2026.07.14 bis 2026.07.04
-- SerienStream-Resolver, Session-Flow, Domain-Fallbacks und Hoster-Aufösung schrittweise verbessert.</news>
+- SerienStream-Resolver, Session-Flow, Domain-Fallbacks und Hoster-Auflösung schrittweise verbessert.</news>
     </extension>
   </addon>
 </addons>
