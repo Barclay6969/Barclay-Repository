@@ -1,11 +1,11 @@
 name: Build xShip 2026.08.19.3 local test
 
 on:
-  push:
+  workflow_dispatch:
+  pull_request:
     branches: [main]
     paths:
-      - '.github/workflows/build-xship-2026.08.19-vixsrc-localtest.yml'
-  workflow_dispatch:
+      - '.localtest-xship-2026.08.19.3'
 
 jobs:
   build:
@@ -28,10 +28,8 @@ jobs:
           ORIG="$ORIGINAL/plugin.video.xship"
           export ROOT ORIG
 
-          # Replace ONLY vixstream.py with the exact resolver that passed the 08.19.2 tests.
           cp tools/vixstream_2026_08_19_2_test.py "$ROOT/scrapers/scrapers_source/de/vixstream.py"
 
-          # Version marker for local install; no other addon content is changed.
           python3 - <<'PY'
           from pathlib import Path
           import os, re
@@ -48,7 +46,6 @@ jobs:
           grep -q "VIXCLOUD = 'vixsrc.to'" "$ROOT/scrapers/scrapers_source/de/vixstream.py"
           grep -q 'TV-derived fallback' "$ROOT/scrapers/scrapers_source/de/vixstream.py"
 
-          # Safety check: compared with the GitHub 08.19 ZIP, only addon.xml and vixstream.py may differ.
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, os
