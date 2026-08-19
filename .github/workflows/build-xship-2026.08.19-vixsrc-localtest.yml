@@ -1,0 +1,90 @@
+name: Build xShip 2026.08.19 VixSrc local test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-2026.08.19-vixsrc-localtest.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build VixSrc domain local test from 2026.08.18.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.18.1.zip'
+          WORK="$RUNNER_TEMP/xship-vixsrc-test"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          export ROOT
+
+          python3 - <<'PY'
+          import os, re, pathlib
+          root = pathlib.Path(os.environ['ROOT'])
+
+          addon = root / 'addon.xml'
+          s = addon.read_text(encoding='utf-8')
+          s, n = re.subn(
+              r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")',
+              r'\g<1>2026.08.19\2',
+              s,
+              count=1,
+          )
+          if n != 1:
+              raise SystemExit('addon version not found')
+          addon.write_text(s, encoding='utf-8', newline='\n')
+
+          vix = root / 'scrapers' / 'scrapers_source' / 'de' / 'vixstream.py'
+          s = vix.read_text(encoding='utf-8')
+          old_count = s.count('https://vixcloud.co')
+          if old_count < 1:
+              raise SystemExit('No https://vixcloud.co occurrence found in vixstream.py')
+
+          # 2026-08-19 local test:
+          # Current vixsrc.to browser traffic resolves both relative /embed/ and
+          # /playlist/ paths on vixsrc.to. xShip still resolves them on
+          # vixcloud.co, where TV playlist requests currently return HTTP 403.
+          # Change only this scraper so the test stays isolated.
+          s = s.replace('https://vixcloud.co', 'https://vixsrc.to')
+          marker = "# xShip 2026.08.19 VIXSRC-DOMAIN-TEST: embed/playlist base follows current vixsrc.to browser flow\n"
+          if marker not in s:
+              s = marker + s
+          vix.write_text(s, encoding='utf-8', newline='\n')
+          print('Replaced vixcloud.co occurrences:', old_count)
+          PY
+
+          grep -q 'version="2026.08.19"' "$ROOT/addon.xml"
+          grep -q 'VIXSRC-DOMAIN-TEST' "$ROOT/scrapers/scrapers_source/de/vixstream.py"
+          if grep -q 'https://vixcloud.co' "$ROOT/scrapers/scrapers_source/de/vixstream.py"; then
+            echo 'Unexpected vixcloud.co remains in vixstream.py'
+            exit 1
+          fi
+          python3 -m py_compile "$ROOT/scrapers/scrapers_source/de/vixstream.py"
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET, os
+          ET.parse(os.path.join(os.environ['ROOT'], 'addon.xml'))
+          PY
+
+          mkdir -p "$GITHUB_WORKSPACE/test-builds"
+          OUT="$GITHUB_WORKSPACE/test-builds/plugin.video.xship-2026.08.19-VIXSRC-TEST.zip"
+          (cd "$WORK" && zip -qr "$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+
+      - name: Commit local test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/plugin.video.xship-2026.08.19-VIXSRC-TEST.zip
+          git commit -m 'Build xShip 2026.08.19 VixSrc local test' || exit 0
+          git push
