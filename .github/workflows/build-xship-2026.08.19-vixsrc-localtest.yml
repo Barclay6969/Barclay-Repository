@@ -33,16 +33,18 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import os, re
-          p = Path(os.environ['ROOT']) / 'addon.xml'
+          root = Path(os.environ['ROOT'])
+          p = root / 'addon.xml'
           s = p.read_text(encoding='utf-8')
           s, n = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")', r'\g<1>2026.08.19.3\2', s, count=1)
           if n != 1:
               raise SystemExit('addon version not found')
           p.write_text(s, encoding='utf-8', newline='\n')
+
+          vix = root / 'scrapers' / 'scrapers_source' / 'de' / 'vixstream.py'
+          compile(vix.read_text(encoding='utf-8'), str(vix), 'exec')
           PY
 
-          python3 -m py_compile "$ROOT/scrapers/scrapers_source/de/vixstream.py"
-          rm -f "$ROOT/scrapers/scrapers_source/de/__pycache__/vixstream.cpython-312.pyc"
           grep -q 'version="2026.08.19.3"' "$ROOT/addon.xml"
           grep -q "VIXCLOUD = 'vixsrc.to'" "$ROOT/scrapers/scrapers_source/de/vixstream.py"
           grep -q 'TV-derived fallback' "$ROOT/scrapers/scrapers_source/de/vixstream.py"
