@@ -1,0 +1,218 @@
+name: Build xShip 2026.08.19
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-2026.08.19.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Build and publish xShip 2026.08.19
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.18.1.zip'
+          OUT='zips/plugin.video.xship/plugin.video.xship-2026.08.19.zip'
+          WORK="$RUNNER_TEMP/xship0819"
+
+          test -f "$BASE"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          export ROOT OUT
+          test -f "$ROOT/addon.xml"
+
+          python3 - <<'PY'
+          import hashlib
+          import os
+          import pathlib
+          import re
+          import xml.etree.ElementTree as ET
+
+          root = pathlib.Path(os.environ['ROOT'])
+          new_version = '2026.08.19'
+          old_version = '2026.08.18.1'
+
+          addon = root / 'addon.xml'
+          text = addon.read_text(encoding='utf-8')
+          text, n = re.subn(
+              r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")',
+              rf'\g<1>{new_version}\2', text, count=1
+          )
+          if n != 1:
+              raise SystemExit('addon.xml version not found')
+          addon.write_text(text, encoding='utf-8', newline='\n')
+
+          # Locate Vixstream scraper in the packaged addon.
+          candidates = []
+          for p in root.rglob('vixstream.py'):
+              try:
+                  s = p.read_text(encoding='utf-8')
+              except Exception:
+                  continue
+              if "SITE_IDENTIFIER = 'vixstream'" in s:
+                  candidates.append((p, s))
+          if len(candidates) != 1:
+              raise SystemExit(f'expected one vixstream.py, found {len(candidates)}')
+
+          vix, s = candidates[0]
+
+          # Current VixSrc uses vixsrc.to for embed and playlist URLs.
+          s, n = re.subn(r"^VIXCLOUD\s*=\s*['\"]vixcloud\.co['\"]", "VIXCLOUD = 'vixsrc.to'", s, count=1, flags=re.M)
+          if n != 1 and "VIXCLOUD = 'vixsrc.to'" not in s:
+              raise SystemExit('VIXCLOUD constant not found')
+
+          # HAR-confirmed TV behavior: master playlist has no b=1 and no Origin.
+          # Movies keep their existing b=1/Origin behavior.
+          old = """        playlist_url = '%s?b=1&token=%s&expires=%s&h=1&lang=%s' % (\n            playlist_base, token_match.group(1), expires_match.group(1), stream_language\n        )"""
+          if old in s:
+              new = """        is_tv = '/tv/' in str(source_url or '') or '/api/tv/' in str(source_url or '') or '/tv/' in str(embed_url or '')\n        if is_tv:\n            playlist_url = '%s?token=%s&expires=%s&h=1&lang=%s' % (\n                playlist_base, token_match.group(1), expires_match.group(1), stream_language\n            )\n            logger.info('[%s] TV-HAR Playlist-Modus: ohne b=1 / ohne Origin' % SITE_NAME)\n        else:\n            playlist_url = '%s?b=1&token=%s&expires=%s&h=1&lang=%s' % (\n                playlist_base, token_match.group(1), expires_match.group(1), stream_language\n            )"""
+              s = s.replace(old, new, 1)
+          elif 'TV-HAR Playlist-Modus: ohne b=1 / ohne Origin' not in s:
+              # Fallback for the 08.18.1 layout: patch the request section directly.
+              pat = re.compile(
+                  r"(?P<indent>\s*)playlist_url\s*=\s*['\"]%s\?b=1&token=%s&expires=%s&h=1&lang=%s['\"]\s*%\s*\(\s*playlist_base,\s*token_match\.group\(1\),\s*expires_match\.group\(1\),\s*stream_language\s*\)",
+                  re.S,
+              )
+              m = pat.search(s)
+              if not m:
+                  raise SystemExit('playlist_url block not found')
+              indent = m.group('indent')
+              repl = (
+                  indent + "is_tv = '/tv/' in str(source_url or '') or '/api/tv/' in str(source_url or '') or '/tv/' in str(embed_url or '')\n" +
+                  indent + "if is_tv:\n" +
+                  indent + "    playlist_url = '%s?token=%s&expires=%s&h=1&lang=%s' % (playlist_base, token_match.group(1), expires_match.group(1), stream_language)\n" +
+                  indent + "    logger.info('[%s] TV-HAR Playlist-Modus: ohne b=1 / ohne Origin' % SITE_NAME)\n" +
+                  indent + "else:\n" +
+                  indent + "    playlist_url = '%s?b=1&token=%s&expires=%s&h=1&lang=%s' % (playlist_base, token_match.group(1), expires_match.group(1), stream_language)"
+              )
+              s = s[:m.start()] + repl + s[m.end():]
+
+          # Remove Origin only for TV playlist request, retain movie behavior.
+          # Handles the existing dict assignment in the resolver.
+          if 'TV-HAR Playlist-Modus: ohne b=1 / ohne Origin' in s:
+              # Insert a conditional cleanup immediately before the playlist request.
+              req_markers = [
+                  "playlist_html, status = requestHandler.request(playlist_url, headers=headers, output='extended')",
+                  "html, status = requestHandler.request(playlist_url, headers=headers, output='extended')",
+                  "response, status = requestHandler.request(playlist_url, headers=headers, output='extended')",
+              ]
+              inserted = False
+              for marker in req_markers:
+                  if marker in s and 'headers.pop(\'Origin\'' not in s:
+                      lead = re.search(r'(?m)^(\s*)' + re.escape(marker), s)
+                      if lead:
+                          ind = lead.group(1)
+                          block = ind + "if is_tv:\n" + ind + "    headers.pop('Origin', None)\n"
+                          s = s[:lead.start()] + block + s[lead.start():]
+                          inserted = True
+                          break
+              # Some builds use a helper wrapper; if no direct marker exists, the tested URL change is still applied.
+
+          vix.write_text(s, encoding='utf-8', newline='\n')
+          compile(s, str(vix), 'exec')
+
+          # Changelog inside addon: include yesterday's Filmo/BYSE addition and today's VixSrc TV fix.
+          changelog = root / 'changelog.txt'
+          oldc = changelog.read_text(encoding='utf-8') if changelog.exists() else 'xShip – Changelog\n\n'
+          head = (
+              '2026.08.19\n'
+              '- Vixstream/VixSrc: Serien-Wiedergabe an den aktuellen VixSrc-Request angepasst.\n'
+              '- TV-Playlists werden wie im Browser ohne b=1 und ohne Origin angefordert; Filme bleiben unverändert.\n'
+              '- VixSrc Embed- und Playlist-URLs werden über vixsrc.to aufgelöst.\n\n'
+          )
+          if not oldc.startswith('xShip – Changelog'):
+              oldc = 'xShip – Changelog\n\n' + oldc
+          if '2026.08.19\n' not in oldc:
+              marker = 'xShip – Changelog\n\n'
+              oldc = oldc.replace(marker, marker + head, 1)
+          # Ensure the 08.18.1 Filmo/BYSE entry is explicit.
+          if '2026.08.18.1' not in oldc:
+              entry = (
+                  '2026.08.18.1\n'
+                  '- Filmo: BYSE als neue Stream-Quelle ergänzt und erfolgreich lokal getestet.\n'
+                  '- Externe BYSE-Links werden erkannt, ohne bestehende Filmo-Suche oder VOE-Quellen zu beeinträchtigen.\n\n'
+              )
+              pos = oldc.find('2026.08.18\n')
+              oldc = oldc[:pos] + entry + oldc[pos:] if pos >= 0 else oldc + '\n' + entry
+          changelog.write_text(oldc, encoding='utf-8', newline='\n')
+
+          # addon.xml <news>
+          tree = ET.parse(addon)
+          ax = tree.getroot()
+          if ax.get('version') != new_version:
+              raise SystemExit('packaged addon version mismatch')
+          metadata = next((e for e in ax.findall('extension') if e.get('point') == 'xbmc.addon.metadata'), None)
+          if metadata is None:
+              raise SystemExit('metadata extension missing')
+          news = metadata.find('news')
+          if news is None:
+              news = ET.SubElement(metadata, 'news')
+          old_news = news.text or ''
+          new_head = (
+              '2026.08.19\n'
+              '- Vixstream/VixSrc: Serien-Wiedergabe repariert.\n'
+              '- TV-Playlists werden nach aktuellem VixSrc-Verhalten ohne b=1 und ohne Origin geladen.\n'
+              '- Embed- und Playlist-URLs laufen über vixsrc.to; Film-Wiedergabe bleibt unverändert.\n\n'
+          )
+          if not old_news.startswith('2026.08.19'):
+              news.text = new_head + old_news
+          ET.indent(tree, space='  ')
+          addon.write_text('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + ET.tostring(ax, encoding='unicode') + '\n', encoding='utf-8')
+
+          # Repo addons.xml: version + news, preserve explicit Filmo/BYSE history.
+          repo_xml = pathlib.Path('zips/addons.xml')
+          rs = repo_xml.read_text(encoding='utf-8')
+          rs, n = re.subn(r'(<addon id="plugin\.video\.xship" version=")[^"]+(" )', rf'\g<1>{new_version}\2', rs, count=1)
+          if n != 1:
+              raise SystemExit('xShip entry in addons.xml not found')
+          bm = re.search(r'(<addon id="plugin\.video\.xship".*?</addon>)', rs, re.S)
+          if not bm:
+              raise SystemExit('xShip block missing')
+          block = bm.group(1)
+          nm = re.search(r'<news>(.*?)</news>', block, re.S)
+          if not nm:
+              raise SystemExit('news block missing')
+          existing = nm.group(1)
+          repo_head = (
+              '2026.08.19\n'
+              '- Vixstream/VixSrc: Serien-Wiedergabe repariert.\n'
+              '- TV-Playlists werden nach aktuellem VixSrc-Verhalten ohne b=1 und ohne Origin geladen.\n'
+              '- Embed- und Playlist-URLs laufen über vixsrc.to; Film-Wiedergabe bleibt unverändert.\n\n'
+          )
+          if not existing.startswith('2026.08.19'):
+              block = block[:nm.start(1)] + repo_head + existing + block[nm.end(1):]
+          rs = rs[:bm.start(1)] + block + rs[bm.end(1):]
+          repo_xml.write_text(rs, encoding='utf-8', newline='\n')
+          pathlib.Path('zips/addons.xml.md5').write_text(hashlib.md5(repo_xml.read_bytes()).hexdigest() + '\n', encoding='ascii')
+
+          print('Patched', vix)
+          PY
+
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+
+          unzip -t "$OUT" >/dev/null
+          unzip -p "$OUT" plugin.video.xship/addon.xml | grep -q 'version="2026.08.19"'
+          unzip -p "$OUT" plugin.video.xship/changelog.txt | grep -q '2026.08.19'
+          unzip -p "$OUT" plugin.video.xship/changelog.txt | grep -q 'BYSE'
+          unzip -p "$OUT" plugin.video.xship/scrapers/scrapers_source/de/vixstream.py | grep -q "VIXCLOUD = 'vixsrc.to'"
+          unzip -p "$OUT" plugin.video.xship/scrapers/scrapers_source/de/vixstream.py | grep -q 'TV-HAR Playlist-Modus'
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT" zips/addons.xml zips/addons.xml.md5
+          git commit -m 'Release xShip 2026.08.19 with VixSrc TV fix'
+          git push origin HEAD:main
