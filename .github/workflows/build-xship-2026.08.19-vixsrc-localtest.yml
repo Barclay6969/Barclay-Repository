@@ -26,6 +26,7 @@ jobs:
           unzip -q "$BASE" -d "$ORIGINAL"
           ROOT="$WORK/plugin.video.xship"
           ORIG="$ORIGINAL/plugin.video.xship"
+          export ROOT ORIG
 
           # Replace ONLY vixstream.py with the exact resolver that passed the 08.19.2 tests.
           cp tools/vixstream_2026_08_19_2_test.py "$ROOT/scrapers/scrapers_source/de/vixstream.py"
@@ -33,8 +34,8 @@ jobs:
           # Version marker for local install; no other addon content is changed.
           python3 - <<'PY'
           from pathlib import Path
-          import re
-          p = Path(r'''$ROOT/addon.xml''')
+          import os, re
+          p = Path(os.environ['ROOT']) / 'addon.xml'
           s = p.read_text(encoding='utf-8')
           s, n = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")', r'\g<1>2026.08.19.3\2', s, count=1)
           if n != 1:
@@ -48,7 +49,7 @@ jobs:
           grep -q 'TV-derived fallback' "$ROOT/scrapers/scrapers_source/de/vixstream.py"
 
           # Safety check: compared with the GitHub 08.19 ZIP, only addon.xml and vixstream.py may differ.
-          ROOT="$ROOT" ORIG="$ORIG" python3 - <<'PY'
+          python3 - <<'PY'
           from pathlib import Path
           import hashlib, os
           a = Path(os.environ['ORIG'])
