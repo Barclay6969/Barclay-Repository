@@ -1,0 +1,20 @@
+name: Trigger xShip 2026.08.19 build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.release-xship-2026.08.19'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch release workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build-xship-2026.08.19.yml --repo "$GITHUB_REPOSITORY" --ref main
