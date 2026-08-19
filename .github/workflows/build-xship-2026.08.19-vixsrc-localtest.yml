@@ -1,13 +1,11 @@
-name: Build xShip 2026.08.19 VixSrc local test
+name: Build xShip 2026.08.19.3 local test
 
 on:
   push:
     branches: [main]
     paths:
       - '.github/workflows/build-xship-2026.08.19-vixsrc-localtest.yml'
-
-permissions:
-  contents: write
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,76 +13,68 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build VixSrc domain local test from 2026.08.18.1
+      - name: Build exact local test from current 2026.08.19 release
         shell: bash
         run: |
           set -euo pipefail
-          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.18.1.zip'
-          WORK="$RUNNER_TEMP/xship-vixsrc-test"
-          rm -rf "$WORK"
-          mkdir -p "$WORK"
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.19.zip'
+          WORK="$RUNNER_TEMP/xship-08193"
+          ORIGINAL="$RUNNER_TEMP/xship-08193-original"
+          rm -rf "$WORK" "$ORIGINAL"
+          mkdir -p "$WORK" "$ORIGINAL"
           unzip -q "$BASE" -d "$WORK"
+          unzip -q "$BASE" -d "$ORIGINAL"
           ROOT="$WORK/plugin.video.xship"
-          export ROOT
+          ORIG="$ORIGINAL/plugin.video.xship"
 
+          # Replace ONLY vixstream.py with the exact resolver that passed the 08.19.2 tests.
+          cp tools/vixstream_2026_08_19_2_test.py "$ROOT/scrapers/scrapers_source/de/vixstream.py"
+
+          # Version marker for local install; no other addon content is changed.
           python3 - <<'PY'
-          import os, re, pathlib
-          root = pathlib.Path(os.environ['ROOT'])
-
-          addon = root / 'addon.xml'
-          s = addon.read_text(encoding='utf-8')
-          s, n = re.subn(
-              r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")',
-              r'\g<1>2026.08.19\2',
-              s,
-              count=1,
-          )
+          from pathlib import Path
+          import re
+          p = Path(r'''$ROOT/addon.xml''')
+          s = p.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")', r'\g<1>2026.08.19.3\2', s, count=1)
           if n != 1:
               raise SystemExit('addon version not found')
-          addon.write_text(s, encoding='utf-8', newline='\n')
-
-          vix = root / 'scrapers' / 'scrapers_source' / 'de' / 'vixstream.py'
-          s = vix.read_text(encoding='utf-8')
-          old_count = s.count('https://vixcloud.co')
-          if old_count < 1:
-              raise SystemExit('No https://vixcloud.co occurrence found in vixstream.py')
-
-          # 2026-08-19 local test:
-          # Current vixsrc.to browser traffic resolves both relative /embed/ and
-          # /playlist/ paths on vixsrc.to. xShip still resolves them on
-          # vixcloud.co, where TV playlist requests currently return HTTP 403.
-          # Change only this scraper so the test stays isolated.
-          s = s.replace('https://vixcloud.co', 'https://vixsrc.to')
-          marker = "# xShip 2026.08.19 VIXSRC-DOMAIN-TEST: embed/playlist base follows current vixsrc.to browser flow\n"
-          if marker not in s:
-              s = marker + s
-          vix.write_text(s, encoding='utf-8', newline='\n')
-          print('Replaced vixcloud.co occurrences:', old_count)
+          p.write_text(s, encoding='utf-8', newline='\n')
           PY
 
-          grep -q 'version="2026.08.19"' "$ROOT/addon.xml"
-          grep -q 'VIXSRC-DOMAIN-TEST' "$ROOT/scrapers/scrapers_source/de/vixstream.py"
-          if grep -q 'https://vixcloud.co' "$ROOT/scrapers/scrapers_source/de/vixstream.py"; then
-            echo 'Unexpected vixcloud.co remains in vixstream.py'
-            exit 1
-          fi
           python3 -m py_compile "$ROOT/scrapers/scrapers_source/de/vixstream.py"
-          python3 - <<'PY'
-          import xml.etree.ElementTree as ET, os
-          ET.parse(os.path.join(os.environ['ROOT'], 'addon.xml'))
+          grep -q 'version="2026.08.19.3"' "$ROOT/addon.xml"
+          grep -q "VIXCLOUD = 'vixsrc.to'" "$ROOT/scrapers/scrapers_source/de/vixstream.py"
+          grep -q 'TV-derived fallback' "$ROOT/scrapers/scrapers_source/de/vixstream.py"
+
+          # Safety check: compared with the GitHub 08.19 ZIP, only addon.xml and vixstream.py may differ.
+          ROOT="$ROOT" ORIG="$ORIG" python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, os
+          a = Path(os.environ['ORIG'])
+          b = Path(os.environ['ROOT'])
+          def hashes(root):
+              out = {}
+              for p in root.rglob('*'):
+                  if p.is_file():
+                      out[str(p.relative_to(root))] = hashlib.sha256(p.read_bytes()).hexdigest()
+              return out
+          ha, hb = hashes(a), hashes(b)
+          changed = sorted(k for k in set(ha) | set(hb) if ha.get(k) != hb.get(k))
+          print('Changed files:', changed)
+          allowed = ['addon.xml', 'scrapers/scrapers_source/de/vixstream.py']
+          if changed != allowed:
+              raise SystemExit('Unexpected changed files: %r' % changed)
           PY
 
-          mkdir -p "$GITHUB_WORKSPACE/test-builds"
-          OUT="$GITHUB_WORKSPACE/test-builds/plugin.video.xship-2026.08.19-VIXSRC-TEST.zip"
+          OUT="$GITHUB_WORKSPACE/plugin.video.xship-2026.08.19.3-LOCAL-TEST.zip"
           (cd "$WORK" && zip -qr "$OUT" plugin.video.xship)
           unzip -t "$OUT" >/dev/null
 
-      - name: Commit local test ZIP
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add test-builds/plugin.video.xship-2026.08.19-VIXSRC-TEST.zip
-          git commit -m 'Build xShip 2026.08.19 VixSrc local test' || exit 0
-          git push
+      - name: Upload local test ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: xship-2026.08.19.3-local-test
+          path: plugin.video.xship-2026.08.19.3-LOCAL-TEST.zip
+          if-no-files-found: error
+          retention-days: 3
