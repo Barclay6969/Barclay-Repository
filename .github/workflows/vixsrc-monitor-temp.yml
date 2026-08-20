@@ -1,0 +1,67 @@
+name: VixSrc monitor temporary
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.vixsrc-monitor-trigger'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe VixSrc endpoints
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import requests,re,json,urllib.parse
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36'
+          S=requests.Session(); S.headers.update({'User-Agent':UA})
+          refs=[('movie','Fight Club',550,None,None),('tv','Reacher',108978,1,1),('tv','FROM',124364,1,1),('tv','Supernatural',1622,1,1)]
+          def get(u,h=None):
+              try:
+                  r=S.get(u,headers=h or {},timeout=20,allow_redirects=True)
+                  return r
+              except Exception as e:
+                  print('ERR',u,repr(e)); return None
+          for typ,name,tmdb,s,e in refs:
+              api=f'https://vixsrc.to/api/movie/{tmdb}' if typ=='movie' else f'https://vixsrc.to/api/tv/{tmdb}/{s}/{e}'
+              r=get(api)
+              print('\nREF',name,typ,'API',api,'STATUS',getattr(r,'status_code',None),'CT',r.headers.get('content-type') if r else None,'LEN',len(r.content) if r else None)
+              src=None
+              if r:
+                  try:
+                      j=r.json(); print('JSON_TYPE',type(j).__name__,'KEYS',sorted(j.keys()) if isinstance(j,dict) else 'n/a'); src=j.get('src') if isinstance(j,dict) else None; print('SRC',src)
+                  except Exception as ex:
+                      print('JSON_FAIL',repr(ex),'HEAD',r.text[:180].replace('\n',' '))
+              if not src:
+                  player=f'https://vixsrc.to/movie/{tmdb}' if typ=='movie' else f'https://vixsrc.to/tv/{tmdb}/{s}/{e}'
+                  pr=get(player); print('PLAYER',player,'STATUS',getattr(pr,'status_code',None),'LEN',len(pr.content) if pr else None)
+                  if pr:
+                      m=re.search(r'"src"\s*:\s*"(/embed/[^"]+)"',pr.text) or re.search(r'\\"src\\"\s*:\s*\\"(/embed/[^\\"]+)',pr.text)
+                      if m: src=m.group(1).replace('\\/','/')
+              if src:
+                  if src.startswith('/'): embed='https://vixsrc.to'+src
+                  else: embed=src
+                  er=get(embed); print('EMBED',embed,'STATUS',getattr(er,'status_code',None),'LEN',len(er.content) if er else None)
+                  playlist=None
+                  if er:
+                      pats=[r'"url"\s*:\s*"(/playlist/[^"]+)"',r'file\s*:\s*[\'\"]([^\'\"]+\.m3u8[^\'\"]*)[\'\"]',r'file=[\'\"]([^\'\"]+\.m3u8[^\'\"]*)[\'\"]']
+                      for p in pats:
+                          m=re.search(p,er.text,re.I)
+                          if m: playlist=m.group(1).replace('\\/','/'); break
+                      if not playlist:
+                          m=re.search(r'/embed/(\d+[^"\'>]*)',embed)
+                          if m: playlist='/playlist/'+m.group(1).split('?')[0]
+                  print('PLAYLIST_CAND',playlist)
+                  if playlist:
+                      if playlist.startswith('/'): playlist='https://vixsrc.to'+playlist
+                      for label,headers in [('plain',{}),('referer',{'Referer':embed}),('origin',{'Referer':embed,'Origin':'https://vixsrc.to'})]:
+                          rr=get(playlist,headers); print('PLAYLIST',label,playlist,'STATUS',getattr(rr,'status_code',None),'CT',rr.headers.get('content-type') if rr else None,'LEN',len(rr.content) if rr else None,'M3U',('#EXTM3U' in rr.text[:200] if rr else False))
+          home=get('https://vixsrc.to/')
+          print('\nHOME STATUS',getattr(home,'status_code',None),'LEN',len(home.content) if home else None)
+          if home:
+              for marker in ['/movie/{id}','/tv/{id}/{season}/{episode}','/api/list/{type}','Next generation Streaming API']:
+                  print('HOME_MARKER',marker,marker in home.text)
+          PY
