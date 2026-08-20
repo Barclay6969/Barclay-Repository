@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.19.3" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.08.20.1" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,7 +42,14 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.19.3
+      <news>2026.08.20.1
+- Vixstream/VixSrc: Film-Wiedergabe an das aktuelle VixSrc-Verhalten angepasst.
+- Movie-Playlists werden zuerst wie im aktuellen Browser ohne b=1 und ohne Origin geladen.
+- Der bisherige b=1-Abruf bleibt als Kompatibilitäts-Fallback erhalten.
+- Serien-Wiedergabe bleibt mit dem Fix vom 19.08. unverändert funktionsfähig.
+- Erfolgreich lokal mit mehreren Filmen und Serien getestet.
+
+2026.08.19.3
 - Vixstream/VixSrc: Serien-Wiedergabe stabilisiert und an das aktuelle VixSrc-Verhalten angepasst.
 - TV-Playlists mit direkter Playlist-URL werden ohne b=1 und ohne Origin geladen.
 - Bei aus der Embed-ID abgeleiteten TV-Playlists werden kompatible Request-Varianten als Fallback verwendet.
