@@ -55,7 +55,6 @@ jobs:
           s = s.replace(marker, replacement, 1)
           scraper.write_text(s, encoding='utf-8', newline='\n')
 
-          # Static sanity checks for the reported case and reverse case.
           def variants(raw_title):
               candidates = [raw_title]
               alt = re.sub(r'\s+[-–—]\s+', ': ', raw_title)
@@ -90,3 +89,5 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m 'Add xShip 2026.08.21.9 SerienStream title variant test'
           git push
+
+# trigger 2
