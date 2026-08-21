@@ -1,4 +1,4 @@
-name: Build clean xShip 2026.08.21.10 release ZIP
+name: Build xShip personalized silent start notice test
 
 on:
   push:
@@ -15,14 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Repack tested SERIESVOE build as clean 2026.08.21.10
+      - name: Build personalized start notice from 2026.08.21.6
         shell: bash
         run: |
           set -euo pipefail
-          BASE='test-builds/plugin.video.xship-2026.08.21.10-SERIESVOE.zip'
-          WORK="$RUNNER_TEMP/xship-release-10"
+          BASE='test-builds/plugin.video.xship-2026.08.21.6-STARTNOTICE.zip'
+          WORK="$RUNNER_TEMP/xship-startnotice-7"
           ROOT="$WORK/plugin.video.xship"
-          OUT='test-builds/plugin.video.xship-2026.08.21.10-RELEASE.zip'
+          OUT='test-builds/plugin.video.xship-2026.08.21.7-STARTNOTICE.zip'
           export ROOT
 
           test -f "$BASE"
@@ -33,39 +33,42 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import os, re
+
           root = Path(os.environ['ROOT'])
+
           addon = root / 'addon.xml'
           s = addon.read_text(encoding='utf-8')
-          s, n = re.subn(r'(<addon\b[^>]*\bversion=")[^"]+("[^>]*>)', r'\g<1>2026.08.21.10\2', s, count=1)
+          s, n = re.subn(r'(<addon\b[^>]*\bversion=")[^"]+("[^>]*>)',
+                         r'\g<1>2026.08.21.7-STARTNOTICE\2', s, count=1)
           if n != 1:
               raise SystemExit('addon version not found')
           addon.write_text(s, encoding='utf-8', newline='\n')
-          ss = next(root.rglob('serienstream.py')).read_text(encoding='utf-8')
-          if 'Raw search title variants' not in ss:
-              raise SystemExit('SerienStream title fix missing')
-          sources = (root / 'resources/lib/sources.py').read_text(encoding='utf-8')
-          if 'from html import unescape as html_unescape' not in sources:
-              raise SystemExit('VOE html_unescape fix missing')
-          if '[VOE-DIAG]' in sources:
-              raise SystemExit('VOE diagnostic patch unexpectedly present')
-          compile(ss, 'serienstream.py', 'exec')
-          compile(sources, 'sources.py', 'exec')
+
+          src = root / 'resources/lib/sources.py'
+          s = src.read_text(encoding='utf-8')
+          old = "xbmcgui.Dialog().notification('xShip', 'Stream wird gestartet...', xbmcgui.NOTIFICATION_INFO, 2500, False)"
+          new = "xbmcgui.Dialog().notification('xShip', 'Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)', xbmcgui.NOTIFICATION_INFO, 2500, False)"
+          if old not in s:
+              raise SystemExit('existing silent notification not found')
+          s = s.replace(old, new)
+          src.write_text(s, encoding='utf-8', newline='\n')
           PY
+
+          python3 -m py_compile "$ROOT/resources/lib/sources.py" "$ROOT/resources/lib/player.py"
+          grep -q 'version="2026.08.21.7-STARTNOTICE"' "$ROOT/addon.xml"
+          grep -Fq "Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)" "$ROOT/resources/lib/sources.py"
 
           rm -f "$OUT"
           (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
           unzip -t "$OUT" >/dev/null
-          unzip -p "$OUT" plugin.video.xship/addon.xml | grep -q 'version="2026.08.21.10"'
 
-      - name: Commit release candidate ZIP only
+      - name: Commit local test ZIP only
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add test-builds/plugin.video.xship-2026.08.21.10-RELEASE.zip
+          git add test-builds/plugin.video.xship-2026.08.21.7-STARTNOTICE.zip
           git diff --cached --quiet && exit 0
-          git commit -m 'Add clean xShip 2026.08.21.10 release ZIP'
+          git commit -m 'Add xShip 2026.08.21.7 personalized silent start notice test'
           git push
-
-# trigger 2
