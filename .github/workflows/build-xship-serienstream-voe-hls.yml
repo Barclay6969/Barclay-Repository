@@ -1,0 +1,106 @@
+name: Build xShip SerienStream VOE HLS test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-serienstream-voe-hls.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build VOE HLS-preferred test
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='test-builds/plugin.video.xship-2026.08.21.10-SERIESVOE.zip'
+          WORK="$RUNNER_TEMP/xship-serienstream-voe-hls"
+          ROOT="$WORK/plugin.video.xship"
+          OUT='test-builds/plugin.video.xship-2026.08.21.11-VOEHLS.zip'
+          export ROOT
+
+          test -f "$BASE"
+          rm -rf "$WORK"
+          mkdir -p "$WORK" test-builds
+          unzip -q "$BASE" -d "$WORK"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          root = Path(os.environ['ROOT'])
+
+          addon = root / 'addon.xml'
+          s = addon.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon\b[^>]*\bversion=")[^"]+("[^>]*>)',
+                         r'\g<1>2026.08.21.11-VOEHLS\2', s, count=1)
+          if n != 1:
+              raise SystemExit('addon version not found')
+          addon.write_text(s, encoding='utf-8', newline='\n')
+
+          matches = []
+          for p in root.rglob('*.py'):
+              try:
+                  text = p.read_text(encoding='utf-8')
+              except Exception:
+                  continue
+              if 'VOE direkt aufgeloest' in text and "data.get('direct_access_url')" in text:
+                  matches.append((p, text))
+
+          if len(matches) != 1:
+              raise SystemExit('Expected one VOE direct resolver file, got %d' % len(matches))
+
+          p, text = matches[0]
+          old = """            media_url = data.get('direct_access_url') or data.get('source') or data.get('file')
+            if not media_url:
+                return None
+            stream_headers = urlencode({'User-Agent': headers['User-Agent'], 'Referer': real_url})
+            log_utils.log('VOE direkt aufgeloest: Provider %s / %s' % (item.get('provider'), item.get('source')), log_utils.LOGINFO)
+            return '%s|%s' % (media_url, stream_headers)
+"""
+          new = """            # VOE can expose multiple usable variants. The direct_access_url is often a
+            # short-lived CDN MP4 which Kodi may reject, while source/file can provide HLS.
+            # Prefer an m3u8 candidate and only fall back to MP4/direct access.
+            candidates = []
+            for key in ('source', 'file', 'direct_access_url'):
+                value = data.get(key)
+                if value and value not in candidates:
+                    candidates.append(value)
+            if not candidates:
+                return None
+            hls = [value for value in candidates if '.m3u8' in value.lower()]
+            media_url = hls[0] if hls else candidates[0]
+            stream_headers = urlencode({'User-Agent': headers['User-Agent'], 'Referer': real_url, 'verifypeer': 'false'})
+            log_utils.log('VOE direkt aufgeloest: Provider %s / %s | Auswahl=%s | Kandidaten=%s' % (
+                item.get('provider'), item.get('source'), 'HLS' if hls else 'Fallback', len(candidates)
+            ), log_utils.LOGINFO)
+            return '%s|%s' % (media_url, stream_headers)
+"""
+          if old not in text:
+              raise SystemExit('VOE media selection anchor not found')
+          text = text.replace(old, new, 1)
+          p.write_text(text, encoding='utf-8', newline='\n')
+          compile(text, str(p), 'exec')
+          print('Patched:', p)
+          PY
+
+          python3 -m compileall -q "$ROOT"
+          grep -q 'version="2026.08.21.11-VOEHLS"' "$ROOT/addon.xml"
+          grep -R -q 'Auswahl=%s | Kandidaten=%s' "$ROOT"
+
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT"
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add xShip 2026.08.21.11 VOE HLS test'
+          git push
