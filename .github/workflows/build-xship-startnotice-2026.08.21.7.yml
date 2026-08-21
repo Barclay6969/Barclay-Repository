@@ -1,0 +1,74 @@
+name: Build xShip personalized silent start notice test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-startnotice-2026.08.21.7.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build personalized start notice from 2026.08.21.6
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='test-builds/plugin.video.xship-2026.08.21.6-STARTNOTICE.zip'
+          WORK="$RUNNER_TEMP/xship-startnotice-7"
+          ROOT="$WORK/plugin.video.xship"
+          OUT='test-builds/plugin.video.xship-2026.08.21.7-STARTNOTICE.zip'
+          export ROOT
+
+          test -f "$BASE"
+          rm -rf "$WORK"
+          mkdir -p "$WORK" test-builds
+          unzip -q "$BASE" -d "$WORK"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          root = Path(os.environ['ROOT'])
+
+          addon = root / 'addon.xml'
+          s = addon.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon\b[^>]*\bversion=")[^"]+("[^>]*>)',
+                         r'\g<1>2026.08.21.7-STARTNOTICE\2', s, count=1)
+          if n != 1:
+              raise SystemExit('addon version not found')
+          addon.write_text(s, encoding='utf-8', newline='\n')
+
+          src = root / 'resources/lib/sources.py'
+          s = src.read_text(encoding='utf-8')
+          old = "xbmcgui.Dialog().notification('xShip', 'Stream wird gestartet...', xbmcgui.NOTIFICATION_INFO, 2500, False)"
+          new = "xbmcgui.Dialog().notification('xShip', 'Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)', xbmcgui.NOTIFICATION_INFO, 2500, False)"
+          if old not in s:
+              raise SystemExit('existing silent notification not found')
+          s = s.replace(old, new)
+          src.write_text(s, encoding='utf-8', newline='\n')
+          PY
+
+          python3 -m py_compile "$ROOT/resources/lib/sources.py" "$ROOT/resources/lib/player.py"
+          grep -q 'version="2026.08.21.7-STARTNOTICE"' "$ROOT/addon.xml"
+          grep -Fq "Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)" "$ROOT/resources/lib/sources.py"
+
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+
+      - name: Commit local test ZIP only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/plugin.video.xship-2026.08.21.7-STARTNOTICE.zip
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add xShip 2026.08.21.7 personalized silent start notice test'
+          git push
