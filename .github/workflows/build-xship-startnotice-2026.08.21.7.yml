@@ -1,4 +1,4 @@
-name: Temporary xShip VOE diagnostics builder
+name: Build xShip personalized silent start notice test
 
 on:
   push:
@@ -15,14 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build xShip 2026.08.21.11 VOE diagnostics
+      - name: Build personalized start notice from 2026.08.21.6
         shell: bash
         run: |
           set -euo pipefail
-          BASE='test-builds/plugin.video.xship-2026.08.21.10-SERIESVOE.zip'
-          WORK="$RUNNER_TEMP/xship-voe-diag"
+          BASE='test-builds/plugin.video.xship-2026.08.21.6-STARTNOTICE.zip'
+          WORK="$RUNNER_TEMP/xship-startnotice-7"
           ROOT="$WORK/plugin.video.xship"
-          OUT='test-builds/plugin.video.xship-2026.08.21.11-VOEDIAG.zip'
+          OUT='test-builds/plugin.video.xship-2026.08.21.7-STARTNOTICE.zip'
           export ROOT
 
           test -f "$BASE"
@@ -35,57 +35,40 @@ jobs:
           import os, re
 
           root = Path(os.environ['ROOT'])
+
           addon = root / 'addon.xml'
           s = addon.read_text(encoding='utf-8')
           s, n = re.subn(r'(<addon\b[^>]*\bversion=")[^"]+("[^>]*>)',
-                         r'\g<1>2026.08.21.11-VOEDIAG\2', s, count=1)
+                         r'\g<1>2026.08.21.7-STARTNOTICE\2', s, count=1)
           if n != 1:
               raise SystemExit('addon version not found')
           addon.write_text(s, encoding='utf-8', newline='\n')
 
-          matches = []
-          for p in root.rglob('*.py'):
-              try:
-                  text = p.read_text(encoding='utf-8')
-              except Exception:
-                  continue
-              if 'VOE direkt aufgeloest' in text and "data.get('direct_access_url')" in text:
-                  matches.append((p, text))
-
-          if len(matches) != 1:
-              raise SystemExit('Expected one VOE direct resolver file, got %d' % len(matches))
-
-          p, text = matches[0]
-          anchor = "            media_url = data.get('direct_access_url') or data.get('source') or data.get('file')\n"
-          diag = """            log_utils.log('[VOE-DIAG] file=%s' % str(data.get('file')), log_utils.LOGINFO)
-            log_utils.log('[VOE-DIAG] source=%s' % str(data.get('source')), log_utils.LOGINFO)
-            log_utils.log('[VOE-DIAG] direct_access_url=%s' % str(data.get('direct_access_url')), log_utils.LOGINFO)
-"""
-          if anchor not in text:
-              raise SystemExit('VOE media selection anchor not found')
-          text = text.replace(anchor, diag + anchor, 1)
-          p.write_text(text, encoding='utf-8', newline='\n')
-          compile(text, str(p), 'exec')
-          print('Patched:', p)
+          src = root / 'resources/lib/sources.py'
+          s = src.read_text(encoding='utf-8')
+          old = "xbmcgui.Dialog().notification('xShip', 'Stream wird gestartet...', xbmcgui.NOTIFICATION_INFO, 2500, False)"
+          new = "xbmcgui.Dialog().notification('xShip', 'Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)', xbmcgui.NOTIFICATION_INFO, 2500, False)"
+          if old not in s:
+              raise SystemExit('existing silent notification not found')
+          s = s.replace(old, new)
+          src.write_text(s, encoding='utf-8', newline='\n')
           PY
 
-          python3 -m compileall -q "$ROOT"
-          grep -q 'version="2026.08.21.11-VOEDIAG"' "$ROOT/addon.xml"
-          grep -R -q '\[VOE-DIAG\] direct_access_url=' "$ROOT"
+          python3 -m py_compile "$ROOT/resources/lib/sources.py" "$ROOT/resources/lib/player.py"
+          grep -q 'version="2026.08.21.7-STARTNOTICE"' "$ROOT/addon.xml"
+          grep -Fq "Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)" "$ROOT/resources/lib/sources.py"
 
           rm -f "$OUT"
           (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
           unzip -t "$OUT" >/dev/null
 
-      - name: Commit diagnostic ZIP and restore workflows
+      - name: Commit local test ZIP only
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git checkout HEAD^ -- '.github/workflows/build-xship-startnotice-2026.08.21.7.yml'
-          rm -f '.github/workflows/build-xship-serienstream-voe-diag.yml'
-          git add test-builds/plugin.video.xship-2026.08.21.11-VOEDIAG.zip '.github/workflows/build-xship-startnotice-2026.08.21.7.yml'
-          git add -u '.github/workflows/build-xship-serienstream-voe-diag.yml' || true
-          git commit -m 'Add xShip 2026.08.21.11 VOE diagnostics test'
+          git add test-builds/plugin.video.xship-2026.08.21.7-STARTNOTICE.zip
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add xShip 2026.08.21.7 personalized silent start notice test'
           git push
