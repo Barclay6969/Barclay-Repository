@@ -1,0 +1,106 @@
+name: Publish xShip 2026.08.21.4
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-xship-2026.08.21.4.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and publish xShip 2026.08.21.4
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.21.3.zip'
+          OUT='zips/plugin.video.xship/plugin.video.xship-2026.08.21.4.zip'
+          WORK="$RUNNER_TEMP/xship-2026.08.21.4"
+          ROOT="$WORK/plugin.video.xship"
+          export ROOT
+
+          test -f "$BASE"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          root = Path(os.environ['ROOT'])
+          addon = root / 'addon.xml'
+          s = addon.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon\b[^>]*\bversion=")[^"]+("[^>]*>)',
+                         r'\g<1>2026.08.21.4\2', s, count=1)
+          if n != 1:
+              raise SystemExit('addon version not found')
+
+          news = '''2026.08.21.4
+- Beim Start eines ausgewaehlten Streams wird fuer 5 Sekunden eine lautlose Startmeldung angezeigt.
+- Meldung: "Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)"
+- Die bisher unzuverlaessige Kodi-Ladeanzeige im Wiedergabepfad wird damit durch ein sichtbares Start-Feedback ergaenzt.
+
+'''
+          if '<news>' not in s:
+              raise SystemExit('news section not found')
+          s = s.replace('<news>', '<news>' + news, 1)
+          addon.write_text(s, encoding='utf-8', newline='\n')
+
+          src = root / 'resources/lib/sources.py'
+          s = src.read_text(encoding='utf-8')
+          lines = s.splitlines(True)
+          out = []
+          count = 0
+          for line in lines:
+              if 'player().run(' in line:
+                  indent = line[:len(line)-len(line.lstrip())]
+                  out.append(indent + 'try:\n')
+                  out.append(indent + '    import xbmcgui\n')
+                  out.append(indent + "    xbmcgui.Dialog().notification('xShip', 'Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)', xbmcgui.NOTIFICATION_INFO, 5000, False)\n")
+                  out.append(indent + 'except:\n')
+                  out.append(indent + '    pass\n')
+                  count += 1
+              out.append(line)
+          if count < 1:
+              raise SystemExit('No player().run handoff found')
+          src.write_text(''.join(out), encoding='utf-8', newline='\n')
+          print('start notifications added:', count)
+
+          repo = Path('zips/addons.xml')
+          r = repo.read_text(encoding='utf-8')
+          old = '<addon id="plugin.video.xship" version="2026.08.21.3"'
+          new = '<addon id="plugin.video.xship" version="2026.08.21.4"'
+          if old not in r:
+              raise SystemExit('xShip 2026.08.21.3 repo entry not found')
+          r = r.replace(old, new, 1)
+          marker = '<news>2026.08.21.3\n'
+          if marker not in r:
+              raise SystemExit('xShip news marker not found')
+          r = r.replace(marker, '<news>' + news + '2026.08.21.3\n', 1)
+          repo.write_text(r, encoding='utf-8', newline='\n')
+          PY
+
+          python3 -m py_compile "$ROOT/resources/lib/sources.py" "$ROOT/resources/lib/player.py"
+          grep -q 'version="2026.08.21.4"' "$ROOT/addon.xml"
+          grep -q 'Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)' "$ROOT/resources/lib/sources.py"
+
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+
+          md5sum zips/addons.xml | awk '{print $1}' > zips/addons.xml.md5
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT" zips/addons.xml zips/addons.xml.md5
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release xShip 2026.08.21.4 start notification'
+          git push
