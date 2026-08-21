@@ -18,3 +18,4 @@ jobs:
         with:
           name: tested-xship
           path: test-builds/plugin.video.xship-2026.08.21.10-SERIESVOE.zip
+# trigger 2
