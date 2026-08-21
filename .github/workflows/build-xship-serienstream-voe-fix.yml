@@ -1,0 +1,95 @@
+name: Build xShip SerienStream VOE fix test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-serienstream-voe-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build SerienStream VOE direct resolve fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='test-builds/plugin.video.xship-2026.08.21.9-SERIENTITLE.zip'
+          WORK="$RUNNER_TEMP/xship-serienstream-voe"
+          ROOT="$WORK/plugin.video.xship"
+          OUT='test-builds/plugin.video.xship-2026.08.21.10-SERIESVOE.zip'
+          export ROOT
+
+          test -f "$BASE"
+          rm -rf "$WORK"
+          mkdir -p "$WORK" test-builds
+          unzip -q "$BASE" -d "$WORK"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          root = Path(os.environ['ROOT'])
+
+          addon = root / 'addon.xml'
+          s = addon.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon\b[^>]*\bversion=")[^"]+("[^>]*>)',
+                         r'\g<1>2026.08.21.10-SERIESVOE\2', s, count=1)
+          if n != 1:
+              raise SystemExit('addon version not found')
+          addon.write_text(s, encoding='utf-8', newline='\n')
+
+          matches = []
+          for p in root.rglob('*.py'):
+              try:
+                  text = p.read_text(encoding='utf-8')
+              except Exception:
+                  continue
+              if 'VOE Direktaufloesung fehlgeschlagen' in text:
+                  matches.append((p, text))
+
+          if len(matches) != 1:
+              raise SystemExit('Expected exactly one VOE direct-resolve source file, got %d: %s' %
+                               (len(matches), [str(p) for p, _ in matches]))
+
+          p, text = matches[0]
+          print('Patching VOE direct-resolve file:', p)
+
+          if re.search(r'^\s*from\s+html\s+import\s+unescape\s+as\s+html_unescape\s*$', text, re.M):
+              print('html_unescape import already present')
+          else:
+              lines = text.splitlines(True)
+              insert_at = 0
+              if lines and lines[0].startswith('#!'):
+                  insert_at = 1
+              if insert_at < len(lines) and re.match(r'^#.*coding[:=]', lines[insert_at]):
+                  insert_at += 1
+              lines.insert(insert_at, 'from html import unescape as html_unescape\n')
+              text = ''.join(lines)
+              p.write_text(text, encoding='utf-8', newline='\n')
+
+          check = p.read_text(encoding='utf-8')
+          if 'from html import unescape as html_unescape' not in check:
+              raise SystemExit('html_unescape import was not added')
+          if 'VOE Direktaufloesung fehlgeschlagen' not in check:
+              raise SystemExit('VOE direct resolver marker missing after patch')
+          PY
+
+          python3 -m compileall -q "$ROOT"
+          grep -q 'version="2026.08.21.10-SERIESVOE"' "$ROOT/addon.xml"
+
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT"
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add xShip 2026.08.21.10 SerienStream VOE fix test'
+          git push
