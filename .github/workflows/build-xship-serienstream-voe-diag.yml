@@ -1,4 +1,4 @@
-name: Build xShip SerienStream VOE diagnostics
+name: Build xShip SerienStream VOE diagnostics test
 
 on:
   push:
