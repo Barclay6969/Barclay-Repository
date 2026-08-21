@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.21.8-KUSI5S" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.08.21.10" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,7 +42,12 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.21.8-KUSI5S
+      <news>2026.08.21.10
+- SerienStream: Titelsuche toleranter bei Bindestrich-/Doppelpunkt-Varianten, z. B. „ES - Welcome to Derry“ / „ES: Welcome to Derry“.
+- VOE: Direktauflösung bei SerienStream korrigiert.
+- Die 5-Sekunden-Startmeldung „Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)“ bleibt enthalten.
+
+2026.08.21.8-KUSI5S
 - Beim Start eines ausgewaehlten Streams wird fuer 5 Sekunden eine lautlose Startmeldung angezeigt.
 - Meldung: „Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)“
 - Die Startmeldung ersetzt das fehlende sichtbare Feedback, wenn Kodis Ladekreis beim Wiedergabestart nicht erscheint.
