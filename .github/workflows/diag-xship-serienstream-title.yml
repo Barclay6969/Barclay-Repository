@@ -1,0 +1,51 @@
+name: Diagnose xShip SerienStream title matching
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diag-xship-serienstream-title.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract SerienStream scraper source
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.21.8-KUSI5S.zip'
+          WORK="$RUNNER_TEMP/xship-serienstream-diag"
+          ROOT="$WORK/plugin.video.xship"
+          OUT='test-builds/diagnostics/serienstream-current.txt'
+          test -f "$BASE"
+          rm -rf "$WORK"
+          mkdir -p "$WORK" test-builds/diagnostics
+          unzip -q "$BASE" -d "$WORK"
+          {
+            echo '=== MATCHING FILE PATHS ==='
+            find "$ROOT" -type f \( -iname '*serienstream*.py' -o -iname '*serien*.py' \) -print
+            echo
+            echo '=== FILE CONTENTS ==='
+            while IFS= read -r f; do
+              echo
+              echo "===== $f ====="
+              cat "$f"
+            done < <(find "$ROOT" -type f \( -iname '*serienstream*.py' -o -iname '*serien*.py' \) -print)
+            echo
+            echo '=== REFERENCES IN PYTHON FILES ==='
+            grep -Rni --include='*.py' 'serienstream' "$ROOT/resources" || true
+          } > "$OUT"
+          test -s "$OUT"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT"
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add temporary SerienStream title matching diagnostics'
+          git push
