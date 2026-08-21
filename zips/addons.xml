@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.20.1" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.08.21.3" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,26 +42,23 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.20.1
+      <news>2026.08.21.3
+- Quellensuche und Scraper-Ablauf deutlich beschleunigt.
+- MeineCloud/FHDfilme/Streamcloud/TopStreamFilm teilen identische Filmabrufe; MeineCloud liefert weiterhin mehrere Hoster.
+- Filmo-Suche mit besserer Titelnormalisierung und gezielter Kandidatenauswahl beschleunigt.
+- Moflix: der langsame und fehlschlagende moflix-stream.link/Byse-Pfad wird waehrend der Suche uebersprungen; alle uebrigen Moflix-Hoster bleiben unveraendert.
+- VixStream/VixSrc funktional unveraendert; Film- und Serien-Wiedergabe bleibt auf dem stabil getesteten Stand.
+
+2026.08.20.1
 - Vixstream/VixSrc: Film-Wiedergabe an das aktuelle VixSrc-Verhalten angepasst.
 - Movie-Playlists werden zuerst wie im aktuellen Browser ohne b=1 und ohne Origin geladen.
 - Der bisherige b=1-Abruf bleibt als Kompatibilitäts-Fallback erhalten.
 - Serien-Wiedergabe bleibt mit dem Fix vom 19.08. unverändert funktionsfähig.
-- Erfolgreich lokal mit mehreren Filmen und Serien getestet.
 
-2026.08.19.3
-- Vixstream/VixSrc: Serien-Wiedergabe stabilisiert und an das aktuelle VixSrc-Verhalten angepasst.
-- TV-Playlists mit direkter Playlist-URL werden ohne b=1 und ohne Origin geladen.
-- Bei aus der Embed-ID abgeleiteten TV-Playlists werden kompatible Request-Varianten als Fallback verwendet.
-- Embed- und Playlist-URLs werden über vixsrc.to aufgelöst; Film-Wiedergabe bleibt unverändert.
-- Erfolgreich lokal getestet mit FROM, Reacher, Supernatural sowie SerienStream.
-
-2026.08.18.1
-- Filmo: BYSE als neue Stream-Quelle hinzugefügt und erfolgreich lokal getestet.
-- Externe BYSE-Links werden erkannt, ohne die bestehende Filmo-Suche oder VOE-Quellen zu beeinträchtigen.
-
-2026.08.18
-- Erste BYSE-Testversion; durch 2026.08.18.1 ersetzt.
+2026.08.19
+- Vixstream/VixSrc: Serien-Wiedergabe repariert.
+- TV-Playlists werden nach aktuellem VixSrc-Verhalten ohne b=1 und ohne Origin geladen.
+- Embed- und Playlist-URLs laufen über vixsrc.to.
 
 2026.08.17.2
 - Changelog hinzugefügt und Kodi-Anzeige „Letzte Änderungen“ ergänzt.
