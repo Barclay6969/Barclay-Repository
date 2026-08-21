@@ -1,0 +1,92 @@
+name: Build xShip SerienStream title variant test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-serienstream-title-test.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build SerienStream punctuation title search test
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.21.8-KUSI5S.zip'
+          WORK="$RUNNER_TEMP/xship-serienstream-title"
+          ROOT="$WORK/plugin.video.xship"
+          OUT='test-builds/plugin.video.xship-2026.08.21.9-SERIENTITLE.zip'
+          export ROOT
+
+          test -f "$BASE"
+          rm -rf "$WORK"
+          mkdir -p "$WORK" test-builds
+          unzip -q "$BASE" -d "$WORK"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          root = Path(os.environ['ROOT'])
+
+          addon = root / 'addon.xml'
+          s = addon.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon\b[^>]*\bversion=")[^"]+("[^>]*>)',
+                         r'\g<1>2026.08.21.9-SERIENTITLE\2', s, count=1)
+          if n != 1:
+              raise SystemExit('addon version not found')
+          addon.write_text(s, encoding='utf-8', newline='\n')
+
+          scraper = root / 'scrapers/scrapers_source/de/serienstream.py'
+          s = scraper.read_text(encoding='utf-8')
+
+          marker = '                for title in titles:\n                    if not title:\n                        continue\n'
+          if s.count(marker) != 1:
+              raise SystemExit('SerienStream fallback title loop marker not found uniquely')
+
+          replacement = '''                # SerienStream search is punctuation-sensitive. TMDB and SerienStream\n                # can use different separators for the same title, e.g.\n                # "ES - Welcome to Derry" vs "ES: Welcome to Derry".\n                search_titles = []\n                for raw_title in titles:\n                    if not raw_title:\n                        continue\n\n                    candidates = [raw_title]\n                    try:\n                        # Dash separator -> colon separator\n                        alt = re.sub(r'\\s+[-–—]\\s+', ': ', raw_title)\n                        if alt != raw_title:\n                            candidates.append(alt)\n                    except:\n                        pass\n                    try:\n                        # Colon separator -> dash separator (reverse case)\n                        alt = re.sub(r'\\s*:\\s*', ' - ', raw_title)\n                        if alt != raw_title:\n                            candidates.append(alt)\n                    except:\n                        pass\n\n                    for candidate in candidates:\n                        if candidate and candidate not in search_titles:\n                            search_titles.append(candidate)\n\n                if log_utils:\n                    logger.info('SerienStream - Raw search title variants: %s' % search_titles)\n\n                for title in search_titles:\n                    if not title:\n                        continue\n'''
+          s = s.replace(marker, replacement, 1)
+          scraper.write_text(s, encoding='utf-8', newline='\n')
+
+          # Static sanity checks for the reported case and reverse case.
+          def variants(raw_title):
+              candidates = [raw_title]
+              alt = re.sub(r'\s+[-–—]\s+', ': ', raw_title)
+              if alt != raw_title:
+                  candidates.append(alt)
+              alt = re.sub(r'\s*:\s*', ' - ', raw_title)
+              if alt != raw_title:
+                  candidates.append(alt)
+              out = []
+              for candidate in candidates:
+                  if candidate and candidate not in out:
+                      out.append(candidate)
+              return out
+
+          assert 'ES: Welcome to Derry' in variants('ES - Welcome to Derry')
+          assert 'ES - Welcome to Derry' in variants('ES: Welcome to Derry')
+          print('variants reported case:', variants('ES - Welcome to Derry'))
+          PY
+
+          python3 -m py_compile "$ROOT/scrapers/scrapers_source/de/serienstream.py"
+          grep -q 'version="2026.08.21.9-SERIENTITLE"' "$ROOT/addon.xml"
+          grep -q 'Raw search title variants' "$ROOT/scrapers/scrapers_source/de/serienstream.py"
+          grep -q 'ES - Welcome to Derry' "$ROOT/scrapers/scrapers_source/de/serienstream.py"
+
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT"
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add xShip 2026.08.21.9 SerienStream title variant test'
+          git push
