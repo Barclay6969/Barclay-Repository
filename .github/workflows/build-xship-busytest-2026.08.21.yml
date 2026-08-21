@@ -7,7 +7,7 @@ on:
       - '.github/workflows/build-xship-busytest-2026.08.21.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -22,12 +22,12 @@ jobs:
           BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.21.3.zip'
           WORK="$RUNNER_TEMP/xship-busytest"
           ROOT="$WORK/plugin.video.xship"
-          OUT="$GITHUB_WORKSPACE/plugin.video.xship-2026.08.21.4-BUSYTEST.zip"
+          OUT="$GITHUB_WORKSPACE/test-builds/plugin.video.xship-2026.08.21.4-BUSYTEST.zip"
           export ROOT
 
           test -f "$BASE"
           rm -rf "$WORK"
-          mkdir -p "$WORK"
+          mkdir -p "$WORK" "$GITHUB_WORKSPACE/test-builds"
           unzip -q "$BASE" -d "$WORK"
 
           python3 - <<'PY'
@@ -42,7 +42,6 @@ jobs:
           s, n = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")',
                          r'\g<1>2026.08.21.4-BUSYTEST\2', s, count=1)
           if n != 1:
-              # Fallback for a different attribute order.
               s, n = re.subn(r'(<addon\b[^>]*\bversion=")[^"]+("[^>]*>)',
                              r'\g<1>2026.08.21.4-BUSYTEST\2', s, count=1)
           if n != 1:
@@ -55,16 +54,14 @@ jobs:
               txt = p.read_text(encoding='utf-8')
               before = txt
 
-              # The 2026.07.25 fix only opened Busy when control.visible() was false.
-              # For this diagnostic build we deliberately force Busy to open at every
-              # existing startup handoff so Kodi always gives immediate feedback.
+              # Diagnostic change: force the existing startup Busy calls instead
+              # of suppressing them when control.visible() reports true.
               txt, n1 = re.subn(r'if\s+not\s+control\.visible\(\)\s*:\s*control\.busy\(\)',
                                 'control.busy()', txt)
               changed += n1
 
-              # Also normalize the multiline form if present.
               txt, n2 = re.subn(r'if\s+not\s+control\.visible\(\)\s*:\s*\n([ \t]+)control\.busy\(\)',
-                                r'control.busy()', txt)
+                                'control.busy()', txt)
               changed += n2
 
               if txt != before:
@@ -82,9 +79,13 @@ jobs:
           (cd "$WORK" && zip -qr "$OUT" plugin.video.xship)
           unzip -t "$OUT" >/dev/null
 
-      - name: Upload local Busy test ZIP
-        uses: actions/upload-artifact@v4
-        with:
-          name: xship-busytest-2026.08.21
-          path: plugin.video.xship-2026.08.21.4-BUSYTEST.zip
-          if-no-files-found: error
+      - name: Commit standalone local test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/plugin.video.xship-2026.08.21.4-BUSYTEST.zip
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add xShip 2026.08.21.4 Busy local test build'
+          git push
