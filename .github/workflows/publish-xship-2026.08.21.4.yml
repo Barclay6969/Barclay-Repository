@@ -104,3 +104,5 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m 'Release xShip 2026.08.21.4 start notification'
           git push
+
+# trigger 2026-08-21
