@@ -1,0 +1,90 @@
+name: Build xShip Busy local test 2026.08.21
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-xship-busytest-2026.08.21.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Busy test from current xShip 2026.08.21.3
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.21.3.zip'
+          WORK="$RUNNER_TEMP/xship-busytest"
+          ROOT="$WORK/plugin.video.xship"
+          OUT="$GITHUB_WORKSPACE/plugin.video.xship-2026.08.21.4-BUSYTEST.zip"
+          export ROOT
+
+          test -f "$BASE"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          root = Path(os.environ['ROOT'])
+
+          # Local test version only. Repository metadata remains untouched.
+          addon = root / 'addon.xml'
+          s = addon.read_text(encoding='utf-8')
+          s, n = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")',
+                         r'\g<1>2026.08.21.4-BUSYTEST\2', s, count=1)
+          if n != 1:
+              # Fallback for a different attribute order.
+              s, n = re.subn(r'(<addon\b[^>]*\bversion=")[^"]+("[^>]*>)',
+                             r'\g<1>2026.08.21.4-BUSYTEST\2', s, count=1)
+          if n != 1:
+              raise SystemExit('addon version not found')
+          addon.write_text(s, encoding='utf-8', newline='\n')
+
+          changed = 0
+          for rel in ('resources/lib/sources.py', 'resources/lib/player.py'):
+              p = root / rel
+              txt = p.read_text(encoding='utf-8')
+              before = txt
+
+              # The 2026.07.25 fix only opened Busy when control.visible() was false.
+              # For this diagnostic build we deliberately force Busy to open at every
+              # existing startup handoff so Kodi always gives immediate feedback.
+              txt, n1 = re.subn(r'if\s+not\s+control\.visible\(\)\s*:\s*control\.busy\(\)',
+                                'control.busy()', txt)
+              changed += n1
+
+              # Also normalize the multiline form if present.
+              txt, n2 = re.subn(r'if\s+not\s+control\.visible\(\)\s*:\s*\n([ \t]+)control\.busy\(\)',
+                                r'control.busy()', txt)
+              changed += n2
+
+              if txt != before:
+                  p.write_text(txt, encoding='utf-8', newline='\n')
+
+          if changed < 1:
+              raise SystemExit('No existing Busy visibility guard found; refusing to build an unrelated test')
+
+          print('Forced Busy guards replaced:', changed)
+          PY
+
+          grep -q 'version="2026.08.21.4-BUSYTEST"' "$ROOT/addon.xml"
+          python3 -m py_compile "$ROOT/resources/lib/sources.py" "$ROOT/resources/lib/player.py"
+          rm -f "$OUT"
+          (cd "$WORK" && zip -qr "$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+
+      - name: Upload local Busy test ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: xship-busytest-2026.08.21
+          path: plugin.video.xship-2026.08.21.4-BUSYTEST.zip
+          if-no-files-found: error
