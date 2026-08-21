@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.21.3" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.08.21.8-KUSI5S" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,7 +42,12 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.21.3
+      <news>2026.08.21.8-KUSI5S
+- Beim Start eines ausgewaehlten Streams wird fuer 5 Sekunden eine lautlose Startmeldung angezeigt.
+- Meldung: „Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)“
+- Die Startmeldung ersetzt das fehlende sichtbare Feedback, wenn Kodis Ladekreis beim Wiedergabestart nicht erscheint.
+
+2026.08.21.3
 - Quellensuche und Scraper-Ablauf deutlich beschleunigt.
 - MeineCloud/FHDfilme/Streamcloud/TopStreamFilm teilen identische Filmabrufe; MeineCloud liefert weiterhin mehrere Hoster.
 - Filmo-Suche mit besserer Titelnormalisierung und gezielter Kandidatenauswahl beschleunigt.
