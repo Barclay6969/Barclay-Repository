@@ -1,0 +1,111 @@
+name: TEMP release xShip 2026.08.25.12
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-release-xship-2026.08.25.12.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Build and verify tested xShip 2026.08.25.12
+        shell: python
+        run: |
+          from pathlib import Path
+          import base64, hashlib, os, shutil, zipfile, py_compile, re
+
+          base_zip = Path('zips/plugin.video.xship/plugin.video.xship-2026.08.25.11.zip')
+          out_zip = Path('zips/plugin.video.xship/plugin.video.xship-2026.08.25.12.zip')
+          patch_b64 = Path('.release-payload/xship-2026.08.25.12/patch.b64')
+          work = Path('/tmp/xship-2026.08.25.12-release')
+          patch_zip = Path('/tmp/xship-2026.08.25.12-patch.zip')
+          expected_manifest = 'ce271d886c8fff7dca0d9419318ac8efe5e8f97b6d86add47231da42cb39bbf1'
+
+          shutil.rmtree(work, ignore_errors=True)
+          work.mkdir(parents=True)
+          patch_zip.write_bytes(base64.b64decode(patch_b64.read_text(encoding='utf-8').strip()))
+
+          with zipfile.ZipFile(base_zip) as z:
+              z.extractall(work)
+          with zipfile.ZipFile(patch_zip) as z:
+              z.extractall(work)
+
+          root = work / 'plugin.video.xship'
+          expected_files = {
+              'addon.xml': '6c6b202014c41211297af71665654974c1086c288c457bd1e3ff260d3fbd5fc0',
+              'resources/lib/requestHandler.py': 'd41f14df5b47729d5330b74b28d22476aee4df5e80edbdc25960a705ca9d8279',
+              'scrapers/scrapers_source/de/bsto.py': 'ad1cfeea4ded99db51982622a9c78b5f109208063e41ad1f4cfc05dcbe3970be',
+              'scrapers/scrapers_source/de/vavoo.py': 'e609a76b67e6a89ece8e924bd9811b82a4249d3a07ebe96e6d3cf4a4b317f928',
+              'service.py': 'eb86deca7c7ef8d05c58f1798a7d0c6548c556cd8215be33c8f7bcb9e129d068',
+              'resources/lib/domain_redirect.py': 'db74f18d80c113d3e5a4c53889d96dd0a0e12285032156f76fcd058cd19fc432',
+          }
+          for rel, expected in expected_files.items():
+              actual = hashlib.sha256((root / rel).read_bytes()).hexdigest()
+              if actual != expected:
+                  raise SystemExit('Tested file mismatch: %s %s != %s' % (rel, actual, expected))
+
+          for rel in ('service.py', 'resources/lib/requestHandler.py', 'resources/lib/domain_redirect.py',
+                      'scrapers/scrapers_source/de/bsto.py', 'scrapers/scrapers_source/de/vavoo.py'):
+              py_compile.compile(str(root / rel), doraise=True)
+
+          # Verify the complete file-content set against the locally tested ZIP.
+          rows = []
+          for fp in sorted(p for p in root.rglob('*') if p.is_file() and '__pycache__' not in p.parts):
+              rel = 'plugin.video.xship/' + fp.relative_to(root).as_posix()
+              rows.append(rel + '\t' + hashlib.sha256(fp.read_bytes()).hexdigest())
+          manifest_hash = hashlib.sha256(('\n'.join(rows) + '\n').encode('utf-8')).hexdigest()
+          if len(rows) != 101 or manifest_hash != expected_manifest:
+              raise SystemExit('Content manifest mismatch: files=%d hash=%s' % (len(rows), manifest_hash))
+
+          if out_zip.exists():
+              out_zip.unlink()
+          with zipfile.ZipFile(out_zip, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+              for fp in sorted(p for p in root.rglob('*') if p.is_file() and '__pycache__' not in p.parts):
+                  z.write(fp, 'plugin.video.xship/' + fp.relative_to(root).as_posix())
+          with zipfile.ZipFile(out_zip) as z:
+              if z.testzip():
+                  raise SystemExit('Generated release ZIP is corrupt')
+              addon = z.read('plugin.video.xship/addon.xml').decode('utf-8')
+              if 'version="2026.08.25.12"' not in addon:
+                  raise SystemExit('Wrong version in release ZIP')
+
+          feed = Path('zips/addons.xml')
+          text = feed.read_text(encoding='utf-8')
+          old_version = '<addon id="plugin.video.xship" version="2026.08.25.11" name="xShip" provider-name="Kusi (Barclay)">'
+          new_version = '<addon id="plugin.video.xship" version="2026.08.25.12" name="xShip" provider-name="Kusi (Barclay)">'
+          if old_version not in text:
+              raise SystemExit('Expected 2026.08.25.11 feed marker not found')
+          text = text.replace(old_version, new_version, 1)
+          news = ('2026.08.25.12\n'
+                  '- Provider-Domains: echte HTTP-Redirects werden zentral erkannt und automatisch als neue Hauptdomain gespeichert.\n'
+                  '- Die Erkennung nutzt bereits laufende xShip-Requests sowie den vorhandenen parallelen Domain-Check; dadurch entstehen bei der Quellensuche keine zusaetzlichen Domain-Anfragen.\n'
+                  '- ISP-/CUII-Sperrseiten und Hoster-/Embed-Redirects koennen die Provider-Domain nicht ueberschreiben.\n'
+                  '- Vavoo verwendet nun ebenfalls die konfigurierbare Provider-Domain; die separate vavoo.tv-Authentifizierung bleibt unveraendert.\n'
+                  '- Kinox behaelt seine bewaehrte eigene Multi-Domain-Erkennung.\n\n')
+          if '<news>2026.08.25.11' not in text:
+              raise SystemExit('Expected news insertion point not found')
+          text = text.replace('<news>2026.08.25.11', '<news>' + news + '2026.08.25.11', 1)
+          feed.write_text(text, encoding='utf-8', newline='')
+          Path('zips/addons.xml.md5').write_text(hashlib.md5(feed.read_bytes()).hexdigest() + '\n', encoding='ascii')
+
+          print('RELEASE_ZIP_SHA256=' + hashlib.sha256(out_zip.read_bytes()).hexdigest())
+          print('CONTENT_MANIFEST_SHA256=' + manifest_hash)
+          print('ADDONS_XML_MD5=' + hashlib.md5(feed.read_bytes()).hexdigest())
+
+      - name: Publish release to main
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay"
+          git config user.email "107470010+Barclay6969@users.noreply.github.com"
+          git add zips/plugin.video.xship/plugin.video.xship-2026.08.25.12.zip zips/addons.xml zips/addons.xml.md5
+          git commit -m "Release xShip 2026.08.25.12 automatic provider domains"
+          git push origin HEAD:main
