@@ -1,0 +1,23 @@
+name: TEMP export xShip 2026.08.25.11
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-export-xship-2026.08.25.11.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload base xShip ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: xship-2026.08.25.11-base
+          path: zips/plugin.video.xship/plugin.video.xship-2026.08.25.11.zip
+          if-no-files-found: error
+          retention-days: 1
