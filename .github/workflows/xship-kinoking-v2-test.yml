@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/xship-kinoking-v2-test.yml'
+      - 'test-builds/_patch_kinoking_259.py'
 permissions:
   contents: write
 jobs:
