@@ -1,0 +1,188 @@
+name: Build xShip Einschalten Dood default TLS test
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-einschalten-dood-defaulttls-test.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build from 25.6 with Einschalten Dood fallback only
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='test-builds/plugin.video.xship-2026.08.25.6-MEGAKINO16-TEST.zip'
+          OUT='test-builds/plugin.video.xship-2026.08.25.7-EINSCHALTEN-DOOD-TLS-TEST.zip'
+          rm -rf /tmp/xship-ein /tmp/xship-base
+          mkdir -p /tmp/xship-ein /tmp/xship-base
+          unzip -q "$BASE" -d /tmp/xship-ein
+          unzip -q "$BASE" -d /tmp/xship-base
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path('/tmp/xship-ein/plugin.video.xship')
+          matches=[]
+          for p in root.rglob('einschalten.py'):
+              s=p.read_text('utf-8')
+              if "SITE_IDENTIFIER = 'einschalten'" in s:
+                  matches.append(p)
+          if len(matches)!=1:
+              raise SystemExit(f'Expected exactly one Einschalten scraper, found {matches}')
+          p=matches[0]
+          s=p.read_text('utf-8')
+          marker="from scrapers.modules import cleantitle\n"
+          if marker not in s: raise SystemExit('Import marker missing')
+          s=s.replace(marker, marker+"from resources.lib import log_utils\n",1)
+          old="""                streamUrl = jResult['streamUrl']
+                isBlocked, hoster, url, prioHoster = isBlockedHoster(streamUrl)
+                if isBlocked: continue
+                if url: self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': url, 'direct': True, 'priority': int(self.priority), 'prioHoster': prioHoster})
+"""
+          new="""                streamUrl = jResult['streamUrl']
+
+                # Kodi 21 / ResolveURL Dood fallback: use an instance-owned default
+                # urllib opener for vide0.net before falling back to ResolveURL.
+                # This avoids ResolveURL's global strict HTTPS handler for this one host.
+                url = self._resolve_dood_default_tls(streamUrl)
+                if url:
+                    self.sources.append({'source': 'DoodStream', 'quality': quality, 'language': 'de', 'url': url, 'direct': True, 'priority': int(self.priority), 'prioHoster': 100})
+                    continue
+
+                isBlocked, hoster, url, prioHoster = isBlockedHoster(streamUrl)
+                if isBlocked: continue
+                if url: self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': url, 'direct': True, 'priority': int(self.priority), 'prioHoster': prioHoster})
+"""
+          if old not in s: raise SystemExit('Stream block marker missing')
+          s=s.replace(old,new,1)
+          resolve_marker="""    def resolve(self, url):
+        return  url
+"""
+          helper=r'''    def _resolve_dood_default_tls(self, stream_url):
+        # Narrow workaround for Einschalten's current vide0.net Dood embeds.
+        # Keep all non-Dood hosts on the existing ResolveURL path.
+        try:
+            import random
+            import re
+            import string
+            import time
+            from urllib.parse import quote_plus, urljoin, urlparse
+            from urllib.request import Request, build_opener, HTTPHandler, HTTPSHandler
+            from urllib.error import HTTPError
+
+            parsed = urlparse(stream_url)
+            host = (parsed.hostname or '').lower()
+            match_id = re.search(r'/(?:e|d)/([0-9A-Za-z]+)', parsed.path or '')
+            if host not in ('vide0.net', 'vvide0.com') or not match_id:
+                return None
+
+            media_id = match_id.group(1)
+            ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/151.0.0.0 Safari/537.36'
+            # Important: own opener, never urllib_request.install_opener().
+            opener = build_opener(HTTPHandler(), HTTPSHandler())
+            candidates = [
+                'https://playmogo.com/e/' + media_id,
+                stream_url,
+            ]
+
+            for page_url in candidates:
+                try:
+                    log_utils.log('[EINSCHALTEN-DOOD] Default-TLS page: %s' % page_url, log_utils.LOGINFO)
+                    req = Request(page_url, headers={
+                        'User-Agent': ua,
+                        'Referer': self.base_link + '/',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    })
+                    response = opener.open(req, timeout=8)
+                    final_url = response.geturl()
+                    html = response.read().decode('utf-8', 'replace')
+                    status = getattr(response, 'status', 200)
+                    log_utils.log('[EINSCHALTEN-DOOD] Page OK: status=%s final=%s bytes=%s' % (status, final_url, len(html)), log_utils.LOGINFO)
+
+                    # Same data pair ResolveURL's Dood resolver uses:
+                    # pass_md5 endpoint + token appended to the returned base URL.
+                    m = re.search(r'''dsplayer\.hotkeys[^']+'([^']+).+?function\s*makePlay.+?return[^?]+([^\"]+)''', html, re.DOTALL)
+                    if not m:
+                        log_utils.log('[EINSCHALTEN-DOOD] pass_md5/token nicht gefunden', log_utils.LOGWARNING)
+                        continue
+
+                    pass_url = urljoin(final_url, m.group(1))
+                    token = m.group(2)
+                    req2 = Request(pass_url, headers={
+                        'User-Agent': ua,
+                        'Referer': final_url,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': '*/*',
+                    })
+                    response2 = opener.open(req2, timeout=8)
+                    base = response2.read().decode('utf-8', 'replace').strip()
+                    status2 = getattr(response2, 'status', 200)
+                    log_utils.log('[EINSCHALTEN-DOOD] pass_md5: status=%s bytes=%s' % (status2, len(base)), log_utils.LOGINFO)
+                    if not base.startswith('http'):
+                        continue
+
+                    direct = base + ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10)) + token + str(int(time.time() * 1000))
+                    headers = 'User-Agent=%s&Referer=%s' % (quote_plus(ua), quote_plus(final_url))
+                    log_utils.log('[EINSCHALTEN-DOOD] Direct URL erzeugt: host=%s' % (urlparse(direct).hostname or ''), log_utils.LOGINFO)
+                    return direct + '|' + headers
+                except HTTPError as exc:
+                    try:
+                        cf = exc.headers.get('cf-mitigated', '')
+                        server = exc.headers.get('server', '')
+                    except Exception:
+                        cf = ''
+                        server = ''
+                    log_utils.log('[EINSCHALTEN-DOOD] HTTPError %s | server=%s | cf=%s | %s' % (getattr(exc, 'code', '?'), server, cf, page_url), log_utils.LOGWARNING)
+                except Exception as exc:
+                    log_utils.log('[EINSCHALTEN-DOOD] Fehler %s: %s' % (type(exc).__name__, exc), log_utils.LOGWARNING)
+
+            return None
+        except Exception as exc:
+            try:
+                log_utils.log('[EINSCHALTEN-DOOD] Setup-Fehler %s: %s' % (type(exc).__name__, exc), log_utils.LOGWARNING)
+            except Exception:
+                pass
+            return None
+
+    def resolve(self, url):
+        return  url
+'''
+          if resolve_marker not in s: raise SystemExit('Resolve marker missing')
+          s=s.replace(resolve_marker,helper,1)
+          p.write_text(s,'utf-8')
+
+          addon=root/'addon.xml'
+          a=addon.read_text('utf-8')
+          a2,n=re.subn(r'(<addon\b[^>]*?\bversion=")[^"]+("[^>]*>)',r'\g<1>2026.08.25.7\2',a,count=1,flags=re.S)
+          if n!=1: raise SystemExit('Could not set addon version')
+          addon.write_text(a2,'utf-8')
+          PY
+          set +e
+          DIFFS=$(diff -qr /tmp/xship-base/plugin.video.xship /tmp/xship-ein/plugin.video.xship | sed -n 's#^Files .*plugin.video.xship/\(.*\) and .* differ$#\1#p' | sort)
+          set -e
+          echo "$DIFFS"
+          COUNT=$(printf '%s\n' "$DIFFS" | sed '/^$/d' | wc -l)
+          [ "$COUNT" -eq 2 ] || { echo 'Unexpected changed file count'; exit 1; }
+          printf '%s\n' "$DIFFS" | grep -qx 'addon.xml'
+          printf '%s\n' "$DIFFS" | grep -q 'einschalten.py'
+          # MegaKino16 must still be present from the 25.6 base.
+          MK=$(find /tmp/xship-ein/plugin.video.xship -type f -name 'megakino.py' | head -1)
+          grep -q "SITE_DOMAIN = 'megakino16.com'" "$MK"
+          python3 -m compileall -q /tmp/xship-ein/plugin.video.xship
+          rm -f "$OUT"
+          (cd /tmp/xship-ein && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+          unzip -p "$OUT" plugin.video.xship/addon.xml | grep -q 'version="2026.08.25.7"'
+          EIN=$(zipinfo -1 "$OUT" | grep '/einschalten.py$' | head -1)
+          unzip -p "$OUT" "$EIN" | grep -q '\[EINSCHALTEN-DOOD\] Direct URL erzeugt'
+      - name: Commit test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/plugin.video.xship-2026.08.25.7-EINSCHALTEN-DOOD-TLS-TEST.zip
+          git commit -m 'Add xShip Einschalten Dood TLS test build'
+          git push
