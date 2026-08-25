@@ -1,0 +1,51 @@
+name: Probe current Einschalten structure
+
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-probe-einschalten.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe website
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=test-builds/_einschalten_probe.txt
+          TMP=/tmp/einschalten_search.html
+          curl -L --compressed -A 'Mozilla/5.0' -sS 'https://einschalten.in/search?query=camp%20rock%203' -o "$TMP"
+          {
+            echo '=== SIZE ==='
+            wc -c "$TMP"
+            echo '=== CAMP/1493400 CONTEXT ==='
+            python3 - <<'PY'
+          from pathlib import Path
+          s=Path('/tmp/einschalten_search.html').read_text('utf-8','replace')
+          for needle in ['1493400','Camp Rock 3','releaseDate','/movies/']:
+              print('\n---',needle,'---')
+              p=0
+              n=0
+              while True:
+                  i=s.find(needle,p)
+                  if i<0 or n>=8: break
+                  print(s[max(0,i-300):min(len(s),i+500)].replace('\n',' '))
+                  p=i+len(needle); n+=1
+              if n==0: print('NOT FOUND')
+          PY
+            echo '=== MOVIE PAGE HEADERS ==='
+            curl -L --compressed -A 'Mozilla/5.0' -sS -D - -o /tmp/movie.html 'https://einschalten.in/movies/1493400' | head -40
+            echo 'movie-size:' $(wc -c </tmp/movie.html)
+            echo '=== API WATCH ==='
+            curl -L --compressed -A 'Mozilla/5.0' -sS -D - 'https://einschalten.in/api/movies/1493400/watch' | head -80
+          } > "$OUT"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT"
+          git commit -m 'Temporary probe current Einschalten structure'
+          git push
