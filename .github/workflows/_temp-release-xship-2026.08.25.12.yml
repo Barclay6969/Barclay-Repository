@@ -48,9 +48,9 @@ jobs:
           expected_files = {
               'addon.xml': '6c6b202014c41211297af71665654974c1086c288c457bd1e3ff260d3fbd5fc0',
               'resources/lib/requestHandler.py': 'd41f14df5b47729d5330b74b28d22476aee4df5e80edbdc25960a705ca9d8279',
-              'scrapers/scrapers_source/de/bsto.py': 'ad1cfeea4ded99db51982622a9c78b5f109208063e41ad1f4cfc05dcbe3970be',
+              'scrapers/scrapers_source/de/bsto.py': 'ad1cfeea4d28213b790b9e80165e8dccffc36e375972f052fd97fc29b7aaba97',
               'scrapers/scrapers_source/de/vavoo.py': 'e609a76b67e6a89ece8e924bd9811b82a4249d3a07ebe96e6d3cf4a4b317f928',
-              'service.py': 'eb86deca7c7ef8d05c58f1798a7d0c6548c556cd8215be33c8f7bcb9e129d068',
+              'service.py': 'eb86deca7c91887f51b3e7240680b9bc22ff71f85bc55f459836bd885e23e250',
               'resources/lib/domain_redirect.py': 'db74f18d80c113d3e5a4c53889d96dd0a0e12285032156f76fcd058cd19fc432',
           }
           for rel, expected in expected_files.items():
@@ -114,4 +114,4 @@ jobs:
           git commit -m "Release xShip 2026.08.25.12 automatic provider domains"
           git push origin HEAD:main
 
-# retry after verified payload correction
+# verified against the user-tested 2026.08.25.12 ZIP
