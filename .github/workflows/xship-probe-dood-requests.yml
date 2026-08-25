@@ -1,0 +1,47 @@
+name: Probe Dood via requests
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-probe-dood-requests.yml'
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe current Camp Rock Dood flow
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re, time, random, string, requests
+          from urllib.parse import urljoin
+          ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/151.0.0.0 Safari/537.36'
+          for start in ['https://vide0.net/e/89tjo7u3z6cr','https://playmogo.com/e/89tjo7u3z6cr']:
+              print('\nSTART',start)
+              s=requests.Session()
+              r=s.get(start,headers={'User-Agent':ua,'Referer':'https://einschalten.in/'},timeout=15,allow_redirects=True)
+              print('page',r.status_code,r.url,'len',len(r.text),'server',r.headers.get('server'),'cf-mitigated',r.headers.get('cf-mitigated'))
+              patterns=[
+                  r'''dsplayer\.hotkeys[^']+'([^']+).+?function\s*makePlay.+?return[^?]+([^\"]+)''',
+                  r'''(\/pass_md5\/[^'\"]+).*?function\s*makePlay.+?return[^?]+([^\"]+)''',
+                  r'''(\/pass_md5\/[^'\"]+)'''
+              ]
+              m=None
+              for p in patterns:
+                  m=re.search(p,r.text,re.S)
+                  if m: break
+              print('match',bool(m), 'groups', m.groups() if m else None)
+              if not m: continue
+              path=m.group(1)
+              token=m.group(2) if len(m.groups())>1 else ''
+              headers={'User-Agent':ua,'Referer':r.url,'X-Requested-With':'XMLHttpRequest'}
+              purl=urljoin(r.url,path)
+              p=s.get(purl,headers=headers,timeout=15)
+              print('pass',p.status_code,p.url,'len',len(p.text),'server',p.headers.get('server'),'cf-mitigated',p.headers.get('cf-mitigated'))
+              print('pass-prefix',repr(p.text[:180]))
+              if p.ok and p.text.strip().startswith('http'):
+                  direct=p.text.strip()+''.join(random.choice(string.ascii_letters+string.digits) for _ in range(10))+token+str(int(time.time()*1000))
+                  print('direct-host',requests.utils.urlparse(direct).netloc,'direct-len',len(direct))
+          PY
