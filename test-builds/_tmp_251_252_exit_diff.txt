@@ -1,0 +1,158 @@
+=== SOURCES DIFF ===
+--- /tmp/x251/plugin.video.xship/resources/lib/sources.py	2026-08-21 11:38:58.000000000 +0000
++++ /tmp/x252/plugin.video.xship/resources/lib/sources.py	2026-08-25 09:24:10.000000000 +0000
+@@ -37,6 +37,7 @@
+         self.watcher = False
+         self.executor = ThreadPoolExecutor(max_workers=20)
+         self.url = None
++        self._user_cancelled = False
+ 
+     def get(self, params):
+         data = json.loads(params['sysmeta'])
+@@ -63,6 +64,9 @@
+             url = None
+             #Liste der gefundenen Streams
+             items = self.getSources(title, year, imdb, season, episode, originaltitle, premiered)
++            if getattr(self, '_user_cancelled', False):
++                log_utils.log('[FAST-CANCEL] Abbruch aus play() uebernommen', log_utils.LOGINFO)
++                return
+             select = control.getSetting('hosts.mode') if select == None else select
+             ## unnötig
+             #select = '1' if control.getSetting('downloads') == 'true' and not (control.getSetting('download.movie.path') == '' or control.getSetting('download.tv.path') == '') else select
+@@ -383,7 +387,12 @@
+             try:
+                 if control.abortRequested: return sys.exit()
+                 try:
+-                    if progressDialog.iscanceled(): break
++                    if progressDialog.iscanceled():
++                        self._user_cancelled = True
++                        log_utils.log('[FAST-CANCEL] Quellensuche durch Benutzer abgebrochen', log_utils.LOGINFO)
++                        for _future in futures:
++                            _future.cancel()
++                        break
+                 except:
+                     pass
+ 
+@@ -459,7 +468,19 @@
+ 
+         try: progressDialog.close()
+         except: pass
++        if getattr(self, '_user_cancelled', False):
++            try:
++                self.executor.shutdown(wait=False, cancel_futures=True)
++            except TypeError:
++                self.executor.shutdown(wait=False)
++            except Exception:
++                pass
++            self.sources = []
++            return []
+         self.sourcesFilter()
++        if getattr(self, '_user_cancelled', False):
++            self.sources = []
++            return []
+         return self.sources
+ 
+ 
+@@ -491,6 +512,8 @@
+         _scraper_started = time.time()
+         _scraper_count = 0
+         try:
++            if getattr(self, '_user_cancelled', False):
++                return
+             try:
+                 call.mediatype = getattr(self, 'mediatype', None)
+             except Exception:
+@@ -500,6 +523,8 @@
+             else:
+                 sources = call.run(titles, year, season, episode, imdb)
+             if sources == None or sources == []: raise Exception()
++            if getattr(self, '_user_cancelled', False):
++                return
+             sources = [json.loads(t) for t in set(json.dumps(d, sort_keys=True) for d in sources)]
+             _scraper_count = len(sources)
+             # Provider-Prioritaet zentral aus den xShip-Einstellungen erzwingen.
+@@ -575,27 +600,53 @@
+         self.sources_new = []
+         progressDialog = control.progressDialog
+         progressDialog.create(control.addonInfo('name'), '')
+-        # Button Cancel deaktivieren
++        # FAST-CANCEL: Abbrechen bleibt auch waehrend MediaInfo aktiv.
+         from xbmc import sleep
+         from xbmcgui import Window
+-        WINDOW_PROGRESS = Window(10101)
+-        sleep(100)
+-        CANCEL_BUTTON = WINDOW_PROGRESS.getControl(10)
+-        CANCEL_BUTTON.setEnabled(False)
++        CANCEL_BUTTON = None
++        try:
++            WINDOW_PROGRESS = Window(10101)
++            sleep(100)
++            CANCEL_BUTTON = WINDOW_PROGRESS.getControl(10)
++            CANCEL_BUTTON.setEnabled(True)
++        except Exception:
++            pass
+         progressDialog.update(100, "Streams - Mediadaten werden ermittelt")
+         count_max = len(self.sources)
+         futures = {self.executor.submit(self._get_resolution, source): source for source in self.sources}
+         while True:
++            try:
++                if progressDialog.iscanceled():
++                    self._user_cancelled = True
++                    log_utils.log('[FAST-CANCEL] MediaInfo-Ermittlung durch Benutzer abgebrochen', log_utils.LOGINFO)
++                    for _future in futures:
++                        _future.cancel()
++                    break
++            except Exception:
++                pass
+             count = len([1 for future in futures if not future.done()])
+             x = int(100*count/count_max)
+             progressDialog.update(x, "Streams - Mediadaten werden ermittelt")
+             if count == 0:
+                 break
+-            else:
+-                sleep(200)
++            sleep(100)
+ 
+         progressDialog.close()
+-        CANCEL_BUTTON.setEnabled(True)
++        try:
++            if CANCEL_BUTTON is not None:
++                CANCEL_BUTTON.setEnabled(True)
++        except Exception:
++            pass
++        if getattr(self, '_user_cancelled', False):
++            try:
++                self.executor.shutdown(wait=False, cancel_futures=True)
++            except TypeError:
++                self.executor.shutdown(wait=False)
++            except Exception:
++                pass
++            self.sources_new = []
++            self.sources = []
++            return
+         control.busy()
+ 
+         self.sources = self.sources_new
+@@ -626,9 +677,10 @@
+         import time
+         from resources.lib import mediainfo
+ 
++        owner = self
+         class _NullDialog:
+             def update(self, *a, **kw): pass
+-            def iscanceled(self): return False
++            def iscanceled(self): return getattr(owner, '_user_cancelled', False)
+             def close(self): pass
+ 
+         source_name = source.get('source')
+@@ -682,6 +734,8 @@
+                 log_utils.LOGWARNING
+             )
+ 
++        if getattr(self, '_user_cancelled', False):
++            return
+         source.update({'info': info, '_probe': probe})
+         self.sources_new.append(source)
+ 
+
+=== PLAYER DIFF ===
