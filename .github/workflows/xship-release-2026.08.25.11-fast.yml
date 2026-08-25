@@ -1,0 +1,31 @@
+name: Build xShip 2026.08.25.11 fast release
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-release-2026.08.25.11-fast.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch tested base and release script
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p test-builds
+          curl -fL --retry 3 -o test-builds/plugin.video.xship-2026.08.25.10-KINOKING-MEINECLOUD-TEST.zip https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/test-builds/plugin.video.xship-2026.08.25.10-KINOKING-MEINECLOUD-TEST.zip
+          curl -fL --retry 3 -o test-builds/_release_2511.py https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/test-builds/_release_2511.py
+      - name: Build release ZIP
+        run: python3 test-builds/_release_2511.py
+      - name: Upload release ZIP to test-builds
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE='test-builds/plugin.video.xship-2026.08.25.11.zip'
+          B64=$(base64 -w0 "$FILE")
+          gh api --method PUT repos/Barclay6969/Barclay-Repository/contents/$FILE \
+            -f message='Add xShip 2026.08.25.11 release ZIP' \
+            -f content="$B64" >/dev/null
