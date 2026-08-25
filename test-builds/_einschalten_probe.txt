@@ -1,0 +1,46 @@
+=== SIZE ===
+16777 /tmp/einschalten_search.html
+=== CAMP/1493400 CONTEXT ===
+
+--- 1493400 ---
+se</h1></div><o-movie-grid class="contents" ngh="4"><div class="grid grid-cols-[repeat(auto-fill,_minmax(171px,_1fr))] gap-2"><o-movie-card class="contents" ngh="3"><a class="group flex h-full flex-col overflow-hidden rounded-lg bg-neutral-800 hover:cursor-pointer" title="Camp Rock 3" href="/movies/1493400" jsaction="click:;"><div class="relative aspect-[1/1.5]"><!----><!----><div></div><!----><!----><!----><div class="absolute inset-0 hidden bg-black opacity-25 group-hover:block"></div></div><div class="flex flex-1 flex-col gap-1 p-2 wrap-break-word"><div class="flex text-xs"><div class="flex items-center gap-1"><ng-icon role="img" name="calendar" _nghost-ng-c572653062 aria-hidden="true" data-ng-icon-ssr ngh="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" strok
+TE67.js"> <link rel="modulepreload" href="chunk-KE22GWQA.js"> <link rel="modulepreload" href="chunk-YTWQPQBP.js"> <link rel="modulepreload" href="chunk-5T5K4Q7T.js"> <link rel="modulepreload" href="chunk-HYIGQ6CJ.js">   <script id="ng-state" type="application/json">{"3076005711":{"b":{"data":[{"id":1493400,"title":"Camp Rock 3","releaseDate":"2026-08-13","posterPath":"/8wI9KByZtzBMWOzDFjxHPSOAuOH.jpg","voteAverage":10,"collectionId":148055}],"pagination":{"hasMore":false,"currentPage":1}},"h":{},"s":200,"st":"OK","u":"https://einschalten.in/api/search","rt":"json"},"CONFIG":{"appTitle":"einschalten","backlinks":[{"name":"szene.link","url":"https://szene.link/"},{"name":"archivx.to","url":"https://archivx.to/"},{"name":"nydus.org","url":"https://top.nydus.org/vote/5202/"},{"name":"raidrush.
+
+--- Camp Rock 3 ---
+lass="text-xl">Suchergebnisse</h1></div><o-movie-grid class="contents" ngh="4"><div class="grid grid-cols-[repeat(auto-fill,_minmax(171px,_1fr))] gap-2"><o-movie-card class="contents" ngh="3"><a class="group flex h-full flex-col overflow-hidden rounded-lg bg-neutral-800 hover:cursor-pointer" title="Camp Rock 3" href="/movies/1493400" jsaction="click:;"><div class="relative aspect-[1/1.5]"><!----><!----><div></div><!----><!----><!----><div class="absolute inset-0 hidden bg-black opacity-25 group-hover:block"></div></div><div class="flex flex-1 flex-col gap-1 p-2 wrap-break-word"><div class="flex text-xs"><div class="flex items-center gap-1"><ng-icon role="img" name="calendar" _nghost-ng-c572653062 aria-hidden="true" data-ng-icon-ssr ngh="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0
+-icon__stroke-width, 2)"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg></ng-icon><div class="whitespace-nowrap">100 %</div></div><!----></div><div class="line-clamp-2 font-bold"> Camp Rock 3 </div></div></a></o-movie-card><!----></div><!----><!----></o-movie-grid><o-pagination ngh="5"><div class="mt-2 flex rounded-lg bg-neutral-800"><div class="flex w-1/2 justify-end pr-3"><!----></div><div class="flex w-1/2 justify-start pl-3"><!----></div></div></o-pagination></div></div></o-content-container></o-search><!----></main><o-footer class="contents" ngh="6"><footer class="bg-neutral-800"><o-content-container class="contents" ngh="0"><div class="flex justify-center"><div clas
+el="modulepreload" href="chunk-KE22GWQA.js"> <link rel="modulepreload" href="chunk-YTWQPQBP.js"> <link rel="modulepreload" href="chunk-5T5K4Q7T.js"> <link rel="modulepreload" href="chunk-HYIGQ6CJ.js">   <script id="ng-state" type="application/json">{"3076005711":{"b":{"data":[{"id":1493400,"title":"Camp Rock 3","releaseDate":"2026-08-13","posterPath":"/8wI9KByZtzBMWOzDFjxHPSOAuOH.jpg","voteAverage":10,"collectionId":148055}],"pagination":{"hasMore":false,"currentPage":1}},"h":{},"s":200,"st":"OK","u":"https://einschalten.in/api/search","rt":"json"},"CONFIG":{"appTitle":"einschalten","backlinks":[{"name":"szene.link","url":"https://szene.link/"},{"name":"archivx.to","url":"https://archivx.to/"},{"name":"nydus.org","url":"https://top.nydus.org/vote/5202/"},{"name":"raidrush.ws","url":"http:/
+
+--- releaseDate ---
+oad" href="chunk-KE22GWQA.js"> <link rel="modulepreload" href="chunk-YTWQPQBP.js"> <link rel="modulepreload" href="chunk-5T5K4Q7T.js"> <link rel="modulepreload" href="chunk-HYIGQ6CJ.js">   <script id="ng-state" type="application/json">{"3076005711":{"b":{"data":[{"id":1493400,"title":"Camp Rock 3","releaseDate":"2026-08-13","posterPath":"/8wI9KByZtzBMWOzDFjxHPSOAuOH.jpg","voteAverage":10,"collectionId":148055}],"pagination":{"hasMore":false,"currentPage":1}},"h":{},"s":200,"st":"OK","u":"https://einschalten.in/api/search","rt":"json"},"CONFIG":{"appTitle":"einschalten","backlinks":[{"name":"szene.link","url":"https://szene.link/"},{"name":"archivx.to","url":"https://archivx.to/"},{"name":"nydus.org","url":"https://top.nydus.org/vote/5202/"},{"name":"raidrush.ws","url":"http://toplist.raidr
+
+--- /movies/ ---
+ergebnisse</h1></div><o-movie-grid class="contents" ngh="4"><div class="grid grid-cols-[repeat(auto-fill,_minmax(171px,_1fr))] gap-2"><o-movie-card class="contents" ngh="3"><a class="group flex h-full flex-col overflow-hidden rounded-lg bg-neutral-800 hover:cursor-pointer" title="Camp Rock 3" href="/movies/1493400" jsaction="click:;"><div class="relative aspect-[1/1.5]"><!----><!----><div></div><!----><!----><!----><div class="absolute inset-0 hidden bg-black opacity-25 group-hover:block"></div></div><div class="flex flex-1 flex-col gap-1 p-2 wrap-break-word"><div class="flex text-xs"><div class="flex items-center gap-1"><ng-icon role="img" name="calendar" _nghost-ng-c572653062 aria-hidden="true" data-ng-icon-ssr ngh="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="non
+=== MOVIE PAGE HEADERS ===
+HTTP/2 200 
+date: Tue, 25 Aug 2026 12:06:20 GMT
+content-type: text/html;charset=UTF-8
+server: cloudflare
+vary: Accept-Encoding
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=2ZokgIh3cu%2FGVeQ3VBecotcVBklVsWH1T5%2BJvwnJwNhFLy6l1Ar0enIsGQMaWEK3Ythf6SML8tf4GcVt%2BBWehk7B1LIj8Q8JYF6uJfb9cdNry3sLzef1dZoDlycKu6nJDw%3D%3D"}]}
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+content-encoding: zstd
+cf-ray: a30a78569df52ca9-DFW
+alt-svc: h3=":443"; ma=86400
+
+movie-size: 30767
+=== API WATCH ===
+HTTP/2 200 
+date: Tue, 25 Aug 2026 12:06:21 GMT
+content-type: application/json; charset=utf-8
+server: cloudflare
+vary: Accept-Encoding
+content-encoding: gzip
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=pT91aIsjrPIMUQtPjlpk6TIvtb1if0VLGw4629H%2Fi80Sd6cywRhRZ9uw%2FlY6eZ6SDVBgrZMnOopZfDYIkML3w5dN5RdYUTNKNobL5DQPlaD8JjOpstplj77H7XLm7Ugiyw%3D%3D"}]}
+cf-ray: a30a785cfaa82707-DFW
+alt-svc: h3=":443"; ma=86400
+
+{"releaseName":"Camp.Rock.3.2026.German.DL.720p.WEB.h264-WvF","streamUrl":"https://vide0.net/e/89tjo7u3z6cr"}
