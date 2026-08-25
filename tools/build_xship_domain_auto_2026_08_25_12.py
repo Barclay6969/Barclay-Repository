@@ -1,0 +1,267 @@
+from pathlib import Path
+import re
+import shutil
+import zipfile
+import py_compile
+
+base_zip = Path('zips/plugin.video.xship/plugin.video.xship-2026.08.25.11.zip')
+work = Path('/tmp/xship-domain-auto-prod')
+out_dir = Path('test-output')
+out = out_dir / 'plugin.video.xship-2026.08.25.12.zip'
+manifest = out_dir / 'DOMAIN-AUTO-MANIFEST.txt'
+
+shutil.rmtree(work, ignore_errors=True)
+shutil.rmtree(out_dir, ignore_errors=True)
+work.mkdir(parents=True)
+out_dir.mkdir(parents=True)
+
+with zipfile.ZipFile(base_zip) as z:
+    z.extractall(work)
+root = work / 'plugin.video.xship'
+
+helper = root / 'resources/lib/domain_redirect.py'
+helper.write_text(r'''# -*- coding: utf-8 -*-
+# xShip automatic provider-domain redirect detection.
+import json
+import os
+import time
+from urllib.parse import urlparse
+
+import requests
+import xbmc
+import xbmcaddon
+import xbmcvfs
+
+_CACHE_FILE = 'domain-redirect-cache.json'
+_CACHE_TTL = 12 * 60 * 60
+_USER_AGENT = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+               'AppleWebKit/537.36 (KHTML, like Gecko) '
+               'Chrome/140.0 Safari/537.36')
+
+
+def _log(message, level=xbmc.LOGINFO):
+    try:
+        xbmc.log('[xShip DomainAuto] %s' % message, level)
+    except Exception:
+        pass
+
+
+def _normalize_domain(value):
+    value = (value or '').strip()
+    if not value:
+        return ''
+    if '://' not in value:
+        value = 'https://' + value
+    host = (urlparse(value).hostname or '').strip().lower().rstrip('.')
+    if host.startswith('www.'):
+        host = host[4:]
+    return host
+
+
+def _cache_path():
+    profile = xbmcvfs.translatePath('special://profile/addon_data/plugin.video.xship')
+    if not xbmcvfs.exists(profile):
+        xbmcvfs.mkdirs(profile)
+    return os.path.join(profile, _CACHE_FILE)
+
+
+def _read_cache():
+    try:
+        path = _cache_path()
+        if not xbmcvfs.exists(path):
+            return {}
+        f = xbmcvfs.File(path, 'r')
+        try:
+            raw = f.read()
+        finally:
+            f.close()
+        data = json.loads(raw or '{}')
+        return data if isinstance(data, dict) else {}
+    except Exception as exc:
+        _log('cache read failed: %s' % exc, xbmc.LOGWARNING)
+        return {}
+
+
+def _write_cache(data):
+    try:
+        f = xbmcvfs.File(_cache_path(), 'w')
+        try:
+            f.write(json.dumps(data, sort_keys=True))
+        finally:
+            f.close()
+    except Exception as exc:
+        _log('cache write failed: %s' % exc, xbmc.LOGWARNING)
+
+
+def _update_setting(identifier, domain):
+    try:
+        addon = xbmcaddon.Addon()
+        key = 'provider.%s.domain' % identifier
+        old = _normalize_domain(addon.getSetting(key))
+        if old != domain:
+            addon.setSetting(key, domain)
+            _log('Setting updated %s: %s -> %s' % (identifier, old or '<leer>', domain))
+    except Exception as exc:
+        _log('%s setting update failed: %s' % (identifier, exc), xbmc.LOGWARNING)
+
+
+def resolve_provider_domain(identifier, current_domain, timeout=4):
+    '''Resolve a provider root-domain redirect and persist the final hostname.'''
+    domain = _normalize_domain(current_domain)
+    if not domain:
+        return current_domain
+
+    now = int(time.time())
+    cache = _read_cache()
+    entry = cache.get(identifier, {}) if isinstance(cache.get(identifier, {}), dict) else {}
+    cached_source = _normalize_domain(entry.get('source', ''))
+    cached_final = _normalize_domain(entry.get('final', ''))
+    checked = int(entry.get('checked', 0) or 0)
+
+    if cached_source == domain and cached_final and now - checked < _CACHE_TTL:
+        if cached_final != domain:
+            _update_setting(identifier, cached_final)
+        return cached_final
+
+    headers = {
+        'User-Agent': _USER_AGENT,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    }
+
+    final = domain
+    success = False
+    for scheme in ('https', 'http'):
+        try:
+            response = requests.get(
+                '%s://%s/' % (scheme, domain),
+                headers=headers,
+                allow_redirects=True,
+                timeout=timeout,
+                stream=True,
+            )
+            success = True
+            candidate = _normalize_domain(response.url)
+            real_redirect = any(
+                getattr(item, 'status_code', 0) in (301, 302, 303, 307, 308)
+                for item in getattr(response, 'history', [])
+            )
+            try:
+                response.close()
+            except Exception:
+                pass
+            if real_redirect and candidate and candidate != domain:
+                final = candidate
+                _log('%s redirect: %s -> %s' % (identifier, domain, final))
+                _update_setting(identifier, final)
+            break
+        except Exception as exc:
+            _log('%s %s probe failed: %s' % (identifier, scheme, exc), xbmc.LOGDEBUG)
+
+    # Successful probes are checked again after 12h. Failures retry after ~15 min.
+    checked_value = now if success else now - (_CACHE_TTL - 15 * 60)
+    cache[identifier] = {'source': domain, 'final': final, 'checked': checked_value}
+    _write_cache(cache)
+    return final
+''', encoding='utf-8')
+
+scrapers = root / 'scrapers/scrapers_source'
+patched = []
+candidates = []
+unmatched = []
+
+shared = re.compile(
+    r"self\.domain\s*=\s*getSetting\(\s*(['\"])provider\.\1\s*\+\s*SITE_IDENTIFIER\s*\+\s*(['\"])\.domain\2\s*,\s*SITE_DOMAIN\s*\)"
+)
+direct = re.compile(
+    r"self\.domain\s*=\s*getSetting\(\s*(['\"])provider\.([A-Za-z0-9_-]+)\.domain\1\s*,\s*SITE_DOMAIN\s*\)"
+)
+
+for path in sorted(scrapers.rglob('*.py')):
+    text = path.read_text(encoding='utf-8')
+    if 'provider.' not in text or '.domain' not in text or 'SITE_IDENTIFIER' not in text:
+        continue
+    rel = str(path.relative_to(root))
+    candidates.append(rel)
+
+    new_text, count = shared.subn(
+        "self.domain = resolve_provider_domain(SITE_IDENTIFIER, getSetting('provider.' + SITE_IDENTIFIER + '.domain', SITE_DOMAIN))",
+        text,
+        count=1,
+    )
+    if not count:
+        m = direct.search(text)
+        if m:
+            ident = m.group(2)
+            new_text = direct.sub(
+                "self.domain = resolve_provider_domain('%s', getSetting('provider.%s.domain', SITE_DOMAIN))" % (ident, ident),
+                text,
+                count=1,
+            )
+            count = 1
+
+    if not count:
+        unmatched.append(rel)
+        continue
+
+    if 'from resources.lib.domain_redirect import resolve_provider_domain' not in new_text:
+        lines = new_text.splitlines(True)
+        insert_at = 0
+        for i, line in enumerate(lines[:100]):
+            if line.startswith('import ') or line.startswith('from '):
+                insert_at = i + 1
+        lines.insert(insert_at, 'from resources.lib.domain_redirect import resolve_provider_domain\n')
+        new_text = ''.join(lines)
+
+    path.write_text(new_text, encoding='utf-8')
+    patched.append(rel)
+
+addon = root / 'addon.xml'
+addon_text = addon.read_text(encoding='utf-8')
+addon_text, n = re.subn(
+    r'(<addon\b[^>]*?\bversion=")[^"]+("[^>]*>)',
+    r'\g<1>2026.08.25.12\2', addon_text, count=1, flags=re.S
+)
+if n != 1:
+    raise SystemExit('Could not set addon version')
+news = ('2026.08.25.12\n'
+        '- Provider-Domains: automatische Erkennung echter HTTP-Redirects fuer alle kompatiblen Provider-Hauptdomains.\n'
+        '- Neue Domains werden direkt in den xShip-Einstellungen gespeichert; kein Add-on-Update nur wegen eines Domainwechsels noetig.\n'
+        '- Redirect-Pruefung wird 12 Stunden gecacht, um die Quellensuche nicht bei jedem Aufruf auszubremsen.\n\n')
+if '<news>' in addon_text:
+    addon_text = addon_text.replace('<news>', '<news>' + news, 1)
+addon.write_text(addon_text, encoding='utf-8')
+
+py_compile.compile(str(helper), doraise=True)
+for rel in patched:
+    py_compile.compile(str(root / rel), doraise=True)
+
+manifest.write_text(
+    'xShip 2026.08.25.12 provider domain auto-detection\n\n'
+    'Candidate provider scraper files: %d\n' % len(candidates) +
+    'Patched provider scraper files: %d\n' % len(patched) +
+    'Unmatched provider scraper files: %d\n\n' % len(unmatched) +
+    'PATCHED:\n' + '\n'.join(patched) +
+    '\n\nUNMATCHED:\n' + '\n'.join(unmatched) +
+    '\n\nCANDIDATES:\n' + '\n'.join(candidates) + '\n',
+    encoding='utf-8'
+)
+
+if not patched:
+    raise SystemExit('No provider domain assignments were patched')
+
+with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
+    for fp in root.rglob('*'):
+        if fp.is_file() and '__pycache__' not in fp.parts:
+            z.write(fp, fp.relative_to(work))
+
+with zipfile.ZipFile(out) as z:
+    bad = z.testzip()
+    if bad:
+        raise SystemExit('Bad ZIP member: %s' % bad)
+    built_addon = z.read('plugin.video.xship/addon.xml').decode('utf-8')
+    built_helper = z.read('plugin.video.xship/resources/lib/domain_redirect.py').decode('utf-8')
+    assert 'version="2026.08.25.12"' in built_addon
+    assert '[xShip DomainAuto]' in built_helper
+
+print(manifest.read_text(encoding='utf-8'))
+print('BUILT', out, out.stat().st_size)
