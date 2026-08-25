@@ -1,0 +1,28 @@
+name: Temporary inspect current xShip source
+
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-inspect-current.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Extract source
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/xship-inspect && mkdir -p /tmp/xship-inspect
+          unzip -q test-builds/plugin.video.xship-2026.08.25.1-MEDIAINFO-GUARD-TEST.zip -d /tmp/xship-inspect
+          cp /tmp/xship-inspect/plugin.video.xship/resources/lib/sources.py test-builds/_tmp_sources_2026.08.25.1.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/_tmp_sources_2026.08.25.1.py
+          git commit -m 'Temporary extract current xShip sources.py'
+          git push
