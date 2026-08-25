@@ -1,0 +1,24 @@
+name: Build xShip KinoKing MeineCloud test
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-kinoking-meinecloud-test.yml'
+      - 'test-builds/_patch_kinoking_2510.py'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build test ZIP
+        run: python3 test-builds/_patch_kinoking_2510.py
+      - name: Commit test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/plugin.video.xship-2026.08.25.10-KINOKING-MEINECLOUD-TEST.zip
+          git commit -m 'Add xShip KinoKing MeineCloud test build'
+          git push
