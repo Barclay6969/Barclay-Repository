@@ -1,0 +1,37 @@
+name: Compare xShip 25.1 and 25.2 exit paths
+
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-compare-251-252-exit.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Extract and diff exit related files
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/x251 /tmp/x252
+          mkdir -p /tmp/x251 /tmp/x252
+          unzip -q test-builds/plugin.video.xship-2026.08.25.1-MEDIAINFO-GUARD-TEST.zip -d /tmp/x251
+          unzip -q test-builds/plugin.video.xship-2026.08.25.2-CANCEL-TEST.zip -d /tmp/x252
+          {
+            echo '=== SOURCES DIFF ==='
+            diff -u /tmp/x251/plugin.video.xship/resources/lib/sources.py /tmp/x252/plugin.video.xship/resources/lib/sources.py || true
+            echo
+            echo '=== PLAYER DIFF ==='
+            diff -u /tmp/x251/plugin.video.xship/resources/lib/player.py /tmp/x252/plugin.video.xship/resources/lib/player.py || true
+          } > test-builds/_tmp_251_252_exit_diff.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/_tmp_251_252_exit_diff.txt
+          git commit -m 'Temporary diff xShip 25.1 vs 25.2 exit paths'
+          git push
