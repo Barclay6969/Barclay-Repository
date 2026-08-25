@@ -1,0 +1,22 @@
+name: TEMP inspect MegaKino domain handling
+on:
+  push:
+    paths:
+      - '.github/workflows/_temp-megakino-domain-inspect.yml'
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect current MegaKino scraper
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP='test-builds/plugin.video.xship-2026.08.25.11.zip'
+          WORK="$RUNNER_TEMP/xship-domain-inspect"
+          mkdir -p "$WORK"
+          unzip -q "$ZIP" -d "$WORK"
+          echo '=== megakino.py ==='
+          sed -n '1,320p' "$WORK/plugin.video.xship/scrapers/scrapers_source/de/megakino.py"
+          echo '=== settings MegaKino ==='
+          grep -n -i 'megakino' "$WORK/plugin.video.xship/resources/settings.xml" || true
