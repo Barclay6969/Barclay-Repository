@@ -1,0 +1,29 @@
+name: Temporary inspect xShip 25.1 exit paths
+
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-exit-only-inspect.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract exit related source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/xship-exit-inspect
+          mkdir -p /tmp/xship-exit-inspect
+          unzip -q test-builds/plugin.video.xship-2026.08.25.1-MEDIAINFO-GUARD-TEST.zip -d /tmp/xship-exit-inspect
+          cp /tmp/xship-exit-inspect/plugin.video.xship/resources/lib/sources.py test-builds/_tmp_exit_sources_25_1.py
+          cp /tmp/xship-exit-inspect/plugin.video.xship/resources/lib/player.py test-builds/_tmp_exit_player_25_1.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/_tmp_exit_sources_25_1.py test-builds/_tmp_exit_player_25_1.py
+          git commit -m 'Temporary inspect xShip 25.1 exit paths'
+          git push
