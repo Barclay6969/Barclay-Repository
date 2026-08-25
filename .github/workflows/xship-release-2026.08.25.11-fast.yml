@@ -18,14 +18,25 @@ jobs:
           curl -fL --retry 3 -o test-builds/_release_2511.py https://raw.githubusercontent.com/Barclay6969/Barclay-Repository/main/test-builds/_release_2511.py
       - name: Build release ZIP
         run: python3 test-builds/_release_2511.py
-      - name: Upload release ZIP to test-builds
+      - name: Upload release ZIP with Git data API
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           FILE='test-builds/plugin.video.xship-2026.08.25.11.zip'
-          B64=$(base64 -w0 "$FILE")
-          gh api --method PUT repos/Barclay6969/Barclay-Repository/contents/$FILE \
-            -f message='Add xShip 2026.08.25.11 release ZIP' \
-            -f content="$B64" >/dev/null
+          python3 - <<'PY'
+          import base64, json
+          from pathlib import Path
+          p=Path('test-builds/plugin.video.xship-2026.08.25.11.zip')
+          Path('/tmp/blob.json').write_text(json.dumps({'content':base64.b64encode(p.read_bytes()).decode('ascii'),'encoding':'base64'}))
+          PY
+          BLOB_SHA=$(gh api --method POST repos/Barclay6969/Barclay-Repository/git/blobs --input /tmp/blob.json --jq .sha)
+          HEAD_SHA=$(gh api repos/Barclay6969/Barclay-Repository/git/ref/heads/main --jq .object.sha)
+          BASE_TREE=$(gh api repos/Barclay6969/Barclay-Repository/git/commits/$HEAD_SHA --jq .tree.sha)
+          jq -n --arg base "$BASE_TREE" --arg path "$FILE" --arg blob "$BLOB_SHA" '{base_tree:$base,tree:[{path:$path,mode:"100644",type:"blob",sha:$blob}]}' > /tmp/tree.json
+          TREE_SHA=$(gh api --method POST repos/Barclay6969/Barclay-Repository/git/trees --input /tmp/tree.json --jq .sha)
+          jq -n --arg msg 'Add xShip 2026.08.25.11 release ZIP' --arg tree "$TREE_SHA" --arg parent "$HEAD_SHA" '{message:$msg,tree:$tree,parents:[$parent]}' > /tmp/commit.json
+          COMMIT_SHA=$(gh api --method POST repos/Barclay6969/Barclay-Repository/git/commits --input /tmp/commit.json --jq .sha)
+          jq -n --arg sha "$COMMIT_SHA" '{sha:$sha,force:false}' > /tmp/ref.json
+          gh api --method PATCH repos/Barclay6969/Barclay-Repository/git/refs/heads/main --input /tmp/ref.json >/dev/null
