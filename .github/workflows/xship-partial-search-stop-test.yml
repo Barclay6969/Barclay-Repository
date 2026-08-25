@@ -1,0 +1,118 @@
+name: Build xShip partial search stop test
+
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-partial-search-stop-test.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build corrected local test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='test-builds/plugin.video.xship-2026.08.25.2-CANCEL-TEST.zip'
+          OUT='test-builds/plugin.video.xship-2026.08.25.3-PARTIAL-SEARCH-STOP-TEST.zip'
+          rm -rf /tmp/xship-partial-stop
+          mkdir -p /tmp/xship-partial-stop
+          unzip -q "$BASE" -d /tmp/xship-partial-stop
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('/tmp/xship-partial-stop/plugin.video.xship')
+          p = root / 'resources/lib/sources.py'
+          s = p.read_text(encoding='utf-8')
+
+          def once(old, new, label):
+              global s
+              if old not in s:
+                  raise SystemExit('PATCH ANCHOR NOT FOUND: ' + label)
+              s = s.replace(old, new, 1)
+
+          # Separate "stop searching" from a real full user cancellation.
+          once(
+              "        self._user_cancelled = False\n",
+              "        self._user_cancelled = False\n        self._search_stopped = False\n",
+              'init search stop flag'
+          )
+
+          # Reset both flags for each new source search.
+          once(
+              "        #TODO\n        self.sources = []\n",
+              "        #TODO\n        self.sources = []\n        self._user_cancelled = False\n        self._search_stopped = False\n",
+              'reset flags in getSources'
+          )
+
+          # Search Cancel now means: stop waiting for more providers, keep everything already found.
+          old = """                    if progressDialog.iscanceled():\n                        self._user_cancelled = True\n                        log_utils.log('[FAST-CANCEL] Quellensuche durch Benutzer abgebrochen', log_utils.LOGINFO)\n                        for _future in futures:\n                            _future.cancel()\n                        break\n"""
+          new = """                    if progressDialog.iscanceled():\n                        self._search_stopped = True\n                        log_utils.log('[SEARCH-STOP] Quellensuche beendet - %d bisherige Quellen werden weiterverarbeitet' % len(self.sources), log_utils.LOGINFO)\n                        for _future in futures:\n                            _future.cancel()\n                        break\n"""
+          if old not in s:
+              raise SystemExit('PATCH ANCHOR NOT FOUND: search cancel semantics')
+          s = s.replace(old, new, 1)
+
+          # Running scraper jobs that finish after Search-Stop must not append late results.
+          start = s.index('    def _getSource(')
+          end = s.index('\n\n    def sourcesFilter', start)
+          block = s[start:end]
+          old_check = """            if getattr(self, '_user_cancelled', False):\n                return\n"""
+          new_check = """            if getattr(self, '_user_cancelled', False) or getattr(self, '_search_stopped', False):\n                return\n"""
+          count = block.count(old_check)
+          if count != 2:
+              raise SystemExit('Expected 2 _getSource cancel checks, found %d' % count)
+          block = block.replace(old_check, new_check, 2)
+          s = s[:start] + block + s[end:]
+
+          # Keep the current partial source set and continue into normal MediaInfo probing.
+          once(
+              """        self.sourcesFilter()\n        if getattr(self, '_user_cancelled', False):\n""",
+              """        if getattr(self, '_search_stopped', False):\n            log_utils.log('[SEARCH-STOP] Starte MediaInfo mit %d bisher gefundenen Quellen' % len(self.sources), log_utils.LOGINFO)\n        self.sourcesFilter()\n        if getattr(self, '_user_cancelled', False):\n""",
+              'continue partial sources to MediaInfo'
+          )
+
+          p.write_text(s, encoding='utf-8')
+
+          addon = root / 'addon.xml'
+          a = addon.read_text(encoding='utf-8')
+          a2, n = re.subn(r'(<addon\b[^>]*?\bversion=")[^"]+("[^>]*>)', r'\g<1>2026.08.25.3\2', a, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('Could not update addon version')
+          addon.write_text(a2, encoding='utf-8')
+
+          whole = p.read_text(encoding='utf-8') + (root / 'resources/lib/mediainfo.py').read_text(encoding='utf-8')
+          for marker in (
+              '[MEDIAINFO-GUARD]',
+              '[FAST-CANCEL] MediaInfo-Ermittlung',
+              '[SEARCH-STOP] Quellensuche beendet',
+              '[SEARCH-STOP] Starte MediaInfo',
+              'self._search_stopped = False',
+          ):
+              if marker not in whole:
+                  raise SystemExit('Missing marker: ' + marker)
+          PY
+
+          python3 -m compileall -q /tmp/xship-partial-stop/plugin.video.xship
+          rm -f "$OUT"
+          (cd /tmp/xship-partial-stop && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+          unzip -p "$OUT" plugin.video.xship/addon.xml | grep -q 'version="2026.08.25.3"'
+
+      - name: Commit local test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/plugin.video.xship-2026.08.25.3-PARTIAL-SEARCH-STOP-TEST.zip
+          git commit -m 'Add xShip partial search stop local test'
+          git push
