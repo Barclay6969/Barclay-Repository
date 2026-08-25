@@ -1,0 +1,155 @@
+name: Build xShip fast cancel local test
+
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-cancel-test.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch current MediaInfo-guard test
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='test-builds/plugin.video.xship-2026.08.25.1-MEDIAINFO-GUARD-TEST.zip'
+          OUT='test-builds/plugin.video.xship-2026.08.25.2-CANCEL-TEST.zip'
+          rm -rf /tmp/xship-cancel
+          mkdir -p /tmp/xship-cancel
+          unzip -q "$BASE" -d /tmp/xship-cancel
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('/tmp/xship-cancel/plugin.video.xship')
+          p = root / 'resources/lib/sources.py'
+          s = p.read_text(encoding='utf-8')
+          original = s
+
+          def once(old, new, label):
+              global s
+              if old not in s:
+                  raise SystemExit('PATCH ANCHOR NOT FOUND: ' + label)
+              s = s.replace(old, new, 1)
+
+          # Per-invocation cancellation state.
+          once(
+              "        self.url = None\n",
+              "        self.url = None\n        self._user_cancelled = False\n",
+              'init cancel flag'
+          )
+
+          # Do not show the generic no-stream error when the user explicitly aborted.
+          once(
+              "            items = self.getSources(title, year, imdb, season, episode, originaltitle, premiered)\n            select = control.getSetting('hosts.mode') if select == None else select\n",
+              "            items = self.getSources(title, year, imdb, season, episode, originaltitle, premiered)\n            if getattr(self, '_user_cancelled', False):\n                log_utils.log('[FAST-CANCEL] Abbruch aus play() uebernommen', log_utils.LOGINFO)\n                return\n            select = control.getSetting('hosts.mode') if select == None else select\n",
+              'play cancel handling'
+          )
+
+          # Patch only the scraper-search function's cancel branch.
+          start = s.index('    def getSources(')
+          end = s.index('\n    def _acceptsHostDict', start)
+          block = s[start:end]
+          old = """                try:\n                    if progressDialog.iscanceled(): break\n                except:\n                    pass\n"""
+          new = """                try:\n                    if progressDialog.iscanceled():\n                        self._user_cancelled = True\n                        log_utils.log('[FAST-CANCEL] Quellensuche durch Benutzer abgebrochen', log_utils.LOGINFO)\n                        for _future in futures:\n                            _future.cancel()\n                        break\n                except:\n                    pass\n"""
+          if old not in block:
+              raise SystemExit('PATCH ANCHOR NOT FOUND: search cancel branch')
+          block = block.replace(old, new, 1)
+          old2 = """        try: progressDialog.close()\n        except: pass\n        self.sourcesFilter()\n        return self.sources\n"""
+          new2 = """        try: progressDialog.close()\n        except: pass\n        if getattr(self, '_user_cancelled', False):\n            try:\n                self.executor.shutdown(wait=False, cancel_futures=True)\n            except TypeError:\n                self.executor.shutdown(wait=False)\n            except Exception:\n                pass\n            self.sources = []\n            return []\n        self.sourcesFilter()\n        if getattr(self, '_user_cancelled', False):\n            self.sources = []\n            return []\n        return self.sources\n"""
+          if old2 not in block:
+              raise SystemExit('PATCH ANCHOR NOT FOUND: search post-processing')
+          block = block.replace(old2, new2, 1)
+          s = s[:start] + block + s[end:]
+
+          # Keep the Cancel button enabled during MediaInfo probing.
+          once(
+              """        # Button Cancel deaktivieren\n        from xbmc import sleep\n        from xbmcgui import Window\n        WINDOW_PROGRESS = Window(10101)\n        sleep(100)\n        CANCEL_BUTTON = WINDOW_PROGRESS.getControl(10)\n        CANCEL_BUTTON.setEnabled(False)\n        progressDialog.update(100, \"Streams - Mediadaten werden ermittelt\")\n""",
+              """        # FAST-CANCEL: Der Abbrechen-Button bleibt auch waehrend MediaInfo aktiv.\n        from xbmc import sleep\n        from xbmcgui import Window\n        CANCEL_BUTTON = None\n        try:\n            WINDOW_PROGRESS = Window(10101)\n            sleep(100)\n            CANCEL_BUTTON = WINDOW_PROGRESS.getControl(10)\n            CANCEL_BUTTON.setEnabled(True)\n        except Exception:\n            pass\n        progressDialog.update(100, \"Streams - Mediadaten werden ermittelt\")\n""",
+              'enable media cancel button'
+          )
+
+          once(
+              """        while True:\n            count = len([1 for future in futures if not future.done()])\n            x = int(100*count/count_max)\n            progressDialog.update(x, \"Streams - Mediadaten werden ermittelt\")\n            if count == 0:\n                break\n            else:\n                sleep(200)\n\n        progressDialog.close()\n        CANCEL_BUTTON.setEnabled(True)\n        control.busy()\n\n        self.sources = self.sources_new\n""",
+              """        while True:\n            try:\n                if progressDialog.iscanceled():\n                    self._user_cancelled = True\n                    log_utils.log('[FAST-CANCEL] MediaInfo-Ermittlung durch Benutzer abgebrochen', log_utils.LOGINFO)\n                    for _future in futures:\n                        _future.cancel()\n                    break\n            except Exception:\n                pass\n            count = len([1 for future in futures if not future.done()])\n            x = int(100*count/count_max)\n            progressDialog.update(x, \"Streams - Mediadaten werden ermittelt\")\n            if count == 0:\n                break\n            else:\n                sleep(100)\n\n        progressDialog.close()\n        try:\n            if CANCEL_BUTTON is not None:\n                CANCEL_BUTTON.setEnabled(True)\n        except Exception:\n            pass\n\n        if getattr(self, '_user_cancelled', False):\n            try:\n                self.executor.shutdown(wait=False, cancel_futures=True)\n            except TypeError:\n                self.executor.shutdown(wait=False)\n            except Exception:\n                pass\n            self.sources_new = []\n            self.sources = []\n            return\n\n        control.busy()\n        self.sources = self.sources_new\n""",
+              'media cancel loop'
+          )
+
+          # Let running MediaInfo probes observe the shared cancel state.
+          once(
+              """        class _NullDialog:\n            def update(self, *a, **kw): pass\n            def iscanceled(self): return False\n            def close(self): pass\n""",
+              """        owner = self\n        class _NullDialog:\n            def update(self, *a, **kw): pass\n            def iscanceled(self): return getattr(owner, '_user_cancelled', False)\n            def close(self): pass\n""",
+              'cancel-aware media dialog'
+          )
+
+          # Do not append a probe result that completed after the user cancelled.
+          once(
+              """        source.update({'info': info, '_probe': probe})\n        self.sources_new.append(source)\n""",
+              """        if getattr(self, '_user_cancelled', False):\n            return\n        source.update({'info': info, '_probe': probe})\n        self.sources_new.append(source)\n""",
+              'discard post-cancel media result'
+          )
+
+          # Scrapers already in a blocking HTTP call cannot be forcibly killed safely,
+          # but their late results are discarded and queued work is cancelled.
+          start = s.index('    def _getSource(')
+          end = s.index('\n\n    def sourcesFilter', start)
+          block = s[start:end]
+          old = """        try:\n            try:\n                call.mediatype = getattr(self, 'mediatype', None)\n"""
+          new = """        try:\n            if getattr(self, '_user_cancelled', False):\n                return\n            try:\n                call.mediatype = getattr(self, 'mediatype', None)\n"""
+          if old not in block:
+              raise SystemExit('PATCH ANCHOR NOT FOUND: scraper early cancel')
+          block = block.replace(old, new, 1)
+          old = """            if sources == None or sources == []: raise Exception()\n            sources = [json.loads(t) for t in set(json.dumps(d, sort_keys=True) for d in sources)]\n"""
+          new = """            if sources == None or sources == []: raise Exception()\n            if getattr(self, '_user_cancelled', False):\n                return\n            sources = [json.loads(t) for t in set(json.dumps(d, sort_keys=True) for d in sources)]\n"""
+          if old not in block:
+              raise SystemExit('PATCH ANCHOR NOT FOUND: scraper late cancel')
+          block = block.replace(old, new, 1)
+          s = s[:start] + block + s[end:]
+
+          if s == original:
+              raise SystemExit('No source changes made')
+          p.write_text(s, encoding='utf-8')
+
+          addon = root / 'addon.xml'
+          a = addon.read_text(encoding='utf-8')
+          a2, n = re.subn(r'(<addon\\b[^>]*?\\bversion=")[^"]+("[^>]*>)', r'\\g<1>2026.08.25.2\\2', a, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('Could not update addon version')
+          addon.write_text(a2, encoding='utf-8')
+
+          # Marker checks.
+          checks = [
+              '[MEDIAINFO-GUARD]',
+              '[FAST-CANCEL] Quellensuche',
+              '[FAST-CANCEL] MediaInfo-Ermittlung',
+              "self._user_cancelled = False",
+          ]
+          whole = (root / 'resources/lib/sources.py').read_text(encoding='utf-8') + (root / 'resources/lib/mediainfo.py').read_text(encoding='utf-8')
+          for marker in checks:
+              if marker not in whole:
+                  raise SystemExit('Missing marker: ' + marker)
+          PY
+
+          python3 -m compileall -q /tmp/xship-cancel/plugin.video.xship
+          rm -f "$OUT"
+          (cd /tmp/xship-cancel && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+
+      - name: Commit local test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/plugin.video.xship-2026.08.25.2-CANCEL-TEST.zip
+          git commit -m 'Add xShip fast cancel local test'
+          git push
