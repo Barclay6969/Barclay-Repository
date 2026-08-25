@@ -1,0 +1,70 @@
+name: Build xShip MegaKino16 test
+
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-megakino16-test.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build from 25.5 with MegaKino domain only
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='test-builds/plugin.video.xship-2026.08.25.5-FAST-STOP-ONLY-TEST.zip'
+          OUT='test-builds/plugin.video.xship-2026.08.25.6-MEGAKINO16-TEST.zip'
+          rm -rf /tmp/xship-mk16 /tmp/xship-base
+          mkdir -p /tmp/xship-mk16 /tmp/xship-base
+          unzip -q "$BASE" -d /tmp/xship-mk16
+          unzip -q "$BASE" -d /tmp/xship-base
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path('/tmp/xship-mk16/plugin.video.xship')
+          matches=[]
+          for p in root.rglob('*.py'):
+              s=p.read_text('utf-8')
+              if "SITE_IDENTIFIER = 'megakino'" in s and "SITE_DOMAIN = 'megakino15.com'" in s:
+                  matches.append(p)
+          if len(matches)!=1:
+              raise SystemExit(f'Expected exactly one MegaKino scraper, found {matches}')
+          p=matches[0]
+          s=p.read_text('utf-8')
+          if s.count("SITE_DOMAIN = 'megakino15.com'")!=1:
+              raise SystemExit('Unexpected MegaKino domain occurrence count')
+          p.write_text(s.replace("SITE_DOMAIN = 'megakino15.com'","SITE_DOMAIN = 'megakino16.com'",1),'utf-8')
+          addon=root/'addon.xml'
+          a=addon.read_text('utf-8')
+          a2,n=re.subn(r'(<addon\b[^>]*?\bversion=")[^"]+("[^>]*>)',r'\g<1>2026.08.25.6\2',a,count=1,flags=re.S)
+          if n!=1: raise SystemExit('Could not set addon version')
+          addon.write_text(a2,'utf-8')
+          PY
+          set +e
+          DIFFS=$(diff -qr /tmp/xship-base/plugin.video.xship /tmp/xship-mk16/plugin.video.xship | sed -n 's#^Files .*plugin.video.xship/\(.*\) and .* differ$#\1#p' | sort)
+          set -e
+          echo "$DIFFS"
+          COUNT=$(printf '%s\n' "$DIFFS" | sed '/^$/d' | wc -l)
+          [ "$COUNT" -eq 2 ] || { echo 'Unexpected changed file count'; exit 1; }
+          printf '%s\n' "$DIFFS" | grep -qx 'addon.xml'
+          printf '%s\n' "$DIFFS" | grep -q 'megakino.py'
+          python3 -m compileall -q /tmp/xship-mk16/plugin.video.xship
+          rm -f "$OUT"
+          (cd /tmp/xship-mk16 && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
+          unzip -t "$OUT" >/dev/null
+          unzip -p "$OUT" plugin.video.xship/addon.xml | grep -q 'version="2026.08.25.6"'
+          unzip -p "$OUT" $(zipinfo -1 "$OUT" | grep '/megakino.py$' | head -1) | grep -q "SITE_DOMAIN = 'megakino16.com'"
+      - name: Commit test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/plugin.video.xship-2026.08.25.6-MEGAKINO16-TEST.zip
+          git commit -m 'Add xShip MegaKino16 test build'
+          git push
