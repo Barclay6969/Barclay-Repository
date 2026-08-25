@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.25.11" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.08.25.12" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,7 +42,14 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.25.11
+      <news>2026.08.25.12
+- Provider-Domains: echte HTTP-Redirects werden zentral erkannt und automatisch als neue Hauptdomain gespeichert.
+- Die Erkennung nutzt bereits laufende xShip-Requests sowie den vorhandenen parallelen Domain-Check; dadurch entstehen bei der Quellensuche keine zusaetzlichen Domain-Anfragen.
+- ISP-/CUII-Sperrseiten und Hoster-/Embed-Redirects koennen die Provider-Domain nicht ueberschreiben.
+- Vavoo verwendet nun ebenfalls die konfigurierbare Provider-Domain; die separate vavoo.tv-Authentifizierung bleibt unveraendert.
+- Kinox behaelt seine bewaehrte eigene Multi-Domain-Erkennung.
+
+2026.08.25.11
 - KinoKing: Filmsuche an das neue V2-Seitenlayout mit data-id/data-title angepasst; Filmquellen werden wieder erkannt.
 - KinoKing: MeineCloud-Zwischenseiten werden über den bereits bewährten gemeinsamen MeineCloud-Auflösungsweg verarbeitet; Hosterquellen werden wieder ausgegeben.
 
