@@ -113,3 +113,5 @@ jobs:
           git add zips/plugin.video.xship/plugin.video.xship-2026.08.25.12.zip zips/addons.xml zips/addons.xml.md5
           git commit -m "Release xShip 2026.08.25.12 automatic provider domains"
           git push origin HEAD:main
+
+# retry after verified payload correction
