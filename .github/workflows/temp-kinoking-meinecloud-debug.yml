@@ -1,0 +1,32 @@
+name: Temp KinoKing MeineCloud debug
+on:
+  push:
+    paths:
+      - '.github/workflows/temp-kinoking-meinecloud-debug.yml'
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract MeineCloud code
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/xshipmc
+          mkdir -p /tmp/xshipmc
+          unzip -q test-builds/plugin.video.xship-2026.08.25.9-KINOKING-V2-TEST.zip -d /tmp/xshipmc
+          MC=$(find /tmp/xshipmc -type f -iname 'meinecloud.py' | head -1)
+          SH=$(find /tmp/xshipmc -type f -iname 'meinecloud_shared.py' | head -1)
+          cp "$MC" test-builds/_debug_meinecloud.py
+          cp "$SH" test-builds/_debug_meinecloud_shared.py
+      - name: Commit debug files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/_debug_meinecloud.py test-builds/_debug_meinecloud_shared.py
+          git commit -m 'Temporary MeineCloud debug files'
+          git push
