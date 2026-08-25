@@ -1,0 +1,24 @@
+name: Build xShip 2026.08.25.11 release
+on:
+  push:
+    paths:
+      - '.github/workflows/xship-release-2026.08.25.11.yml'
+      - 'test-builds/_release_2511.py'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build release ZIP
+        run: python3 test-builds/_release_2511.py
+      - name: Commit release ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-builds/plugin.video.xship-2026.08.25.11.zip
+          git commit -m 'Add xShip 2026.08.25.11 release ZIP'
+          git push
