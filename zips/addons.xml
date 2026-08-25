@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.25.8" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.08.25.11" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,7 +42,11 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.25.8
+      <news>2026.08.25.11
+- KinoKing: Filmsuche an das neue V2-Seitenlayout mit data-id/data-title angepasst; Filmquellen werden wieder erkannt.
+- KinoKing: MeineCloud-Zwischenseiten werden über den bereits bewährten gemeinsamen MeineCloud-Auflösungsweg verarbeitet; Hosterquellen werden wieder ausgegeben.
+
+2026.08.25.8
 - MediaInfo: Ungültige bzw. interne Nicht-HTTP-URLs wie False und vixsrc:// werden nicht mehr abgefragt; betroffene Quellen bleiben für die eigentliche Wiedergabe erhalten.
 - Wiedergabe: Stoppen eines Streams reagiert deutlich schneller und beendet den Player-Loop praktisch sofort.
 - MegaKino: Domain von megakino15.com auf megakino16.com aktualisiert.
