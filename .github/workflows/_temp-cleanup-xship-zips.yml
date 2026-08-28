@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Remove obsolete xShip ZIPs
         shell: python
@@ -44,14 +44,17 @@ jobs:
                   removed_tests.append(fp.name)
                   fp.unlink()
 
+          # Remove temporary trigger files created while verifying the cleanup.
+          Path('.cleanup-trigger').unlink(missing_ok=True)
+          for fp in Path('.github/workflows').glob('_temp-cleanup-xship-zips-trigger*.txt'):
+              fp.unlink()
+
           remaining = sorted(fp.name for fp in release_dir.glob('plugin.video.xship-*.zip'))
           if set(remaining) != keep:
               raise SystemExit('Unexpected remaining release ZIPs: %r' % remaining)
 
           print('REMOVED_RELEASE=%d' % len(removed_release))
-          print('\n'.join(removed_release))
           print('REMOVED_TESTS=%d' % len(removed_tests))
-          print('\n'.join(removed_tests))
           print('KEPT=%s' % ', '.join(remaining))
 
       - name: Publish cleanup
@@ -59,10 +62,11 @@ jobs:
           set -euo pipefail
           git config user.name "Barclay"
           git config user.email "107470010+Barclay6969@users.noreply.github.com"
-          git add -A zips/plugin.video.xship test-builds
+          git add -A
           if git diff --cached --quiet; then
             echo "Nothing to clean"
             exit 0
           fi
           git commit -m "Cleanup obsolete xShip ZIP builds"
+          git pull --rebase origin main
           git push origin HEAD:main
