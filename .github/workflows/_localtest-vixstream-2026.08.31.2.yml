@@ -1,0 +1,107 @@
+name: LOCAL TEST xShip 2026.08.31.2 VixStream
+
+on:
+  push:
+    branches: [localtest-vixstream-20260831-build]
+    paths:
+      - '.github/workflows/_localtest-vixstream-2026.08.31.2.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build local VixStream resolver test from 2026.08.31.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.31.1.zip'
+          WORK="$RUNNER_TEMP/xship-vixstream-test"
+          OUT="$RUNNER_TEMP/plugin.video.xship-2026.08.31.2-VIXSTREAM-TEST.zip"
+          rm -rf "$WORK" "$OUT"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          export ROOT OUT
+
+          python3 - <<'PY'
+          import os, pathlib, re
+          root = pathlib.Path(os.environ['ROOT'])
+
+          addon = root / 'addon.xml'
+          s = addon.read_text(encoding='utf-8')
+          s, n = re.subn(
+              r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")',
+              r'\g<1>2026.08.31.2\2',
+              s,
+              count=1,
+          )
+          if n != 1:
+              raise SystemExit('addon version not found')
+          news = '<news>2026.08.31.2\n- LOCAL TEST: VixCloud/VixSrc-Playlist wird nach erfolgreicher eigener Aufloesung nicht erneut durch ResolveURL verworfen.\n\n'
+          s, n = re.subn(r'<news>', news, s, count=1)
+          if n != 1:
+              raise SystemExit('news tag not found')
+          addon.write_text(s, encoding='utf-8', newline='\n')
+
+          src = root / 'resources' / 'lib' / 'sources.py'
+          s = src.read_text(encoding='utf-8')
+          needle = """                        if not hmf.valid_url():
+                            log_utils.log(
+                                '[xShip Resolver] Kein passender ResolveURL-Resolver: %s / %s -> naechste Quelle' %
+                                (item.get('source'), str(url)),
+                                log_utils.LOGWARNING
+                            )
+                            url = None
+                        else:
+"""
+          replacement = """                        # LOCAL TEST 2026.08.31.2: VixStream resolves its pseudo URL itself.
+                        # At this point VixCloud can already be a final VixSrc/VixCloud
+                        # HLS playlist. Do not discard that direct stream merely because
+                        # ResolveURL has no VixCloud resolver.
+                        is_vixcloud_direct = (
+                            str(item.get('source') or '').lower() == 'vixcloud'
+                            and isinstance(url, str)
+                            and ('vixsrc.to/playlist/' in url or 'vixcloud.co/playlist/' in url)
+                        )
+                        if is_vixcloud_direct:
+                            log_utils.log(
+                                '[xShip Resolver] VixCloud bereits direkt aufgeloest -> ResolveURL-Bypass: %s' % str(url),
+                                log_utils.LOGINFO
+                            )
+                            resolved = True
+                        elif not hmf.valid_url():
+                            log_utils.log(
+                                '[xShip Resolver] Kein passender ResolveURL-Resolver: %s / %s -> naechste Quelle' %
+                                (item.get('source'), str(url)),
+                                log_utils.LOGWARNING
+                            )
+                            url = None
+                        else:
+"""
+          if needle not in s:
+              raise SystemExit('31.1 ResolveURL fallback block not found')
+          s = s.replace(needle, replacement, 1)
+          src.write_text(s, encoding='utf-8', newline='\n')
+          PY
+
+          python3 -m py_compile "$ROOT/resources/lib/sources.py"
+          python3 - <<'PY'
+          import os, xml.etree.ElementTree as ET
+          ET.parse(os.path.join(os.environ['ROOT'], 'addon.xml'))
+          PY
+          rm -rf "$ROOT/resources/lib/__pycache__"
+          (cd "$WORK" && zip -q -9 -r "$OUT" plugin.video.xship -x '*/__pycache__/*' '*.pyc')
+          unzip -t "$OUT" >/dev/null
+
+      - name: Upload local test ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin.video.xship-2026.08.31.2-VIXSTREAM-TEST
+          path: ${{ runner.temp }}/plugin.video.xship-2026.08.31.2-VIXSTREAM-TEST.zip
+          if-no-files-found: error
+          retention-days: 1
