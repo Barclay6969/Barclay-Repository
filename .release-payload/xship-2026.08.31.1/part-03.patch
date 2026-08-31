@@ -1,0 +1,162 @@
+ayback] Resolver executor released', log_utils.LOGINFO)
++        except:
++            pass
++
+     def get(self, params):
+         data = json.loads(params['sysmeta'])
+         self.mediatype = data.get('mediatype')
+@@ -59,6 +147,7 @@
+ 
+     def play(self, params):
+         title, year, imdb, season, episode, originaltitle, premiered, meta, select = self.get(params)
++        self._ensureExecutor()
+         try:
+             url = None
+             #Liste der gefundenen Streams
+@@ -97,12 +186,18 @@
+             from resources.lib.player import player
+             try:
+                 import xbmcgui
+-                xbmcgui.Dialog().notification('xShip', 'Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)', xbmcgui.NOTIFICATION_INFO, 5000, False)
++                xbmcgui.Dialog().notification('xShip', 'Der Stream wird nun gestartet, ich wünsche Dir viel Vergnügen mit Deiner Auswahl', xbmcgui.NOTIFICATION_INFO, 5000, False)
+             except:
+                 pass
++            # No source/resolver worker is needed once Kodi takes over playback.
++            # Releasing here prevents completed xShip invocations from waiting on
++            # unrelated provider threads during interpreter shutdown.
++            self._shutdownExecutor()
+             player().run(title, url, meta)
+         except Exception as e:
+             log_utils.log('Error %s' % str(e), log_utils.LOGERROR)
++        finally:
++            self._shutdownExecutor()
+ 
+ 
+ # Liste gefundene Streams Indexseite|Hoster
+@@ -287,6 +382,7 @@
+     def playItem(self, title, source):
+         isDebug = False
+         if isDebug: log_utils.log('start playItem', log_utils.LOGWARNING)
++        self._ensureExecutor()
+         try:
+             meta = control.window.getProperty(self.metaProperty)
+             meta = json.loads(meta)
+@@ -310,7 +406,7 @@
+                 except:
+                     pass
+                 if future.done(): break
+-                control.sleep(poll_interval)
++                control.sleep(1)
+                 waiting_time = waiting_time - 1
+                 progressDialog.update(int(100 - 100. / start_time * waiting_time), str(item['label']))
+                 if control.condVisibility('Window.IsActive(virtualkeyboard)') or \
+@@ -319,6 +415,10 @@
+                     waiting_time = waiting_time + 1  # dont count down while dialog is presented
+                 if future.done(): break
+ 
++            if not future.done():
++                try: future.cancel()
++                except: pass
++
+             try: progressDialog.close()
+             except: pass
+ 
+@@ -334,16 +434,20 @@
+             from resources.lib.player import player
+             try:
+                 import xbmcgui
+-                xbmcgui.Dialog().notification('xShip', 'Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)', xbmcgui.NOTIFICATION_INFO, 5000, False)
++                xbmcgui.Dialog().notification('xShip', 'Der Stream wird nun gestartet, ich wünsche Dir viel Vergnügen mit Deiner Auswahl', xbmcgui.NOTIFICATION_INFO, 5000, False)
+             except:
+                 pass
++            self._shutdownExecutor()
+             player().run(title, self.url, meta)
+             return self.url
+         except Exception as e:
+             log_utils.log('Error %s' % str(e), log_utils.LOGERROR)
++        finally:
++            self._shutdownExecutor()
+ 
+ 
+     def getSources(self, title, year, imdb, season, episode, originaltitle, premiered, quality='HD', timeout=30):
++        self._ensureExecutor()
+         #TODO
+         self.sources = []
+         self.hostDict = self._getHostDict()
+@@ -908,12 +1012,36 @@
+                                 include_universal=False,
+                                 include_popups=True
+                             )
+-                        if hmf.valid_url():
++
++                        # Important: a non-direct source must never be handed to
++                        # Kodi as the original hoster/embed page when ResolveURL
++                        # has no matching resolver. Previously valid_url()==False
++                        # left ``url`` unchanged, so Kodi tried to play HTML and
++                        # displayed "Fehler bei der Wiedergabe". Returning None
++                        # here lets the existing dialog/autoplay source fallback
++                        # continue with the next candidate.
++                        if not hmf.valid_url():
++                            log_utils.log(
++                                '[xShip Resolver] Kein passender ResolveURL-Resolver: %s / %s -> naechste Quelle' %
++                                (item.get('source'), str(url)),
++                                log_utils.LOGWARNING
++                            )
++                            url = None
++                        else:
+                             url = hmf.resolve()
+                             resolved = True
+                             if url == False or url == None or url == '':
++                                log_utils.log(
++                                    '[xShip Resolver] ResolveURL ohne Stream: %s -> naechste Quelle' % item.get('source'),
++                                    log_utils.LOGWARNING
++                                )
+                                 url = None
+-                    except:
++                    except Exception as e:
++                        log_utils.log(
++                            '[xShip Resolver] ResolveURL Fehler fuer %s: %s -> naechste Quelle' %
++                            (item.get('source'), str(e)),
++                            log_utils.LOGWARNING
++                        )
+                         url = None
+             elif item.get('prioHoster', 0) >= 999:
+                 try:
+@@ -949,6 +1077,7 @@
+ 
+ 
+     def sourcesDialog(self, items):
++        self._ensureExecutor()
+         labels = [i['label'] for i in items]
+ 
+         select = control.selectDialog(labels)
+@@ -1084,6 +1213,7 @@
+ # https://github.com/michaz1988/michaz1988.github.io/issues/48
+     def mediaInfo(self, source, dialog=None):
+         import xbmcgui
++        self._ensureExecutor()
+         try:
+             import urllib3
+             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+@@ -1115,6 +1245,7 @@
+                     if dialog.iscanceled():
+                         try: dialog.close()
+                         except: pass
++                        self._shutdownExecutor()
+                         return
+                 except: pass
+                 if future.done():
+@@ -1133,6 +1264,7 @@
+                 if dialog.iscanceled():
+                     try: dialog.close()
+                     except: pass
++                    self._shutdownExecutor()
+                     return
+             except: pass
+ 
+@@ -1140,6 +1272,7 @@
+                 try: dialog.close()
+                 except: pass
+                 control.infoDialog("Stream-URL konnte nicht aufgelöst werden", sound=False, icon='INFO')
++                self._shutdownExecutor()
+  
