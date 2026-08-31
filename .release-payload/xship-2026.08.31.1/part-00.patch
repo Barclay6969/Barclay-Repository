@@ -1,0 +1,190 @@
+--- a/plugin.video.xship/addon.xml
++++ b/plugin.video.xship/addon.xml
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+-<addon id="plugin.video.xship" version="2026.08.28.1" name="xShip" provider-name="Kusi (Barclay)">
++<addon id="plugin.video.xship" version="2026.08.31.1" name="xShip" provider-name="Kusi (Barclay)">
+   <requires>
+     <import addon="xbmc.python" version="3.0.0" />
+     <import addon="script.module.requests" />
+@@ -31,7 +31,16 @@
+       <screenshot>resources/media/screenshot-02.jpg</screenshot>
+       <screenshot>resources/media/screenshot-04.jpg</screenshot>
+     </assets>
+-    <news>2026.08.28.1
++    <news>2026.08.31.1
++- Wiedergabestabilitaet deutlich verbessert: Source- und Resolver-Worker werden vor dem Playerstart sauber beendet und Kodi-Objekte nach der Nutzung freigegeben.
++- Player-Callbacks entkoppelt: Navigation sowie Bookmark- und Datenbank-Aufraeumarbeiten erfolgen ausserhalb der Kodi-Playback-Callbacks.
++- Adaptive Workerzahl je Plattform reduziert unnoetige Parallelitaet sowie Speicher- und CPU-Last.
++- Streamstart wird nach maximal 60 Sekunden abgebrochen; festgefahrene Wiedergabe wird nach 90 Sekunden ohne Fortschritt erkannt. Eine normale Pause ist davon ausgenommen.
++- ResolveURL-Fallback verbessert: nicht unterstuetzte oder fehlerhafte Resolver-Quellen werden verworfen, damit xShip mit der naechsten verfuegbaren Quelle fortfahren kann.
++- Startmeldung angepasst: „Der Stream wird nun gestartet, ich wünsche Dir viel Vergnügen mit Deiner Auswahl“
++- Bestehende Provider- und Scraper-Logik bleibt unveraendert erhalten.
++
++2026.08.28.1
+ - Automatische Provider-Domainverwaltung fuer weitere wechselnde Indexseiten erweitert.
+ - FHD Filme: bekannte Domainmigration hdfilme.my / hdfilme.blog -> hdfilme.win.
+ - StreamCloud: bekannte Domainmigration streamcloud.my -> streamcloud.bid.
+--- a/plugin.video.xship/changelog.txt
++++ b/plugin.video.xship/changelog.txt
+@@ -1,3 +1,12 @@
++2026.08.31.1
++- Wiedergabestabilitaet deutlich verbessert: Source- und Resolver-Worker werden vor dem Playerstart sauber beendet und Kodi-Objekte nach der Nutzung freigegeben.
++- Player-Callbacks entkoppelt: Navigation sowie Bookmark- und Datenbank-Aufraeumarbeiten erfolgen ausserhalb der Kodi-Playback-Callbacks.
++- Adaptive Workerzahl je Plattform reduziert unnoetige Parallelitaet sowie Speicher- und CPU-Last.
++- Streamstart wird nach maximal 60 Sekunden abgebrochen; festgefahrene Wiedergabe wird nach 90 Sekunden ohne Fortschritt erkannt. Eine normale Pause ist davon ausgenommen.
++- ResolveURL-Fallback verbessert: nicht unterstuetzte oder fehlerhafte Resolver-Quellen werden verworfen, damit xShip mit der naechsten verfuegbaren Quelle fortfahren kann.
++- Startmeldung angepasst: „Der Stream wird nun gestartet, ich wünsche Dir viel Vergnügen mit Deiner Auswahl“
++- Bestehende Provider- und Scraper-Logik bleibt unveraendert erhalten.
++
+ 2026.08.21.3
+ - Quellensuche und Scraper-Ablauf deutlich beschleunigt.
+ - MeineCloud/FHDfilme/Streamcloud/TopStreamFilm teilen identische Filmabrufe; MeineCloud liefert weiterhin mehrere Hoster.
+--- a/plugin.video.xship/resources/lib/control.py
++++ b/plugin.video.xship/resources/lib/control.py
+@@ -3,7 +3,7 @@
+ #2021-07-20
+ #edit 2024-12-04
+ 
+-import os, sys
++import os, sys, atexit
+ import xbmc, xbmcplugin, xbmcaddon, xbmcgui, xbmcvfs
+ from six import iteritems
+ 
+@@ -44,6 +44,70 @@
+ ## from six
+ ## iteritems = lambda d: ((hasattr(d, 'iteritems') and d.iteritems) or d.items)()
+ 
++
++class _KodiLazyObject(object):
++    """Create Kodi wrapper objects only when needed and release them cleanly."""
++    def __init__(self, factory, cleanup=None):
++        self._factory = factory
++        self._cleanup = cleanup
++        self._obj = None
++
++    def _get(self):
++        if self._obj is None:
++            self._obj = self._factory()
++        return self._obj
++
++    def __getattr__(self, name):
++        if self._cleanup and name == self._cleanup:
++            return self._release_call
++        return getattr(self._get(), name)
++
++    def __bool__(self):
++        return True
++
++    __nonzero__ = __bool__
++
++    def _release_call(self, *args, **kwargs):
++        obj = self._obj
++        self._obj = None
++        if obj is None:
++            return None
++        try:
++            return getattr(obj, self._cleanup)(*args, **kwargs)
++        except:
++            return None
++
++    def release(self):
++        if self._cleanup:
++            self._release_call()
++        else:
++            self._obj = None
++
++
++class _KodiDynamicObject(object):
++    """Return a fresh lightweight Kodi wrapper for every attribute access."""
++    def __init__(self, factory):
++        self._factory = factory
++
++    def __getattr__(self, name):
++        return getattr(self._factory(), name)
++
++    def __bool__(self):
++        return True
++
++    __nonzero__ = __bool__
++
++
++_kodi_lazy_objects = []
++
++def _lazy(factory, cleanup=None):
++    obj = _KodiLazyObject(factory, cleanup)
++    _kodi_lazy_objects.append(obj)
++    return obj
++
++def _dynamic(factory):
++    return _KodiDynamicObject(factory)
++
+ # xbmcaddon
+ Addon = xbmcaddon.Addon()
+ addonInfo = xbmcaddon.Addon().getAddonInfo
+@@ -102,7 +166,7 @@
+ skin = xbmc.getSkinDir()
+ infoLabel = xbmc.getInfoLabel
+ condVisibility = xbmc.getCondVisibility
+-playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
++playlist = _lazy(lambda: xbmc.PlayList(xbmc.PLAYLIST_VIDEO))
+ keyboard = xbmc.Keyboard
+ 
+ 
+@@ -117,7 +181,7 @@
+ 
+ execute = xbmc.executebuiltin
+ executebuiltin  = xbmc.executebuiltin
+-player = xbmc.Player()
++player = _dynamic(lambda: xbmc.Player())
+ abortRequested = xbmc.Monitor().abortRequested()
+ jsonrpc = xbmc.executeJSONRPC
+ getInfoLabel = xbmc.getInfoLabel
+@@ -155,12 +219,12 @@
+     return True
+ 
+ # xbmcgui
+-window = xbmcgui.Window(10000)
+-currentWindowId = xbmcgui.Window(xbmcgui.getCurrentWindowId())
++window = _dynamic(lambda: xbmcgui.Window(10000))
++currentWindowId = _dynamic(lambda: xbmcgui.Window(xbmcgui.getCurrentWindowId()))
+ item = xbmcgui.ListItem
+-dialog = xbmcgui.Dialog()
+-progressDialog = xbmcgui.DialogProgress()
+-progressDialogBG = xbmcgui.DialogProgressBG()
++dialog = _dynamic(lambda: xbmcgui.Dialog())
++progressDialog = _lazy(lambda: xbmcgui.DialogProgress(), 'close')
++progressDialogBG = _lazy(lambda: xbmcgui.DialogProgressBG(), 'close')
+ 
+ dataPath = py2_decode(translatePath(addonInfo('profile')))
+ 
+@@ -329,3 +393,27 @@
+             content = file.read()
+             if word in content: return True
+     return False
++
++def cleanupKodiObjects():
++    """Release lazily held Kodi GUI/playlist wrappers when the invocation exits."""
++    try:
++        idle()
++    except:
++        pass
++    for obj in reversed(_kodi_lazy_objects):
++        try:
++            obj.release()
++        except:
++            pass
++    try:
++        import gc
++        gc.collect()
++    except:
++        pass
++
++
++try:
++    atexit.register(cleanupKodiObjects)
++except:
++    pass
++
+--- a/plugin.video.xship/resources/lib/player.py
+++
