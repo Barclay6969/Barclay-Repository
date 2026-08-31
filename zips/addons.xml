@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.31.1" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.08.31.2" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,7 +42,10 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.31.1
+      <news>2026.08.31.2
+- LOCAL TEST: VixCloud/VixSrc-Playlist wird nach erfolgreicher eigener Aufloesung nicht erneut durch ResolveURL verworfen.
+
+2026.08.31.1
 - Wiedergabestabilitaet deutlich verbessert: Source- und Resolver-Worker werden vor dem Playerstart sauber beendet und Kodi-Objekte nach der Nutzung freigegeben.
 - Player-Callbacks entkoppelt: Navigation sowie Bookmark- und Datenbank-Aufraeumarbeiten erfolgen ausserhalb der Kodi-Playback-Callbacks.
 - Adaptive Workerzahl je Plattform reduziert unnoetige Parallelitaet sowie Speicher- und CPU-Last.
