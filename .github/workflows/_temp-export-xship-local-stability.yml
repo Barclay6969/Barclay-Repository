@@ -1,0 +1,40 @@
+name: TEMP export xShip local stability base
+
+on:
+  push:
+    branches:
+      - temp-xship-local-stability-20260831
+    paths:
+      - '.github/workflows/_temp-export-xship-local-stability.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify current xShip base
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib, zipfile
+          p = Path('zips/plugin.video.xship/plugin.video.xship-2026.08.28.1.zip')
+          if not p.exists():
+              raise SystemExit('Current xShip 2026.08.28.1 ZIP missing')
+          with zipfile.ZipFile(p) as z:
+              bad = z.testzip()
+              if bad:
+                  raise SystemExit('Corrupt ZIP member: ' + bad)
+              addon = z.read('plugin.video.xship/addon.xml').decode('utf-8')
+              if 'version="2026.08.28.1"' not in addon:
+                  raise SystemExit('Unexpected xShip version')
+          print('SHA256=' + hashlib.sha256(p.read_bytes()).hexdigest())
+      - name: Upload current xShip ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: xship-2026.08.28.1-base
+          path: zips/plugin.video.xship/plugin.video.xship-2026.08.28.1.zip
+          if-no-files-found: error
+          retention-days: 1
