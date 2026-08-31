@@ -50,49 +50,49 @@ jobs:
 
           src = root / 'resources' / 'lib' / 'sources.py'
           s = src.read_text(encoding='utf-8')
-          needle = """                        if not hmf.valid_url():
-                            log_utils.log(
-                                '[xShip Resolver] Kein passender ResolveURL-Resolver: %s / %s -> naechste Quelle' %
-                                (item.get('source'), str(url)),
-                                log_utils.LOGWARNING
-                            )
-                            url = None
-                        else:
-          """
-          replacement = """                        # LOCAL TEST 2026.08.31.2: VixStream resolves its pseudo URL itself.
-                        # At this point VixCloud can already be a final VixSrc/VixCloud
-                        # HLS playlist. Do not discard that direct stream merely because
-                        # ResolveURL has no VixCloud resolver.
-                        is_vixcloud_direct = (
-                            str(item.get('source') or '').lower() == 'vixcloud'
-                            and isinstance(url, str)
-                            and ('vixsrc.to/playlist/' in url or 'vixcloud.co/playlist/' in url)
-                        )
-                        if is_vixcloud_direct:
-                            log_utils.log(
-                                '[xShip Resolver] VixCloud bereits direkt aufgeloest -> ResolveURL-Bypass: %s' % str(url),
-                                log_utils.LOGINFO
-                            )
-                            resolved = True
-                        elif not hmf.valid_url():
-                            log_utils.log(
-                                '[xShip Resolver] Kein passender ResolveURL-Resolver: %s / %s -> naechste Quelle' %
-                                (item.get('source'), str(url)),
-                                log_utils.LOGWARNING
-                            )
-                            url = None
-                        else:
-          """
-          if needle not in s:
-              raise SystemExit('31.1 ResolveURL fallback block not found')
-          s = s.replace(needle, replacement, 1)
+          target = 'if not hmf.valid_url():'
+          positions = [m.start() for m in re.finditer(re.escape(target), s)]
+          if len(positions) != 1:
+              raise SystemExit('Expected exactly one 31.1 valid_url fallback, found %d' % len(positions))
+          idx = positions[0]
+          line_start = s.rfind('\n', 0, idx) + 1
+          indent = s[line_start:idx]
+          if indent.strip():
+              raise SystemExit('Unexpected text before valid_url fallback')
+
+          unit = '    '
+          insert = (
+              indent + '# LOCAL TEST 2026.08.31.2: VixStream has already resolved its pseudo URL.\n' +
+              indent + 'is_vixcloud_direct = (\n' +
+              indent + unit + "str(item.get('source') or '').lower() == 'vixcloud'\n" +
+              indent + unit + 'and isinstance(url, str)\n' +
+              indent + unit + "and ('vixsrc.to/playlist/' in url or 'vixcloud.co/playlist/' in url)\n" +
+              indent + ')\n' +
+              indent + 'if is_vixcloud_direct:\n' +
+              indent + unit + 'log_utils.log(\n' +
+              indent + unit*2 + "'[xShip Resolver] VixCloud bereits direkt aufgeloest -> ResolveURL-Bypass: %s' % str(url),\n" +
+              indent + unit*2 + 'log_utils.LOGINFO\n' +
+              indent + unit + ')\n' +
+              indent + unit + 'resolved = True\n' +
+              indent + 'elif not hmf.valid_url():'
+          )
+
+          old_line = indent + target
+          if s.count(old_line) != 1:
+              raise SystemExit('Unable to identify fallback line uniquely')
+          s = s.replace(old_line, insert, 1)
           src.write_text(s, encoding='utf-8', newline='\n')
           PY
 
           python3 -m py_compile "$ROOT/resources/lib/sources.py"
           python3 - <<'PY'
-          import os, xml.etree.ElementTree as ET
-          ET.parse(os.path.join(os.environ['ROOT'], 'addon.xml'))
+          import os, pathlib, xml.etree.ElementTree as ET
+          root = pathlib.Path(os.environ['ROOT'])
+          ET.parse(root / 'addon.xml')
+          s = (root / 'resources/lib/sources.py').read_text(encoding='utf-8')
+          assert s.count('VixCloud bereits direkt aufgeloest -> ResolveURL-Bypass') == 1
+          assert "elif not hmf.valid_url():" in s
+          assert '2026.08.31.2' in (root / 'addon.xml').read_text(encoding='utf-8')
           PY
           rm -rf "$ROOT/resources/lib/__pycache__"
           (cd "$WORK" && zip -q -9 -r "$OUT" plugin.video.xship -x '*/__pycache__/*' '*.pyc')
