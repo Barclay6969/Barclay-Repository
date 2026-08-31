@@ -1,4 +1,4 @@
-name: LOCAL TEST xShip 2026.08.31.2 VixStream
+name: PUBLISH xShip 2026.08.31.2 repository metadata
 
 on:
   push:
@@ -7,101 +7,66 @@ on:
       - '.github/workflows/_localtest-vixstream-2026.08.31.2.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
 
-      - name: Build local VixStream resolver test from 2026.08.31.1
+      - name: Update addons.xml and md5
         shell: bash
         run: |
           set -euo pipefail
-          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.31.1.zip'
-          WORK="$RUNNER_TEMP/xship-vixstream-test"
-          OUT="$RUNNER_TEMP/plugin.video.xship-2026.08.31.2-VIXSTREAM-TEST.zip"
-          rm -rf "$WORK" "$OUT"
-          mkdir -p "$WORK"
-          unzip -q "$BASE" -d "$WORK"
-          ROOT="$WORK/plugin.video.xship"
-          export ROOT OUT
+          test -f 'zips/plugin.video.xship/plugin.video.xship-2026.08.31.2.zip'
 
           python3 - <<'PY'
-          import os, pathlib, re
-          root = pathlib.Path(os.environ['ROOT'])
+          from pathlib import Path
+          import hashlib, re, xml.etree.ElementTree as ET
 
-          addon = root / 'addon.xml'
-          s = addon.read_text(encoding='utf-8')
-          s, n = re.subn(
-              r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+("\s+name="xShip")',
+          feed_path = Path('zips/addons.xml')
+          md5_path = Path('zips/addons.xml.md5')
+          feed = feed_path.read_text(encoding='utf-8')
+
+          feed, count = re.subn(
+              r'(<addon id="plugin\.video\.xship" version=")[^"]+(" name="xShip" provider-name="Kusi \(Barclay\)">)',
               r'\g<1>2026.08.31.2\2',
-              s,
+              feed,
               count=1,
           )
-          if n != 1:
-              raise SystemExit('addon version not found')
-          news = '<news>2026.08.31.2\n- LOCAL TEST: VixCloud/VixSrc-Playlist wird nach erfolgreicher eigener Aufloesung nicht erneut durch ResolveURL verworfen.\n\n'
-          s, n = re.subn(r'<news>', news, s, count=1)
-          if n != 1:
-              raise SystemExit('news tag not found')
-          addon.write_text(s, encoding='utf-8', newline='\n')
+          if count != 1:
+              raise SystemExit('Unable to update xShip version')
 
-          src = root / 'resources' / 'lib' / 'sources.py'
-          s = src.read_text(encoding='utf-8')
-          target = 'if not hmf.valid_url():'
-          positions = [m.start() for m in re.finditer(re.escape(target), s)]
-          if len(positions) != 1:
-              raise SystemExit('Expected exactly one 31.1 valid_url fallback, found %d' % len(positions))
-          idx = positions[0]
-          line_start = s.rfind('\n', 0, idx) + 1
-          indent = s[line_start:idx]
-          if indent.strip():
-              raise SystemExit('Unexpected text before valid_url fallback')
+          start = feed.find('<addon id="plugin.video.xship"')
+          end = feed.find('</addon>', start)
+          if start < 0 or end < 0:
+              raise SystemExit('xShip block missing')
+          end += len('</addon>')
+          block = feed[start:end]
 
-          unit = '    '
-          insert = (
-              indent + '# LOCAL TEST 2026.08.31.2: VixStream has already resolved its pseudo URL.\n' +
-              indent + 'is_vixcloud_direct = (\n' +
-              indent + unit + "str(item.get('source') or '').lower() == 'vixcloud'\n" +
-              indent + unit + 'and isinstance(url, str)\n' +
-              indent + unit + "and ('vixsrc.to/playlist/' in url or 'vixcloud.co/playlist/' in url)\n" +
-              indent + ')\n' +
-              indent + 'if is_vixcloud_direct:\n' +
-              indent + unit + 'log_utils.log(\n' +
-              indent + unit*2 + "'[xShip Resolver] VixCloud bereits direkt aufgeloest -> ResolveURL-Bypass: %s' % str(url),\n" +
-              indent + unit*2 + 'log_utils.LOGINFO\n' +
-              indent + unit + ')\n' +
-              indent + unit + 'resolved = True\n' +
-              indent + 'elif not hmf.valid_url():'
+          entry = (
+              '2026.08.31.2\n'
+              '- LOCAL TEST: VixCloud/VixSrc-Playlist wird nach erfolgreicher eigener Aufloesung nicht erneut durch ResolveURL verworfen.\n\n'
           )
+          if '2026.08.31.2\n' not in block:
+              block, count = re.subn(r'<news>', '<news>' + entry, block, count=1)
+              if count != 1:
+                  raise SystemExit('Unable to prepend xShip news')
+          feed = feed[:start] + block + feed[end:]
 
-          old_line = indent + target
-          if s.count(old_line) != 1:
-              raise SystemExit('Unable to identify fallback line uniquely')
-          s = s.replace(old_line, insert, 1)
-          src.write_text(s, encoding='utf-8', newline='\n')
+          ET.fromstring(feed.encode('utf-8'))
+          feed_path.write_text(feed, encoding='utf-8', newline='')
+          md5 = hashlib.md5(feed_path.read_bytes()).hexdigest()
+          md5_path.write_text(md5 + '\n', encoding='ascii')
+          print('ADDONS_XML_MD5=' + md5)
           PY
 
-          python3 -m py_compile "$ROOT/resources/lib/sources.py"
-          python3 - <<'PY'
-          import os, pathlib, xml.etree.ElementTree as ET
-          root = pathlib.Path(os.environ['ROOT'])
-          ET.parse(root / 'addon.xml')
-          s = (root / 'resources/lib/sources.py').read_text(encoding='utf-8')
-          assert s.count('VixCloud bereits direkt aufgeloest -> ResolveURL-Bypass') == 1
-          assert "elif not hmf.valid_url():" in s
-          assert '2026.08.31.2' in (root / 'addon.xml').read_text(encoding='utf-8')
-          PY
-          rm -rf "$ROOT/resources/lib/__pycache__"
-          (cd "$WORK" && zip -q -9 -r "$OUT" plugin.video.xship -x '*/__pycache__/*' '*.pyc')
-          unzip -t "$OUT" >/dev/null
-
-      - name: Upload local test ZIP
-        uses: actions/upload-artifact@v4
-        with:
-          name: plugin.video.xship-2026.08.31.2-VIXSTREAM-TEST
-          path: ${{ runner.temp }}/plugin.video.xship-2026.08.31.2-VIXSTREAM-TEST.zip
-          if-no-files-found: error
-          retention-days: 1
+          git config user.name 'Barclay'
+          git config user.email '107470010+Barclay6969@users.noreply.github.com'
+          git add zips/addons.xml zips/addons.xml.md5
+          git commit -m 'Publish xShip 2026.08.31.2 VixStream fix'
+          git push origin HEAD:main
