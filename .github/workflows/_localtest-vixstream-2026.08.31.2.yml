@@ -58,7 +58,7 @@ jobs:
                             )
                             url = None
                         else:
-"""
+          """
           replacement = """                        # LOCAL TEST 2026.08.31.2: VixStream resolves its pseudo URL itself.
                         # At this point VixCloud can already be a final VixSrc/VixCloud
                         # HLS playlist. Do not discard that direct stream merely because
@@ -82,7 +82,7 @@ jobs:
                             )
                             url = None
                         else:
-"""
+          """
           if needle not in s:
               raise SystemExit('31.1 ResolveURL fallback block not found')
           s = s.replace(needle, replacement, 1)
