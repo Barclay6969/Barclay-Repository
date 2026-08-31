@@ -1,0 +1,155 @@
++ b/plugin.video.xship/resources/lib/player.py
+@@ -15,6 +15,9 @@
+ # eventuell zur späteren verwendung als meta
+ #_params = dict(parse_qsl(sys.argv[2].replace('?',''))) if len(sys.argv) > 1 else dict()
+ 
++PLAYBACK_START_TIMEOUT = 60
++PLAYBACK_STALL_TIMEOUT = 90
++
+ class player(xbmc.Player):
+     def __init__(self, *args, **kwargs):
+         xbmc.Player.__init__(self, *args, **kwargs)
+@@ -23,6 +26,10 @@
+         self.currentTime = 0
+         self.playcount = 0
+         self.watcher_control = False
++        self.playback_started = False
++        self.playback_failed = False
++        self._playback_ended = False
++        self._playback_cleanup_done = False
+         self.isdebug = True if control.getSetting('status.debug') == 'true' else False
+         # Startup-Busy wird bewusst vom Player verwaltet. setResolvedUrl() kann
+         # einen zuvor geoeffneten Kodi-Busy-Dialog wieder schliessen, obwohl
+@@ -160,38 +167,126 @@
+ 
+     def keepPlaybackAlive(self):
+         if self.isdebug: log_utils.log('Start - keepPlaybackAlive', log_utils.LOGINFO)
+-        for i in range(0, 240):
+-            if self.isPlayingVideo() or self.streamFinished:
++        started = False
++        monitor = xbmc.Monitor()
++        for _ in range(0, PLAYBACK_START_TIMEOUT):
++            if monitor.abortRequested() or self.streamFinished:
++                break
++            if self.isPlayingVideo():
++                started = True
++                self.playback_started = True
+                 break
+-            xbmc.sleep(1000)
++            monitor.waitForAbort(1.0)
+ 
+-        if self.streamFinished and not self.isPlayingVideo():
++        if not started:
++            self.playback_failed = True
+             self._closeStartupBusy()
++            self._stopFailedPlayback()
++            log_utils.log('[xShip Playback] Playback start timeout/abort after max. %s seconds: %s' %
++                          (PLAYBACK_START_TIMEOUT, getattr(self, 'name', 'unbekannt')), log_utils.LOGWARNING)
++            if self.streamFinished:
++                self._finishPlaybackOutsideCallback()
++            if self.isdebug: log_utils.log('Ende - keepPlaybackAlive (not started)', log_utils.LOGINFO)
+             return
+ 
+-        if self.isPlayingVideo():
+-            try:
+-                playcountDB.createEntry(self.mediatype, self.title, self.name, self.imdb, self.number_of_seasons, self.season, self.number_of_episodes, self.episode)
+-            except:
+-                pass
++        try:
++            playcountDB.createEntry(self.mediatype, self.title, self.name, self.imdb, self.number_of_seasons, self.season, self.number_of_episodes, self.episode)
++        except:
++            pass
+ 
+-        monitor = xbmc.Monitor()
+         self.watcher_control = False
+-        while (not monitor.abortRequested()) & (not self.streamFinished):
++        stopped_without_callback = 0
++        last_position = -1.0
++        last_progress_at = time.time()
++        while (not monitor.abortRequested()) and (not self.streamFinished):
+             if self.isPlayingVideo():
+-                self.totalTime = self.getTotalTime()
+-                self.currentTime = self.getTime()
+-                watcher = (self.currentTime / self.totalTime >= .85)
+-                if watcher and not self.watcher_control:
+-                    playcountDB.updatePlaycount(self.mediatype, self.title, self.name, self.imdb, self.number_of_seasons, self.season, self.number_of_episodes, self.episode, 1)
+-                    #control.setSetting(id='watcher.control', value='true')
+-                    self.watcher_control = True
+-            # FAST-STOP-ONLY: react to playback stop almost immediately.
++                stopped_without_callback = 0
++                try:
++                    self.totalTime = self.getTotalTime()
++                    self.currentTime = self.getTime()
++
++                    # A user pause is not a stream stall. Reset the watchdog while paused.
++                    if self._isPlaybackPaused():
++                        last_progress_at = time.time()
++                    elif self.currentTime > last_position + 0.25:
++                        last_position = self.currentTime
++                        last_progress_at = time.time()
++                    elif time.time() - last_progress_at >= PLAYBACK_STALL_TIMEOUT:
++                        self.playback_failed = True
++                        self.streamFinished = True
++                        log_utils.log('[xShip Playback] Playback stalled for %s seconds: %s' %
++                                      (PLAYBACK_STALL_TIMEOUT, getattr(self, 'name', 'unbekannt')), log_utils.LOGWARNING)
++                        self._closeStartupBusy()
++                        self._stopFailedPlayback()
++                        break
++
++                    watcher = self.totalTime > 0 and (self.currentTime / self.totalTime >= .85)
++                    if watcher and not self.watcher_control:
++                        playcountDB.updatePlaycount(self.mediatype, self.title, self.name, self.imdb, self.number_of_seasons, self.season, self.number_of_episodes, self.episode, 1)
++                        self.watcher_control = True
++                except:
++                    pass
++            else:
++                # Kodi normally calls onPlayBackStopped/Ended. If the callback is
++                # lost, do not leave this Python invocation alive forever.
++                stopped_without_callback += 1
++                if stopped_without_callback >= 20:  # ~2 seconds
++                    log_utils.log('[xShip Playback] Playback ended without callback', log_utils.LOGWARNING)
++                    self.streamFinished = True
++                    break
+             monitor.waitForAbort(0.1)
+ 
++        # Important: database/bookmark/navigation work is deliberately performed
++        # here, on the plugin invocation thread, not inside Kodi's Player callback.
++        self._finishPlaybackOutsideCallback()
+         if self.isdebug: log_utils.log('Ende - keepPlaybackAlive', log_utils.LOGINFO)
+ 
+ 
++    def _isPlaybackPaused(self):
++        try:
++            return bool(control.condVisibility('Player.Paused'))
++        except:
++            return False
++
++
++    def _stopFailedPlayback(self):
++        try:
++            if self.isPlaying():
++                self.stop()
++        except:
++            try:
++                xbmc.Player().stop()
++            except:
++                pass
++
++
++    def _finishPlaybackOutsideCallback(self):
++        if self._playback_cleanup_done:
++            return
++        self._playback_cleanup_done = True
++        self._closeStartupBusy()
++
++        if not self.playback_started:
++            return
++
++        if self.isdebug: log_utils.log('[xShip Playback] deferred playback cleanup start', log_utils.LOGINFO)
++        try:
++            self.runVideoDB()
++        except Exception as e:
++            log_utils.log('[xShip Playback] runVideoDB cleanup error: %s' % str(e), log_utils.LOGWARNING)
++
++        try:
++            if
