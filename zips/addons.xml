@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.28.1" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.08.31.1" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,7 +42,16 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.28.1
+      <news>2026.08.31.1
+- Wiedergabestabilitaet deutlich verbessert: Source- und Resolver-Worker werden vor dem Playerstart sauber beendet und Kodi-Objekte nach der Nutzung freigegeben.
+- Player-Callbacks entkoppelt: Navigation sowie Bookmark- und Datenbank-Aufraeumarbeiten erfolgen ausserhalb der Kodi-Playback-Callbacks.
+- Adaptive Workerzahl je Plattform reduziert unnoetige Parallelitaet sowie Speicher- und CPU-Last.
+- Streamstart wird nach maximal 60 Sekunden abgebrochen; festgefahrene Wiedergabe wird nach 90 Sekunden ohne Fortschritt erkannt. Eine normale Pause ist davon ausgenommen.
+- ResolveURL-Fallback verbessert: nicht unterstuetzte oder fehlerhafte Resolver-Quellen werden verworfen, damit xShip mit der naechsten verfuegbaren Quelle fortfahren kann.
+- Startmeldung angepasst: „Der Stream wird nun gestartet, ich wünsche Dir viel Vergnügen mit Deiner Auswahl“
+- Bestehende Provider- und Scraper-Logik bleibt unveraendert erhalten.
+
+2026.08.28.1
 - Automatische Provider-Domainverwaltung fuer weitere wechselnde Indexseiten erweitert.
 - FHD Filme: bekannte Domainmigration hdfilme.my / hdfilme.blog -> hdfilme.win.
 - StreamCloud: bekannte Domainmigration streamcloud.my -> streamcloud.bid.
