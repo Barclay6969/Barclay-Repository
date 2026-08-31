@@ -1,0 +1,136 @@
+name: TEMP release xShip 2026.08.31.1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/_temp-release-xship-2026.08.31.1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Build and validate xShip 2026.08.31.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.28.1.zip'
+          OUT='zips/plugin.video.xship/plugin.video.xship-2026.08.31.1.zip'
+          PAYLOAD='.release-payload/xship-2026.08.31.1'
+          PATCH='/tmp/xship-2026.08.31.1.patch'
+          WORK='/tmp/xship-release-work'
+
+          test -f "$BASE"
+          cat "$PAYLOAD"/part-00.patch "$PAYLOAD"/part-01.patch "$PAYLOAD"/part-02.patch "$PAYLOAD"/part-03.patch "$PAYLOAD"/part-04.patch > "$PATCH"
+          echo '572c14fd15a415b3e2e31e009de4ed6ccd33105c8eb5896429231544854ea70b  '"$PATCH" | sha256sum -c -
+
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          patch -s -p1 -d "$WORK" < "$PATCH"
+
+          python - <<'PY'
+          from pathlib import Path
+          import py_compile, shutil, xml.etree.ElementTree as ET
+          root = Path('/tmp/xship-release-work/plugin.video.xship')
+          addon = root / 'addon.xml'
+          ET.parse(addon)
+          text = addon.read_text(encoding='utf-8')
+          assert 'id="plugin.video.xship" version="2026.08.31.1"' in text
+          assert '<news>2026.08.31.1' in text
+          sources = (root / 'resources/lib/sources.py').read_text(encoding='utf-8')
+          wanted = 'Der Stream wird nun gestartet, ich wünsche Dir viel Vergnügen mit Deiner Auswahl'
+          assert sources.count(wanted) == 2
+          assert '[STABILITY-TEST' not in sources
+          assert '[RESOLVER-FALLBACK]' not in sources
+          errors = []
+          py_files = list(root.rglob('*.py'))
+          for path in py_files:
+              try:
+                  py_compile.compile(str(path), doraise=True)
+              except Exception as exc:
+                  errors.append((str(path), str(exc)))
+          for cache in root.rglob('__pycache__'):
+              shutil.rmtree(cache, ignore_errors=True)
+          if errors:
+              raise SystemExit('Python compile errors: %r' % errors[:10])
+          if len(py_files) != 86:
+              raise SystemExit('Unexpected Python file count: %s' % len(py_files))
+          PY
+
+          rm -f "$OUT"
+          cd "$WORK"
+          zip -q -9 -r "$GITHUB_WORKSPACE/$OUT" plugin.video.xship -x '*/__pycache__/*' '*.pyc'
+          cd "$GITHUB_WORKSPACE"
+
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, re, zipfile, xml.etree.ElementTree as ET
+          zip_path = Path('zips/plugin.video.xship/plugin.video.xship-2026.08.31.1.zip')
+          feed_path = Path('zips/addons.xml')
+          md5_path = Path('zips/addons.xml.md5')
+          with zipfile.ZipFile(zip_path, 'r') as z:
+              bad = z.testzip()
+              if bad:
+                  raise SystemExit('Corrupt ZIP member: ' + bad)
+              names = z.namelist()
+              if 'plugin.video.xship/addon.xml' not in names:
+                  raise SystemExit('addon.xml missing from ZIP')
+              if any('__pycache__' in n or n.endswith('.pyc') for n in names):
+                  raise SystemExit('Bytecode/cache found in ZIP')
+              addon = z.read('plugin.video.xship/addon.xml').decode('utf-8')
+              ET.fromstring(addon.encode('utf-8'))
+              if 'id="plugin.video.xship" version="2026.08.31.1"' not in addon:
+                  raise SystemExit('Wrong addon version')
+              sources = z.read('plugin.video.xship/resources/lib/sources.py').decode('utf-8')
+              wanted = 'Der Stream wird nun gestartet, ich wünsche Dir viel Vergnügen mit Deiner Auswahl'
+              if sources.count(wanted) != 2:
+                  raise SystemExit('Wrong stream-start message')
+
+          news_match = re.search(r'<news>(.*?)</news>', addon, flags=re.S)
+          if not news_match:
+              raise SystemExit('News missing in addon.xml')
+          full_news = news_match.group(1)
+
+          feed = feed_path.read_text(encoding='utf-8')
+          feed, count = re.subn(
+              r'(<addon id="plugin\.video\.xship" version=")[^"]+(" name="xShip" provider-name="Kusi \(Barclay\)">)',
+              r'\g<1>2026.08.31.1\2', feed, count=1
+          )
+          if count != 1:
+              raise SystemExit('Unable to update xShip version in addons.xml')
+
+          start = feed.find('<addon id="plugin.video.xship"')
+          end = feed.find('</addon>', start)
+          if start < 0 or end < 0:
+              raise SystemExit('xShip block missing in addons.xml')
+          end += len('</addon>')
+          block = feed[start:end]
+          block, count = re.subn(r'<news>.*?</news>', '<news>' + full_news + '</news>', block, count=1, flags=re.S)
+          if count != 1:
+              raise SystemExit('Unable to update xShip news in addons.xml')
+          feed = feed[:start] + block + feed[end:]
+          ET.fromstring(feed.encode('utf-8'))
+          feed_path.write_text(feed, encoding='utf-8', newline='')
+          md5 = hashlib.md5(feed_path.read_bytes()).hexdigest()
+          md5_path.write_text(md5 + '\n', encoding='ascii')
+          print('ZIP_SHA256=' + hashlib.sha256(zip_path.read_bytes()).hexdigest())
+          print('ADDONS_XML_MD5=' + md5)
+          PY
+
+      - name: Publish xShip 2026.08.31.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay"
+          git config user.email "107470010+Barclay6969@users.noreply.github.com"
+          git add zips/plugin.video.xship/plugin.video.xship-2026.08.31.1.zip zips/addons.xml zips/addons.xml.md5
+          git commit -m "Release xShip 2026.08.31.1 playback stability" || exit 0
+          git push origin HEAD:main
