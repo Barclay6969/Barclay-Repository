@@ -46,10 +46,16 @@ def patch_movie2k_title_variants(path):
     text = text.replace(old, new, 1)
     p.write_text(text, encoding='utf-8', newline='\n')
 
-    # 95 test additions: use the updated Huhu and KKiste scraper snapshots.
     tools = Path(__file__).resolve().parent
     scrapers = p.parent
-    for src_name, dst_name in (('huhu95.py', 'huhu.py'), ('kkiste95.py', 'kkiste.py')):
+    replacements = (
+        ('huhu95.py', 'huhu.py'),
+        ('kkiste95.py', 'kkiste.py'),
+        ('kinokiste95.py', 'kinokiste.py'),
+        ('netzkino95.py', 'netzkino.py'),
+        ('kinoger95.py', 'kinoger.py'),
+    )
+    for src_name, dst_name in replacements:
         src = tools / src_name
         dst = scrapers / dst_name
         if not src.exists():
