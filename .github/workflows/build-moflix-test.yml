@@ -1,4 +1,4 @@
-name: Build MoFlix test ZIP
+name: Build MoFlix Movie2k test ZIP
 
 on:
   push:
@@ -20,6 +20,6 @@ jobs:
       - run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add zips/test/plugin.video.xship-2026.09.14.90-MOFLIXTEST.zip
-          git commit -m 'Build xShip 2026.09.14.90 MoFlix test ZIP'
+          git add zips/test/plugin.video.xship-2026.09.14.91-MOFLIX-MOVIE2KTEST.zip
+          git commit -m 'Build xShip 2026.09.14.91 MoFlix Movie2k test ZIP'
           git push origin HEAD:moflix-test-20260914
