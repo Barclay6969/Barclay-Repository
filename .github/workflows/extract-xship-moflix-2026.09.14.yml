@@ -1,4 +1,4 @@
-name: Extract xShip scrapers 2026.08.31.2
+name: Extract xShip resolver sources 2026.08.31.2
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: moflix-test-20260914
-      - name: Extract scraper sources
+      - name: Extract scraper and resolver sources
         shell: bash
         run: |
           set -euo pipefail
@@ -32,14 +32,18 @@ jobs:
           mkdir -p tools/extracted/xship-2026.08.31.2-scrapers
           cp -a "$SRC/." tools/extracted/xship-2026.08.31.2-scrapers/
           cp "$SRC/moflix.py" tools/extracted/xship-2026.08.31.2-moflix.py
-          python3 -m py_compile tools/extracted/xship-2026.08.31.2-moflix.py
+          mkdir -p tools/extracted/xship-2026.08.31.2-resolver
+          cp "$ROOT/resources/lib/utils.py" tools/extracted/xship-2026.08.31.2-resolver/utils.py
+          if [ -f "$ROOT/resources/lib/hoster_compat.py" ]; then cp "$ROOT/resources/lib/hoster_compat.py" tools/extracted/xship-2026.08.31.2-resolver/hoster_compat.py; fi
+          grep -R -l -E 'HostedMediaFile|def resolveUrl|hoster_compat|isBlockedHoster' "$ROOT/resources/lib" "$ROOT/scrapers" | sed "s#^$ROOT/##" | sort > tools/extracted/xship-2026.08.31.2-resolver/paths.txt || true
+          python3 -m py_compile tools/extracted/xship-2026.08.31.2-moflix.py tools/extracted/xship-2026.08.31.2-resolver/utils.py
       - name: Commit extracted sources
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add tools/extracted/xship-2026.08.31.2-moflix.py tools/extracted/xship-2026.08.31.2-scrapers
+          git add tools/extracted/xship-2026.08.31.2-moflix.py tools/extracted/xship-2026.08.31.2-scrapers tools/extracted/xship-2026.08.31.2-resolver
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Extract xShip 2026.08.31.2 scraper sources'
+          git commit -m 'Extract xShip resolver sources for MoFlix test'
           git push origin HEAD:moflix-test-20260914
