@@ -1,0 +1,27 @@
+name: Build scraper core test 94
+
+on:
+  push:
+    branches: [moflix-test-20260914]
+    paths:
+      - 'tools/moflix-test/patch_94.py'
+      - 'tools/moflix-test/build_test94.py'
+      - '.github/workflows/build-scrapercore-test94.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: moflix-test-20260914
+      - run: python3 tools/moflix-test/build_test94.py "$GITHUB_WORKSPACE"
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add zips/test/plugin.video.xship-2026.09.14.94-SCRAPERCORETEST.zip
+          git commit -m 'Build xShip 2026.09.14.94 scraper core test ZIP'
+          git push origin HEAD:moflix-test-20260914
