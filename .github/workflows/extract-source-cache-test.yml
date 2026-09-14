@@ -1,0 +1,47 @@
+name: Extract xShip source cache code
+
+on:
+  push:
+    branches: [moflix-test-20260914]
+    paths:
+      - '.github/workflows/extract-source-cache-test.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: moflix-test-20260914
+      - name: Extract source/cache code
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.31.2.zip'
+          WORK="$RUNNER_TEMP/xship-cache"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          OUT='tools/extracted/xship-source-cache'
+          rm -rf "$OUT"
+          mkdir -p "$OUT"
+          cp "$ROOT/resources/lib/sources.py" "$OUT/sources.py" || true
+          find "$ROOT" -type f \( -iname '*cache*.py' -o -iname '*source*.py' -o -iname '*database*.py' \) -print > "$OUT/paths.txt"
+          while IFS= read -r f; do
+            rel="${f#$ROOT/}"
+            safe="${rel//\//__}"
+            cp "$f" "$OUT/$safe" || true
+          done < "$OUT/paths.txt"
+      - name: Commit extracted files
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tools/extracted/xship-source-cache
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Extract xShip source cache code'
+          git push origin HEAD:moflix-test-20260914
