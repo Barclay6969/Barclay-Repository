@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 
 
 def patch_movie2k_title_variants(path):
@@ -43,5 +44,15 @@ def patch_movie2k_title_variants(path):
     if old not in text:
         raise RuntimeError('Movie2k title loop marker missing')
     text = text.replace(old, new, 1)
-
     p.write_text(text, encoding='utf-8', newline='\n')
+
+    # 95 test additions: use the updated Huhu and KKiste scraper snapshots.
+    tools = Path(__file__).resolve().parent
+    scrapers = p.parent
+    for src_name, dst_name in (('huhu95.py', 'huhu.py'), ('kkiste95.py', 'kkiste.py')):
+        src = tools / src_name
+        dst = scrapers / dst_name
+        if not src.exists():
+            raise RuntimeError('Missing scraper test file: %s' % src_name)
+        shutil.copy2(src, dst)
+        compile(dst.read_text(encoding='utf-8'), str(dst), 'exec')
