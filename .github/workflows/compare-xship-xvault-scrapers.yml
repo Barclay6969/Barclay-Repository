@@ -1,0 +1,30 @@
+name: Compare xShip and xVault scrapers
+
+on:
+  push:
+    branches: [moflix-test-20260914]
+    paths:
+      - '.github/workflows/compare-xship-xvault-scrapers.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: moflix-test-20260914
+      - name: Compare scrapers
+        run: |
+          git clone -q --depth 1 https://github.com/mojomedia1812/xVAULT.git "$RUNNER_TEMP/xvault"
+          python3 tools/compare_xship_xvault_scrapers.py tools/extracted/xship-2026.08.31.2-scrapers "$RUNNER_TEMP/xvault/sites" tools/extracted/xship-xvault-comparison
+      - name: Commit report
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tools/extracted/xship-xvault-comparison
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Add xShip vs xVault scraper comparison report'
+          git push origin HEAD:moflix-test-20260914
