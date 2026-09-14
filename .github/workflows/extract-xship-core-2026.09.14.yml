@@ -1,0 +1,45 @@
+name: Extract xShip core for scraper test
+
+on:
+  push:
+    branches: [moflix-test-20260914]
+    paths:
+      - '.github/workflows/extract-xship-core-2026.09.14.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: moflix-test-20260914
+      - name: Extract core files
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.31.2.zip'
+          WORK="$RUNNER_TEMP/xship-core"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          OUT='tools/extracted/xship-2026.08.31.2-core'
+          rm -rf "$OUT"
+          mkdir -p "$OUT/resources/lib"
+          cp "$ROOT/resources/lib/sources.py" "$OUT/resources/lib/sources.py"
+          cp "$ROOT/resources/lib/utils.py" "$OUT/resources/lib/utils.py"
+          if [ -f "$ROOT/resources/lib/hoster_compat.py" ]; then cp "$ROOT/resources/lib/hoster_compat.py" "$OUT/resources/lib/hoster_compat.py"; fi
+          python3 -m py_compile "$OUT/resources/lib/sources.py" "$OUT/resources/lib/utils.py"
+      - name: Commit extracted core
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tools/extracted/xship-2026.08.31.2-core
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Extract xShip 2026.08.31.2 core resolver files'
+          git push origin HEAD:moflix-test-20260914
