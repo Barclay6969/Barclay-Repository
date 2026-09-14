@@ -1,0 +1,33 @@
+--- xShip/filmpro.py
++++ xVault/filmpro.py
+@@ -1,5 +1,5 @@
+ # -*- coding: UTF-8 -*-
+-from resources.lib.utils import isBlockedHosterFast as isBlockedHoster
++from resources.lib.utils import isBlockedHoster
+ from resources.lib.requestHandler import cRequestHandler
+ from scrapers.modules import cleantitle, dom_parser
+ from scrapers.modules.tools import cParser
+@@ -28,9 +28,9 @@
+             isMatch, aResults = cParser.parse(sHtmlContent, pattern)
+             if isMatch:
+                 for link, quality in aResults:
+-                    isBlocked, hoster, sUrl, prioHoster = isBlockedHoster(link)
++                    isBlocked, hoster, sUrl, prioHoster = isBlockedHoster(link, isResolve=False)
+                     if isBlocked: continue
+-                    if sUrl: sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': sUrl, 'direct': True, 'prioHoster': prioHoster})
++                    if sUrl: sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': sUrl, 'direct': False, 'prioHoster': prioHoster})
+             return sources
+         else:
+             try:
+@@ -69,9 +69,9 @@
+                 aResults=cParser.parse(dataLinks[0], pattern)[1]
+ 
+                 for link in aResults:
+-                    isBlocked, sDomain, sUrl, prioHoster = isBlockedHoster(link)
++                    isBlocked, sDomain, sUrl, prioHoster = isBlockedHoster(link, isResolve=False)
+                     if isBlocked: continue
+-                    if url: sources.append({'source': sDomain, 'quality': 'HD', 'language': 'de', 'url': sUrl, 'direct': True, 'prioHoster': prioHoster})
++                    if url: sources.append({'source': sDomain, 'quality': 'HD', 'language': 'de', 'url': sUrl, 'direct': False, 'prioHoster': prioHoster})
+                 return sources
+             except:
+                 return sources

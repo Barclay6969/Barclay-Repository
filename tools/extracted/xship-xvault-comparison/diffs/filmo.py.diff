@@ -1,0 +1,481 @@
+--- xShip/filmo.py
++++ xVault/filmo.py
+@@ -2,9 +2,8 @@
+ 
+ import json
+ import re
+-import requests
+ from html import unescape
+-from urllib.parse import quote_plus, urljoin
++from urllib.parse import quote_plus, urljoin, urlparse
+ 
+ from resources.lib.control import getSetting
+ from resources.lib.requestHandler import cRequestHandler
+@@ -18,19 +17,8 @@
+ 
+ UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+ 
+-try:
+-    requests.packages.urllib3.disable_warnings()
+-except Exception:
+-    pass
+-
+ 
+ class source:
+-    def _dbg(self, message):
+-        try:
+-            logger.info('[FILMO-DEBUG] %s' % message)
+-        except Exception:
+-            pass
+-
+     def __init__(self):
+         self.priority = 1
+         self.language = ['de', 'en']
+@@ -40,91 +28,37 @@
+         self.suggest_link = self.base_link + '/search/suggest?q=%s'
+         self.sources = []
+         self._seen = set()
+-        self._session = requests.Session()
+-        self._session.headers.update({
+-            'User-Agent': UA,
+-            'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
+-            'Connection': 'close'
+-        })
++        self._last_response_header = None
+ 
+     def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+-        self._dbg('run start | titles=%s | year=%s | season=%s | imdb=%s' % (titles, year, season, imdb))
+-        try:
+-            _pf = self._session.get(
+-                self.base_link + '/',
+-                timeout=12,
+-                verify=False,
+-                allow_redirects=True
+-            )
+-            self._dbg('FILMO Session Preflight | status=%s | cookies=%s' % (
+-                _pf.status_code, len(self._session.cookies)
+-            ))
+-        except Exception as exc:
+-            self._dbg('FILMO Session Preflight Fehler: %s' % exc)
+         if int(season or 0) > 0:
+-            self._dbg('Abbruch: Serieninhalt')
+             return self.sources
+         try:
+-            clean_titles = set([self._norm_title(title) for title in titles if title])
+-            clean_titles.discard('')
+-            candidates = self._candidates(titles)
+-
+-            # Fast path: Wenn die Suchergebnisse bereits einen eindeutigen
+-            # Titel-Treffer enthalten, muessen nicht erst zahlreiche fremde
+-            # Filmseiten geladen werden. Falls kein exakter Treffer vorhanden
+-            # ist, bleibt das bisherige breite Fallback unveraendert erhalten.
+-            exact_candidates = [
+-                item for item in candidates
+-                if self._norm_title(item.get('title')) in clean_titles
+-            ]
+-            if exact_candidates:
+-                self._dbg('Exakte Kandidaten: %s/%s' % (len(exact_candidates), len(candidates)))
+-                candidates = exact_candidates
+-
+-            self._dbg('Kandidaten gefunden: %s' % len(candidates))
+-            for candidate in candidates:
+-                self._dbg('Kandidat: %s | %s' % (candidate.get('title'), candidate.get('url')))
++            clean_titles = set([cleantitle.get(title) for title in titles if title])
++            for candidate in self._candidates(titles):
+                 page = self._get(candidate.get('url'), referer=self.base_link + '/')
+                 if not page:
+-                    self._dbg('Filmseite leer: %s' % candidate.get('url'))
+-                    continue
+-                self._dbg('Filmseite geladen: %s Bytes' % len(page))
++                    continue
+                 title = self._page_title(page) or candidate.get('title')
+                 if not self._matches(title, clean_titles, year, page):
+-                    self._dbg('Titel/Jahr Match fehlgeschlagen: %s' % title)
+-                    continue
+-                self._dbg('Titel/Jahr Match OK: %s' % title)
+-                before_sources = len(self.sources)
++                    continue
+                 self._add_chips(candidate.get('url'), page)
+-                self._dbg('Streams nach _add_chips: %s' % len(self.sources))
+-
+-                # Ein validierter exakter Film-Treffer mit Streams ist das
+-                # Ziel. Weitere gleichnamige/fremde Kandidaten wuerden nur
+-                # zusaetzliche Requests verursachen.
+-                if len(self.sources) > before_sources:
+-                    break
+                 if len(self.sources) >= 20:
+                     break
+         except Exception as exc:
+             logger.error('[Filmo] Fehler: %s' % exc)
+-            self._dbg('run Exception: %s' % exc)
+-        self._dbg('run Ende | Streams=%s' % len(self.sources))
+         return self.sources
+ 
+     def resolve(self, url):
+         return url
+ 
+     def _candidates(self, titles):
+-        self._dbg('_candidates start')
+         result = []
+         seen = set()
+         for title in titles:
+             if not title:
+                 continue
+-            suggested = self._suggest(title)
+-            searched = self._search(title)
+-            self._dbg('Titel "%s": suggest=%s search=%s' % (title, len(suggested), len(searched)))
+-            for item in suggested + searched:
++            for item in self._suggest(title) + self._search(title):
+                 url = item.get('url') or ''
+                 if not url:
+                     continue
+@@ -138,7 +72,6 @@
+         return result
+ 
+     def _suggest(self, title):
+-        self._dbg('_suggest: %s' % title)
+         try:
+             headers = {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}
+             payload, status, _real_url = self._request(
+@@ -147,7 +80,6 @@
+                 headers=headers,
+                 caching=True
+             )
+-            self._dbg('_suggest Status=%s URL=%s payload=%s' % (status, _real_url, len(payload or '')))
+             if status not in ('200', '301'):
+                 return []
+             data = json.loads(payload or '{}')
+@@ -160,12 +92,9 @@
+             return []
+ 
+     def _search(self, title):
+-        self._dbg('_search: %s' % title)
+         html = self._get(self.search_link % quote_plus(title), referer=self.base_link + '/')
+         if not html:
+-            self._dbg('_search: leere Antwort')
+             return []
+-        self._dbg('_search HTML=%s Bytes' % len(html))
+         items = []
+         seen = set()
+         for match in re.finditer(r'(?is)<a\b[^>]+href=["\']([^"\']*/movies/[^"\']+)["\'][^>]*>(.*?)</a>', html):
+@@ -175,7 +104,9 @@
+             seen.add(url)
+             body = match.group(2)
+             title = (
+-                self._class_text(body, 'popular-spotlight-card__title')
++                self._attr_text(match.group(0), 'title')
++                or self._attr_text(match.group(0), 'aria-label')
++                or self._class_text(body, 'popular-spotlight-card__title')
+                 or self._class_text(body, 'movie-poster-grid-card__title')
+                 or self._attr_text(body, 'alt')
+             )
+@@ -185,23 +116,17 @@
+     def _add_chips(self, page_url, html):
+         csrf = self._csrf_token(html)
+         open_mint = self._open_mint_url(html) or (self.base_link + '/n')
+-        rows = self._provider_rows(html)
+-        self._dbg('_add_chips | csrf=%s | openMint=%s | rows=%s' % ('ja' if csrf else 'nein', open_mint, len(rows)))
+-        for row in rows:
+-            self._dbg('Provider-Row Sprache=%s Chips=%s' % (row.get('language'), len(row.get('chips') or [])))
++        for row in self._provider_rows(html):
+             language = self._language(row.get('language'))
+             if language not in ('de', 'en'):
+                 continue
+             for chip in row.get('chips') or []:
+-                self._dbg('Mint start | hoster=%s | p=%s' % (chip.get('hoster'), str(chip.get('p'))[:60]))
+                 final_url = self._mint(open_mint, chip.get('p'), csrf, page_url)
+-                self._dbg('Mint Ergebnis: %s' % final_url)
+                 if not final_url or final_url in self._seen:
+                     continue
+                 self._seen.add(final_url)
+ 
+                 is_blocked, hoster, clean_url, prio_hoster = isBlockedHoster(final_url, isResolve=False)
+-                self._dbg('Hostercheck | blocked=%s | hoster=%s | url=%s' % (is_blocked, hoster, clean_url))
+                 if is_blocked or not clean_url:
+                     continue
+ 
+@@ -247,13 +172,8 @@
+ 
+     def _mint(self, open_mint, p_value, csrf, referer):
+         if not p_value:
+-            self._dbg('_mint: p leer')
+-            return ''
+-        try:
+-            # WICHTIG: FILMO bindet den ausgegebenen Mint-Token an die HTTP-Session.
+-            # Deshalb müssen POST /n und GET /n/<token> zwingend über dieselbe
+-            # requests.Session laufen. Ein Wechsel zwischen cRequestHandler und
+-            # requests.Session führt reproduzierbar zu HTTP 404.
++            return ''
++        try:
+             headers = {
+                 'Accept': 'application/json, text/plain, */*',
+                 'Content-Type': 'application/json',
+@@ -263,80 +183,46 @@
+             }
+             if csrf:
+                 headers['X-CSRF-TOKEN'] = csrf
+-
+-            post_response = self._session.post(
++            payload, status, _real_url = self._request(
+                 open_mint,
+-                json={'p': p_value},
++                referer=referer or self.base_link + '/',
+                 headers=headers,
+-                timeout=12,
+-                verify=False,
+-                allow_redirects=True
+-            )
+-            self._dbg('_mint Session POST | status=%s | real=%s | payload=%s | cookies=%s' % (
+-                post_response.status_code,
+-                post_response.url or open_mint,
+-                len(post_response.text or ''),
+-                len(self._session.cookies)
+-            ))
+-
+-            if post_response.status_code not in (200, 201):
++                post={'p': p_value},
++                jspost=True,
++                caching=False
++            )
++            if status not in ('200', '301'):
+                 return ''
+-
+-            try:
+-                token = (post_response.json() or {}).get('x')
+-            except Exception:
+-                token = (json.loads(post_response.text or '{}') or {}).get('x')
+-
+-            self._dbg('_mint Token vorhanden=%s' % bool(token))
++            response = json.loads(payload or '{}') or {}
++            direct_url = self._external_url(
++                response.get('url') or response.get('href') or response.get('location') or response.get('redirect')
++            )
++            if direct_url:
++                return direct_url
++
++            token = response.get('x') or response.get('token')
+             if not token:
+                 return ''
+-
+             mint_url = open_mint.rstrip('/') + '/' + quote_plus(token)
+-            redirect_headers = {
+-                'Referer': referer or self.base_link + '/',
+-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+-            }
+-
+-            response = self._session.get(
++            redirect_html, status, real_url = self._request(
+                 mint_url,
+-                headers=redirect_headers,
+-                timeout=12,
+-                verify=False,
+-                allow_redirects=True
+-            )
+-
+-            redirect_html = response.text or ''
+-            real_url = response.url or mint_url
+-            self._dbg('_mint Session GET | status=%s | real=%s | html=%s | redirects=%s | cookies=%s' % (
+-                response.status_code,
+-                real_url,
+-                len(redirect_html),
+-                len(response.history),
+-                len(self._session.cookies)
+-            ))
+-
+-            # Idealfall: FILMO hat direkt zum externen Hoster weitergeleitet.
+-            if real_url and real_url != mint_url and '/n/' not in real_url:
+-                return real_url
+-
+-            # Manche Varianten liefern das Ziel als Location ohne automatischen
+-            # Redirect oder als Link im HTML.
+-            location = response.headers.get('Location', '')
+-            if location:
+-                location = urljoin(self.base_link, location)
+-                if '/n/' not in location:
+-                    return location
+-
+-            match = re.search(r'<a\b[^>]*href=["\']([^"\']+)["\']', redirect_html, re.I)
+-            if match:
+-                href = urljoin(self.base_link, unescape(match.group(1)).strip())
+-                if href and '/n/' not in href:
+-                    return href
+-
+-            return ''
+-        except Exception as exc:
+-            logger.error('[Filmo] Mint Session Fehler: %s' % exc)
+-            self._dbg('_mint Session Exception: %s' % exc)
++                referer=referer or self.base_link + '/',
++                caching=False,
++                follow_redirects=False
++            )
++            redirect_url = self._redirect_target_from_response(mint_url, status, real_url, redirect_html)
++            if redirect_url:
++                return redirect_url
++
++            redirect_html, status, real_url = self._request(
++                mint_url,
++                referer=referer or self.base_link + '/',
++                caching=False,
++                follow_redirects=True
++            )
++            redirect_url = self._redirect_target_from_response(mint_url, status, real_url, redirect_html)
++            return redirect_url or ''
++        except Exception:
+             return ''
+ 
+     def _get(self, url, referer=None):
+@@ -355,69 +241,27 @@
+         except Exception:
+             return ''
+ 
+-    def _request(self, url, referer=None, headers=None, post=None, jspost=False, caching=False):
+-        # FILMO koppelt CSRF- und Mint-Token an die aktuelle Web-Session.
+-        # Deshalb laufen ALLE FILMO-Requests über dieselbe requests.Session.
+-        try:
+-            req_headers = dict(headers or {})
+-            if referer:
+-                req_headers['Referer'] = referer
+-
+-            if post is not None:
+-                if jspost:
+-                    response = self._session.post(
+-                        url,
+-                        json=post,
+-                        headers=req_headers,
+-                        timeout=12,
+-                        verify=False,
+-                        allow_redirects=True
+-                    )
+-                else:
+-                    response = self._session.post(
+-                        url,
+-                        data=post,
+-                        headers=req_headers,
+-                        timeout=12,
+-                        verify=False,
+-                        allow_redirects=True
+-                    )
+-            else:
+-                response = self._session.get(
+-                    url,
+-                    headers=req_headers,
+-                    timeout=12,
+-                    verify=False,
+-                    allow_redirects=True
+-                )
+-
+-            status = '301' if response.history else str(response.status_code)
+-            self._dbg('SessionRequest | method=%s | status=%s | real=%s | payload=%s | cookies=%s' % (
+-                'POST' if post is not None else 'GET',
+-                status,
+-                response.url or url,
+-                len(response.text or ''),
+-                len(self._session.cookies)
+-            ))
+-            return response.text or '', status, response.url or url
+-        except Exception as exc:
+-            logger.error('[Filmo] Session-Request Fehler: %s' % exc)
+-            self._dbg('SessionRequest Exception: %s' % exc)
+-            return '', '0', url
+-
+-    @staticmethod
+-    def _norm_title(title):
+-        # cleantitle behandelt den normalen ASCII-Bindestrich, aber nicht
+-        # zuverlaessig alle typografischen Unicode-Striche. Das fuehrte z.B.
+-        # bei 'Obsession – Du sollst mich lieben' zu einem False-Negative.
+-        text = str(title or '')
+-        for dash in ('–', '—', '−', '‐', '‑', '﹘', '﹣', '－'):
+-            text = text.replace(dash, '-')
+-        return cleantitle.get(text) or ''
++    def _request(self, url, referer=None, headers=None, post=None, jspost=False, caching=False, follow_redirects=True):
++        request = cRequestHandler(url, caching=caching, ignoreErrors=True, jspost=jspost, preserve_url=True, follow_redirects=follow_redirects)
++        request.addHeaderEntry('User-Agent', UA)
++        request.addHeaderEntry('Accept-Language', 'de,en-US;q=0.7,en;q=0.3')
++        request.addHeaderEntry('Connection', 'close')
++        if referer:
++            request.addHeaderEntry('Referer', referer)
++        for key, value in (headers or {}).items():
++            request.addHeaderEntry(key, value)
++        for key, value in (post or {}).items():
++            request.addParameters(key, value)
++        payload = request.request()
++        self._last_response_header = request.getResponseHeader()
++        return payload or '', str(request.getStatus()), request.getRealUrl()
+ 
+     def _matches(self, title, clean_titles, year, html):
+-        clean_title = self._norm_title(title)
+-        if clean_title not in clean_titles:
++        clean_title = cleantitle.get(title or '')
++        if clean_title not in clean_titles and not any(
++            clean_title and value and len(clean_title) >= 5 and len(value) >= 5 and (clean_title in value or value in clean_title)
++            for value in clean_titles
++        ):
+             return False
+         page_year = self._year(html)
+         try:
+@@ -484,9 +328,9 @@
+     @staticmethod
+     def _language(value):
+         text = str(value or '').strip().lower()
+-        if text in ('deutsch', 'german', 'de', 'ger'):
++        if text in ('deutsch', 'german', 'de', 'ger') or 'deutsch' in text or 'german' in text:
+             return 'de'
+-        if text in ('english', 'englisch', 'en', 'eng'):
++        if text in ('english', 'englisch', 'en', 'eng') or 'english' in text or 'englisch' in text:
+             return 'en'
+         return 'unknown'
+ 
+@@ -509,6 +353,53 @@
+     @staticmethod
+     def _json_url(value):
+         return value.replace('\\/', '/').replace('\\u0026', '&').replace('\\u003d', '=')
++
++    def _redirect_target_from_response(self, request_url, status, real_url, html):
++        header = getattr(self, '_last_response_header', None)
++        location = ''
++        try:
++            if header:
++                location = header.get('Location') or header.get('location') or ''
++        except Exception:
++            location = ''
++
++        for candidate in [location, real_url, self._extract_redirect_url(html)]:
++            target = self._external_url(candidate, request_url)
++            if target:
++                return target
++        return ''
++
++    def _extract_redirect_url(self, html):
++        patterns = [
++            r'(?is)<meta[^>]+http-equiv=["\']refresh["\'][^>]+content=["\'][^"\']*url=([^"\']+)',
++            r'(?is)window\.location(?:\.href)?\s*=\s*["\']([^"\']+)',
++            r'(?is)location\.replace\(\s*["\']([^"\']+)',
++            r'(?is)<a\b[^>]*\bhref=["\']([^"\']+)["\']',
++        ]
++        for pattern in patterns:
++            match = re.search(pattern, html or '')
++            if match:
++                return unescape(match.group(1)).strip()
++        return ''
++
++    def _external_url(self, value, base_url=None):
++        if not value:
++            return ''
++        try:
++            target = urljoin(base_url or self.base_link, self._json_url(unescape(str(value)).strip()))
++            if not target or self._is_filmo_url(target):
++                return ''
++            return target
++        except Exception:
++            return ''
++
++    def _is_filmo_url(self, value):
++        try:
++            host = (urlparse(str(value).split('|', 1)[0]).hostname or '').lower()
++            domain = (self.domain or SITE_DOMAIN).lower()
++            return host == domain or host.endswith('.' + domain)
++        except Exception:
++            return False
+ 
+     @staticmethod
+     def _clean(value):

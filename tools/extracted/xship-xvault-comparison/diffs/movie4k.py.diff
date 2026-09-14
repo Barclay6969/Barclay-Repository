@@ -1,0 +1,36 @@
+--- xShip/movie4k.py
++++ xVault/movie4k.py
+@@ -5,10 +5,8 @@
+ 
+ from resources.lib.control import getSetting, quote_plus, setSetting
+ from resources.lib.requestHandler import cRequestHandler
+-from resources.lib.utils import isBlockedHosterFast as isBlockedHoster
++from resources.lib.utils import isBlockedHoster
+ from scrapers.modules import cleantitle
+-
+-from resources.lib.domain_manager import resolve_domain
+ 
+ SITE_IDENTIFIER = 'movie4k'
+ SITE_DOMAIN = 'movie4k.sx'
+@@ -20,7 +18,7 @@
+     def __init__(self):
+         self.priority = 1
+         self.language = ['de', 'en']
+-        self.domain = resolve_domain(SITE_IDENTIFIER, SITE_DOMAIN)
++        self.domain = getSetting('provider.' + SITE_IDENTIFIER + '.domain', SITE_DOMAIN)
+         if self.domain in LEGACY_DOMAINS:
+             self.domain = SITE_DOMAIN
+             setSetting('provider.' + SITE_IDENTIFIER + '.domain', self.domain)
+@@ -151,8 +149,12 @@
+             return ''
+         url = str(url).strip()
+         if url.startswith('https:///'):
++            if url[9:].lower().startswith('redirect/'):
++                return ''
+             return 'https://' + url[9:]
+         if url.startswith('http:///'):
++            if url[8:].lower().startswith('redirect/'):
++                return ''
+             return 'http://' + url[8:]
+         if url.startswith('//'):
+             return 'https:' + url

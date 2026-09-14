@@ -1,0 +1,34 @@
+--- xShip/topstreamfilm.py
++++ xVault/topstreamfilm.py
+@@ -3,11 +3,8 @@
+ from scrapers.modules.tools import cParser  # re - alternative
+ from resources.lib.requestHandler import cRequestHandler
+ from scrapers.modules import cleantitle, dom_parser, source_utils
+-from scrapers.modules.meinecloud_shared import get_movie_links
+ from resources.lib.control import getSetting
+ import xbmcgui
+-from resources.lib.domain_manager import resolve_domain
+-
+ SITE_IDENTIFIER = 'topstreamfilm'
+ SITE_DOMAIN = 'www.topstreamfilm.live'
+ SITE_NAME = SITE_IDENTIFIER.upper()
+@@ -32,7 +29,7 @@
+         
+         self.priority = 1
+         self.language = ['de']
+-        self.domain = resolve_domain(SITE_IDENTIFIER, SITE_DOMAIN)
++        self.domain = getSetting('provider.' + SITE_IDENTIFIER + '.domain', SITE_DOMAIN)
+         self.base_link = 'https://' + self.domain
+ 
+         self.search_link = self.base_link + '/?story=%s&do=search&subaction=search'
+@@ -41,7 +38,9 @@
+     def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+         try:
+             if season == 0:
+-                aResult = get_movie_links(imdb)
++                oRequest = cRequestHandler('https://meinecloud.click/movie/%s' % imdb, caching=True)
++                sHtmlContent = oRequest.request()
++                isMatch, aResult = cParser.parse(sHtmlContent, 'data-link="([^"]+)')
+                 for sUrl in aResult:
+                     if sUrl.startswith('/'): sUrl = 'https:' + sUrl
+                     valid, hoster = source_utils.is_host_valid(sUrl, hostDict)
