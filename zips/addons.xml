@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.08.31.2" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.09.14.95" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,7 +42,16 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.08.31.2
+      <news>2026.09.14.95
+- Scraper-Updates fuer Huhu, KKiste, KinoKiste, KinoGer und Netzkino uebernommen und an xShip angepasst.
+- Huhu: Serien werden ueber IMDb/TMDb direkt auf Staffel und Episode aufgeloest.
+- Movie2k: Seriensuche robuster, inklusive alternativer Titelvarianten und besserer Staffel-/Folgenerkennung.
+- Movie2k2 und Filmpalast: aktuelle Mirror-/Hosterbehandlung und robustere Serienquellen.
+- MoFlix: Treffer- und Episodenlogik verbessert; zusätzliche Mirror-Erkennung und HLS-Pruefung.
+- Zentrale Hoster-Kompatibilitaet fuer neuere Spezialdomains erweitert.
+- AniWorld wurde bewusst nicht uebernommen; Filmo bleibt auf dem bewaehrten xShip-Stand.
+
+2026.08.31.2
 - LOCAL TEST: VixCloud/VixSrc-Playlist wird nach erfolgreicher eigener Aufloesung nicht erneut durch ResolveURL verworfen.
 
 2026.08.31.1
