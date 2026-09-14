@@ -1,0 +1,58 @@
+name: Extract xShip MoFlix 2026.08.31.2
+
+on:
+  push:
+    branches: [moflix-test-20260914]
+    paths:
+      - '.github/workflows/extract-xship-moflix-2026.09.14.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: moflix-test-20260914
+
+      - name: Extract current MoFlix scraper
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.31.2.zip'
+          WORK="$RUNNER_TEMP/xship-moflix-extract"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$WORK/plugin.video.xship"
+          SRC=''
+          for p in \
+            "$ROOT/scrapers/scrapers_source/de/moflix.py" \
+            "$ROOT/sites/moflix.py"; do
+            if [ -f "$p" ]; then SRC="$p"; break; fi
+          done
+          if [ -z "$SRC" ]; then
+            echo 'MoFlix scraper not found' >&2
+            find "$ROOT" -iname '*moflix*' -print
+            exit 1
+          fi
+          mkdir -p tools/extracted
+          cp "$SRC" tools/extracted/xship-2026.08.31.2-moflix.py
+          echo "Extracted: $SRC"
+          python3 -m py_compile tools/extracted/xship-2026.08.31.2-moflix.py
+
+      - name: Commit extracted scraper to test branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tools/extracted/xship-2026.08.31.2-moflix.py
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+            exit 0
+          fi
+          git commit -m 'Extract xShip 2026.08.31.2 MoFlix scraper'
+          git push origin HEAD:moflix-test-20260914
