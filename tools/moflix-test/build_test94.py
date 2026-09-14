@@ -31,12 +31,12 @@ with tempfile.TemporaryDirectory() as tmp:
 
     addon = root / 'addon.xml'
     text = addon.read_text(encoding='utf-8')
-    text, count = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+', r'\g<1>2026.09.14.94', text, count=1)
+    text, count = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+', r'\g<1>2026.09.14.95', text, count=1)
     if count != 1:
         raise RuntimeError('addon version patch failed')
     addon.write_text(text, encoding='utf-8', newline='\n')
 
-    checks = [scrapers/'moflix.py', scrapers/'movie2k.py', scrapers/'movie2k2.py', scrapers/'filmpalast.py', lib/'hoster_compat.py', lib/'sources.py']
+    checks = [scrapers/'moflix.py', scrapers/'movie2k.py', scrapers/'movie2k2.py', scrapers/'filmpalast.py', scrapers/'huhu.py', scrapers/'kkiste.py', scrapers/'kinokiste.py', scrapers/'netzkino.py', scrapers/'kinoger.py', lib/'hoster_compat.py', lib/'sources.py']
     for path in checks:
         compile(path.read_text(encoding='utf-8'), str(path), 'exec')
 
