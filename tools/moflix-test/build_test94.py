@@ -5,6 +5,7 @@ sys.path.insert(0, str(repo / 'tools/moflix-test'))
 import patch_core
 import patch_93
 import patch_94
+import patch_96
 
 base = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.08.31.2.zip'
 tools = repo / 'tools/moflix-test'
@@ -28,10 +29,11 @@ with tempfile.TemporaryDirectory() as tmp:
     patch_93.patch_hoster_compat(lib / 'hoster_compat.py')
     patch_93.patch_moflix_display(scrapers / 'moflix.py')
     patch_94.patch_movie2k_title_variants(scrapers / 'movie2k.py')
+    patch_96.patch_sources(lib / 'sources.py')
 
     addon = root / 'addon.xml'
     text = addon.read_text(encoding='utf-8')
-    text, count = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+', r'\g<1>2026.09.14.95', text, count=1)
+    text, count = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+', r'\g<1>2026.09.16.96', text, count=1)
     if count != 1:
         raise RuntimeError('addon version patch failed')
     addon.write_text(text, encoding='utf-8', newline='\n')
@@ -43,6 +45,12 @@ with tempfile.TemporaryDirectory() as tmp:
     movie2k_text = (scrapers/'movie2k.py').read_text(encoding='utf-8')
     if '_search_titles' not in movie2k_text or "split(' - ', 1)[0]" not in movie2k_text:
         raise RuntimeError('Movie2k title variant fix missing')
+
+    sources_text = (lib/'sources.py').read_text(encoding='utf-8')
+    if '_safe_media_probe_url' not in sources_text:
+        raise RuntimeError('safe MediaInfo probe patch missing')
+    if "provider_name != 'serienstream'" not in sources_text or "'voe' not in hoster_name" not in sources_text:
+        raise RuntimeError('SerienStream VOE-only filter missing')
 
     out.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
