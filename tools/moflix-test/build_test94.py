@@ -36,6 +36,26 @@ with tempfile.TemporaryDirectory() as tmp:
     text, count = re.subn(r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+', r'\g<1>2026.09.16.96', text, count=1)
     if count != 1:
         raise RuntimeError('addon version patch failed')
+
+    release_news = """2026.09.16.96
+- MediaInfo fuer deferred Hoster konservativ wiederhergestellt: sichere, schnelle Resolver duerfen nur fuer die Hintergrundanalyse temporaer aufgeloest werden.
+- Die eigentliche Wiedergabe-URL bleibt dabei unveraendert; problematische, CAPTCHA- oder token-sensitive Hoster werden nicht vorab aufgeloest.
+- SerienStream zeigt nur noch VOE Deutsch und VOE Englisch; DoodStream/CAPTCHA und andere unbrauchbare SerienStream-Quellen werden ausgeblendet.
+- SerienStream bleibt von der MediaInfo-Vorabpruefung ausgeschlossen, damit kurzlebige Redirect-Tokens nicht verbraucht werden.
+
+2026.09.14.95
+- Scraper-Updates fuer Huhu, KKiste, KinoKiste, KinoGer und Netzkino uebernommen und an xShip angepasst.
+- Huhu: Serien werden ueber IMDb/TMDb direkt auf Staffel und Episode aufgeloest.
+- Movie2k: Seriensuche robuster, inklusive alternativer Titelvarianten und besserer Staffel-/Folgenerkennung.
+- Movie2k2 und Filmpalast: aktuelle Mirror-/Hosterbehandlung und robustere Serienquellen.
+- MoFlix: Treffer- und Episodenlogik verbessert; zusaetzliche Mirror-Erkennung und HLS-Pruefung.
+- Zentrale Hoster-Kompatibilitaet fuer neuere Spezialdomains erweitert.
+- AniWorld wurde bewusst nicht uebernommen; Filmo bleibt auf dem bewaehrten xShip-Stand.
+
+"""
+    if '<news>' not in text:
+        raise RuntimeError('addon news marker missing')
+    text = text.replace('<news>', '<news>' + release_news, 1)
     addon.write_text(text, encoding='utf-8', newline='\n')
 
     checks = [scrapers/'moflix.py', scrapers/'movie2k.py', scrapers/'movie2k2.py', scrapers/'filmpalast.py', scrapers/'huhu.py', scrapers/'kkiste.py', scrapers/'kinokiste.py', scrapers/'netzkino.py', scrapers/'kinoger.py', lib/'hoster_compat.py', lib/'sources.py']
@@ -61,4 +81,7 @@ with tempfile.TemporaryDirectory() as tmp:
 with zipfile.ZipFile(out) as zf:
     if zf.testzip():
         raise RuntimeError('zip integrity failed')
+    addon_text = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+    if '2026.09.16.96' not in addon_text or 'MediaInfo fuer deferred Hoster' not in addon_text:
+        raise RuntimeError('release changelog missing in addon.xml')
 print(out)
