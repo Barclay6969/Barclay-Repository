@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.09.14.95" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.09.16.96" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,7 +42,13 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.09.14.95
+      <news>2026.09.16.96
+- MediaInfo fuer deferred Hoster konservativ wiederhergestellt: sichere, schnelle Resolver duerfen nur fuer die Hintergrundanalyse temporaer aufgeloest werden.
+- Die eigentliche Wiedergabe-URL bleibt dabei unveraendert; problematische, CAPTCHA- oder token-sensitive Hoster werden nicht vorab aufgeloest.
+- SerienStream zeigt nur noch VOE Deutsch und VOE Englisch; DoodStream/CAPTCHA und andere unbrauchbare SerienStream-Quellen werden ausgeblendet.
+- SerienStream bleibt von der MediaInfo-Vorabpruefung ausgeschlossen, damit kurzlebige Redirect-Tokens nicht verbraucht werden.
+
+2026.09.14.95
 - Scraper-Updates fuer Huhu, KKiste, KinoKiste, KinoGer und Netzkino uebernommen und an xShip angepasst.
 - Huhu: Serien werden ueber IMDb/TMDb direkt auf Staffel und Episode aufgeloest.
 - Movie2k: Seriensuche robuster, inklusive alternativer Titelvarianten und besserer Staffel-/Folgenerkennung.
