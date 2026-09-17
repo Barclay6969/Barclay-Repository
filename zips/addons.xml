@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.09.16.96" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.09.17.97" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -42,7 +42,12 @@
         <icon>resources/icon_barclay.png</icon>
         <fanart>resources/media/fanart.jpg</fanart>
       </assets>
-      <news>2026.09.16.96
+      <news>2026.09.17.97
+- Provider-Healthstatus ist nur noch informativ und kann die Quellensuche nicht mehr komplett deaktivieren.
+- Netzwerk-/DNS-/HEAD-Fehler im Hintergrundcheck werden als unknown statt dead gespeichert.
+- Behebt den Fall, dass xShip ohne Scraper-Aufrufe sofort mit 0 Quellen beendet.
+
+2026.09.16.96
 - MediaInfo fuer deferred Hoster konservativ wiederhergestellt: sichere, schnelle Resolver duerfen nur fuer die Hintergrundanalyse temporaer aufgeloest werden.
 - Die eigentliche Wiedergabe-URL bleibt dabei unveraendert; problematische, CAPTCHA- oder token-sensitive Hoster werden nicht vorab aufgeloest.
 - SerienStream zeigt nur noch VOE Deutsch und VOE Englisch; DoodStream/CAPTCHA und andere unbrauchbare SerienStream-Quellen werden ausgeblendet.
