@@ -1,0 +1,72 @@
+name: Audit xShip series scrapers
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.audit-series-scrapers'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit TEST3 series-capable scrapers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, zipfile
+
+          zpath=Path('test-builds/plugin.video.xship-2026.09.18.98.3-MEINECLOUD-TEST3.zip')
+          out=Path('test-builds/series-scraper-audit.txt')
+          rows=[]
+          with zipfile.ZipFile(zpath) as z:
+              for name in sorted(z.namelist()):
+                  if '/scrapers/scrapers_source/de/' not in name or not name.endswith('.py'):
+                      continue
+                  text=z.read(name).decode('utf-8','replace')
+                  low=text.lower()
+                  signals=[]
+                  for token,label in [
+                      ('season','season'),
+                      ('episode','episode'),
+                      ('serial/','serial'),
+                      ('tvseries','tvseries'),
+                      ('imdb','imdb'),
+                      ('tmdb','tmdb'),
+                      ('data-label','data-label'),
+                      ('staffel','staffel'),
+                      ('season == 0','movie/series branch'),
+                      ('if season','season branch'),
+                  ]:
+                      if token in low:
+                          signals.append(label)
+                  if not any(x in low for x in ['season','episode','serial/','tvseries','staffel']):
+                      continue
+                  # extract compact run() body / nearby logic
+                  m=re.search(r'(?ms)^\s*def run\(.*?(?=^\s*def \w+\(|\Z)',text)
+                  body=m.group(0) if m else text[:5000]
+                  body='\n'.join(body.splitlines()[:140])
+                  rows.append(
+                      f'===== {Path(name).name} =====\n'
+                      f'SIGNALS: {", ".join(signals)}\n'
+                      f'{body}\n'
+                  )
+          out.write_text('\n'.join(rows),encoding='utf-8')
+          PY
+      - name: Commit audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -f .audit-series-scrapers
+          git rm -f .github/workflows/audit-series-scrapers.yml
+          git add test-builds/series-scraper-audit.txt
+          git commit -m "Audit current xShip series scrapers"
+          git push
