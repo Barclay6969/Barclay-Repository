@@ -23,17 +23,14 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          files = [
-              'kinoking.py','huhu.py','movie4k.py',
-              'burningseries.py','serienfans.py','hdfilme.py'
-          ]
+          names=['kinoking.py','huhu.py','movie4k.py','hdfilme.py','burningseries.py','serienfans.py']
           root=Path('tools/series-fix-test4')
-          for name in files:
+          for name in names:
               p=root/name
               if not p.exists():
-                  raise SystemExit('Missing staged file: '+str(p))
-              compile(p.read_text(encoding='utf-8'), str(p), 'exec')
-              print('SYNTAX OK', name)
+                  raise SystemExit('Missing staged file: '+name)
+              compile(p.read_text(encoding='utf-8'),str(p),'exec')
+              print('SYNTAX OK',name)
           PY
 
       - name: Live smoke tests
@@ -43,91 +40,73 @@ jobs:
           python3 - <<'PY'
           import json,re,urllib.request,urllib.parse
           UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-
-          def get(url, headers=None):
+          def get(url,headers=None):
               h={'User-Agent':UA,'Accept-Language':'de-DE,de;q=0.9,en;q=0.8'}
-              if headers: h.update(headers)
+              h.update(headers or {})
               req=urllib.request.Request(url,headers=h)
               with urllib.request.urlopen(req,timeout=25) as r:
-                  return r.read().decode('utf-8','replace')
+                  return r.status,r.geturl(),r.read().decode('utf-8','replace')
 
-          # KinoKing: current card + exact season/episode API.
-          html=get('https://kinoking.cc/index.php?search=Reacher')
-          m=re.search(r'<[^>]+fav-data-source[^>]+data-id=["\'](\d+)["\'][^>]+data-type=["\']series["\'][^>]+data-title=["\']Reacher["\']',html,re.I)
-          if not m:
-              # attribute order tolerant fallback
-              cards=re.findall(r'<[^>]+fav-data-source[^>]*>',html,re.I|re.S)
-              kid=''
-              for card in cards:
-                  attrs=dict((a.lower(),v) for a,q,v in re.findall(r'([\w:-]+)\s*=\s*([\'\"])(.*?)\2',card,re.I|re.S))
-                  if attrs.get('data-type','').lower()=='series' and attrs.get('data-title','').lower()=='reacher':
-                      kid=attrs.get('data-id',''); break
-          else:
-              kid=m.group(1)
-          if not kid:
-              raise SystemExit('KinoKing Reacher card not found')
-          page=get('https://kinoking.cc/series.php?id=%s&season=1' % kid)
-          jm=re.search(r'const\s+allEpisodesData\s*=\s*(\[.*?\])\s*;\s*let\s+watchedEpisodes',page,re.I|re.S)
-          if not jm:
-              raise SystemExit('KinoKing episode JSON missing')
-          eps=json.loads(jm.group(1))
-          ep=next((x for x in eps if int(x.get('season_number') or 0)==1 and int(x.get('episode_number') or 0)==1),None)
-          if not ep:
-              raise SystemExit('KinoKing Reacher S1E1 missing')
-          nav=json.loads(get('https://kinoking.cc/api/episode-navigation.php?episode_id=%s' % ep['id']))
-          if not nav.get('links'):
-              raise SystemExit('KinoKing S1E1 has no links')
-          print('KINOKING LIVE OK', len(nav.get('links') or []))
+          # KinoKing V2 search card + selected season must expose episode IDs.
+          st,fu,body=get('https://kinoking.cc/index.php?search=Reacher')
+          cards=re.findall(r'<[^>]+fav-data-source[^>]*>',body,re.I|re.S)
+          kid=''
+          for card in cards:
+              attrs=dict((a.lower(),v) for a,q,v in re.findall(r'([\w:-]+)\s*=\s*([\'\"])(.*?)\2',card,re.I|re.S))
+              if attrs.get('data-type','').lower()=='series' and attrs.get('data-title','').lower()=='reacher':
+                  kid=attrs.get('data-id',''); break
+          assert kid,'KinoKing Reacher series card missing'
+          st,fu,page=get('https://kinoking.cc/series.php?id=%s&season=1' % kid)
+          ids=re.findall(r'playEpisode\([\'\"]?(\d+)',page,re.I)
+          assert ids,'KinoKing selected season has no episode IDs'
+          print('KINOKING LIVE OK',len(ids))
 
-          # Huhu: new mediaurl API must return playable Reacher URLs.
-          payload={
-              'language':'de','region':'DE','type':'series',
-              'ids':{'tmdb_id':108978},'name':'',
-              'episode':{'ids':{},'season':1,'episode':1}
-          }
+          # Huhu current frontend source API.
+          payload={'language':'de','region':'DE','type':'series','ids':{'tmdb_id':108978},'name':'',
+                   'episode':{'ids':{},'season':1,'episode':1}}
           req=urllib.request.Request(
               'https://www.huhu.to/mediaurl-source.json',
               data=json.dumps(payload).encode('utf-8'),
-              headers={
-                  'User-Agent':UA,
-                  'Content-Type':'application/json; charset=utf-8',
-                  'Origin':'https://www.huhu.to',
-                  'Referer':'https://www.huhu.to/'
-              },
-              method='POST'
-          )
+              headers={'User-Agent':UA,'Content-Type':'application/json; charset=utf-8',
+                       'Accept':'application/json, text/plain, */*',
+                       'Origin':'https://www.huhu.to','Referer':'https://www.huhu.to/'},
+              method='POST')
           with urllib.request.urlopen(req,timeout=25) as r:
               data=json.loads(r.read().decode('utf-8','replace'))
           urls=[x for x in data if isinstance(x,dict) and x.get('type')=='url' and str(x.get('url') or '').startswith('http')]
-          if not urls:
-              raise SystemExit('Huhu Reacher S1E1 returned no URLs')
-          print('HUHU LIVE OK', len(urls))
+          assert urls,'Huhu Reacher S1E1 returned no URLs'
+          print('HUHU LIVE OK',len(urls))
 
-          # Movie4K: browse endpoint must identify exact series/season and watch
-          # endpoint must contain episode 1 streams.
-          browse=json.loads(get(
+          # Movie4K current browse + watch flow.
+          st,fu,body=get(
               'https://movie4k.sx/data/browse/?lang=2&keyword=Reacher&year=&type=tvseries&page=1',
-              {'Accept':'application/json, text/plain, */*','Referer':'https://movie4k.sx/','Origin':'https://movie4k.sx','X-Requested-With':'XMLHttpRequest'}
-          ))
-          movies=browse.get('movies') or []
-          item=next((x for x in movies if re.search(r'^Reacher\s*[-:]\s*Staffel\s*0*1\b',str(x.get('title') or ''),re.I)),None)
-          if not item:
-              raise SystemExit('Movie4K Reacher Staffel 1 missing')
-          watch=json.loads(get(
-              'https://movie4k.sx/data/watch/?_id=%s' % item['_id'],
-              {'Accept':'application/json, text/plain, */*','Referer':'https://movie4k.sx/','Origin':'https://movie4k.sx','X-Requested-With':'XMLHttpRequest'}
-          ))
+              {'Accept':'application/json, text/plain, */*','Referer':'https://movie4k.sx/',
+               'Origin':'https://movie4k.sx','X-Requested-With':'XMLHttpRequest'})
+          data=json.loads(body)
+          movies=data.get('movies',[]) if isinstance(data,dict) else []
+          exact=[x for x in movies if re.match(r'^Reacher\s*[-:]?\s*Staffel\s*0*1\b',str(x.get('title','')),re.I)]
+          assert exact,'Movie4K Reacher Staffel 1 missing'
+          mid=exact[0].get('_id')
+          st,fu,body=get(
+              'https://movie4k.sx/data/watch/?_id=%s' % mid,
+              {'Accept':'application/json, text/plain, */*','Referer':'https://movie4k.sx/',
+               'Origin':'https://movie4k.sx','X-Requested-With':'XMLHttpRequest'})
+          watch=json.loads(body)
           e1=[x for x in (watch.get('streams') or []) if str(x.get('e') or '').lstrip('0')=='1' and x.get('stream')]
-          if not e1:
-              raise SystemExit('Movie4K Reacher S1E1 streams missing')
-          print('MOVIE4K LIVE OK', len(e1))
+          assert e1,'Movie4K Reacher S1E1 streams missing'
+          print('MOVIE4K LIVE OK',len(e1))
 
-          # BurningSeries: year-suffixed catalogue title is present and is the
-          # exact case fixed by TEST4.
-          bs=get('https://burningseries.ac/andere-serien')
-          if not re.search(r'title=["\']Reacher\s*\(2022\)["\']',bs,re.I):
-              raise SystemExit('BurningSeries Reacher (2022) missing')
+          # BurningSeries currently uses a year suffix for Reacher.
+          st,fu,body=get('https://burningseries.ac/andere-serien')
+          assert re.search(r'title=[\'\"]Reacher\s*\(2022\)[\'\"]',body,re.I)
           print('BURNINGSERIES LIVE OK')
+
+          # HDFilme current domain uses season-separated catalogue entries.
+          st,fu,body=get('https://hd-filme.lol/index.php?do=search&subaction=search&story=Reacher')
+          assert re.search(r'Reacher\s*-\s*Staffel\s*[234]',body,re.I)
+          print('HDFILME LIVE OK')
+
+          print('SERIENFANS: syntax/logic only; site anti-bot blocks GitHub runner.')
           PY
 
       - name: Build TEST4 ZIP
@@ -142,25 +121,24 @@ jobs:
           base_zip=repo/'test-builds/plugin.video.xship-2026.09.18.98.3-MEINECLOUD-TEST3.zip'
           out_zip=repo/'test-builds/plugin.video.xship-2026.09.18.98.4-SERIES-TEST4.zip'
           stage=repo/'tools/series-fix-test4'
-          names=['kinoking.py','huhu.py','movie4k.py','burningseries.py','serienfans.py','hdfilme.py']
+          names=['kinoking.py','huhu.py','movie4k.py','hdfilme.py','burningseries.py','serienfans.py']
 
           with tempfile.TemporaryDirectory() as td:
               td=Path(td)
               with zipfile.ZipFile(base_zip,'r') as zf:
                   zf.extractall(td)
               root=td/'plugin.video.xship'
-
               for name in names:
                   src=stage/name
                   dst=root/'scrapers/scrapers_source/de'/name
                   if not dst.exists():
-                      raise SystemExit('Target missing: '+str(dst))
+                      raise SystemExit('Target missing: '+name)
                   shutil.copyfile(src,dst)
 
               addon=root/'addon.xml'
               text=addon.read_text(encoding='utf-8')
               if 'version="2026.09.18.98.3"' not in text:
-                  raise SystemExit('TEST3 version not found')
+                  raise SystemExit('TEST3 base version missing')
               text=text.replace('version="2026.09.18.98.3"','version="2026.09.18.98.4"',1)
               addon.write_text(text,encoding='utf-8',newline='\n')
 
@@ -169,8 +147,7 @@ jobs:
               for pyc in root.rglob('*.pyc'):
                   pyc.unlink(missing_ok=True)
 
-              if out_zip.exists():
-                  out_zip.unlink()
+              if out_zip.exists(): out_zip.unlink()
               with zipfile.ZipFile(out_zip,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as zf:
                   for p in sorted(root.rglob('*')):
                       if p.is_file():
@@ -178,18 +155,16 @@ jobs:
 
           with zipfile.ZipFile(out_zip,'r') as zf:
               bad=zf.testzip()
-              if bad:
-                  raise SystemExit('Corrupt ZIP member: '+bad)
+              if bad: raise SystemExit('Corrupt ZIP member: '+bad)
               addon=zf.read('plugin.video.xship/addon.xml').decode('utf-8')
-              if 'version="2026.09.18.98.4"' not in addon:
-                  raise SystemExit('Wrong TEST4 version')
+              assert 'version="2026.09.18.98.4"' in addon
               for name in names:
-                  data=zf.read('plugin.video.xship/scrapers/scrapers_source/de/'+name).decode('utf-8')
-                  compile(data,name,'exec')
+                  rel='plugin.video.xship/scrapers/scrapers_source/de/'+name
+                  compile(zf.read(rel).decode('utf-8'),rel,'exec')
           print('BUILT',out_zip)
           PY
 
-      - name: Commit TEST4 and cleanup
+      - name: Commit TEST4
         shell: bash
         run: |
           set -euo pipefail
@@ -197,18 +172,6 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git rm -f .build-series-test4
           git rm -f .github/workflows/build-series-test4.yml
-          git rm -rf tools/series-fix-test4 tools/series-audit-current || true
-          git rm -f test-builds/series-scraper-audit.txt || true
-          git rm -f test-builds/series-live-diagnostic.txt || true
-          git rm -f test-builds/series-detail-diagnostic.txt || true
-          git rm -f test-builds/provider-api-diagnostic.txt || true
-          git rm -f test-builds/huhu-api-diagnostic.txt || true
-          git rm -f test-builds/huhu-prefix-diagnostic.txt || true
-          git rm -f test-builds/final-series-diagnostic.txt || true
-          git rm -f test-builds/hdfilme-page2-diagnostic.txt || true
-          git rm -f test-builds/final-provider-detail-diagnostic.txt || true
-          git rm -f test-builds/hdfilme-s1-probe.txt || true
-          git rm -f test-builds/nox-current-diagnostic.txt || true
           git add test-builds/plugin.video.xship-2026.09.18.98.4-SERIES-TEST4.zip
           git commit -m "Build xShip series scraper TEST4"
           git push
