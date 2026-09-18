@@ -1,0 +1,1749 @@
+===== aniworld.py =====
+SIGNALS: season, episode, imdb, staffel, movie/series branch, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        # if self.login == '' or self.password == '':
+        #     import xbmcgui, xbmcaddon
+        #     AddonName = xbmcaddon.Addon().getAddonInfo('name')
+        #     xbmcgui.Dialog().ok(AddonName,
+        #                         "In den Einstellungen die Kontodaten (Login) für %s eintragen / überprüfen\nBis dahin wird %s von der Suche ausgeschlossen. Es erfolgt kein erneuter Hinweis!" % (
+        #                         SITE_NAME, SITE_NAME))
+        #     setSetting('provider.' + SITE_IDENTIFIER, 'false')
+        #     return []
+
+        sources = []
+        if season == 0: return sources
+        try:
+            t = [cleantitle.get(i) for i in titles if i]
+            url = urljoin(self.base_link, self.search_link)
+            #url = urljoin('https://sus.to', self.search_link) # for test only
+            #isTrue, sHtmlContent = getcontent.aniworld(url)
+            #if not isTrue: sHtmlContent = cRequestHandler(url).request()
+            oRequest = cRequestHandler(url)
+            oRequest.cacheTime = 60*60*24
+            sHtmlContent = oRequest.request()
+            # if not self.base_link in str(dom_parser.parse_dom(sHtmlContent, "meta", attrs={"property": "og:url"})):
+            #     url = urljoin(self.base_link, self.search_link)
+            #     sHtmlContent = cRequestHandler(url).request()
+
+            links = dom_parser.parse_dom(sHtmlContent, "div", attrs={"class": "genre"})
+            links = dom_parser.parse_dom(links, "a")
+            links = [(i.attrs["href"], i.content) for i in links]
+            #links = [i for i in links if cleantitle.get(i[1]) in t or any([a in cleantitle.get(i[1]) for a in t])]
+            url = ''
+            aLinks = []
+            for i in links:
+                try:
+                    if cleantitle.get(i[1]) in t:
+                        #print (i[1])
+                        url = i[0]
+                        break
+                except:
+                    pass
+
+            if url == '':
+                for i in links:
+                    for a in t:
+                        try:
+                            if any([a in cleantitle.get(i[1])]):
+                                aLinks.append({'source': i[0]})
+                                break
+                        except:
+                            pass
+
+            if url == '':
+                if len(aLinks) > 0:
+                    for i in aLinks:
+                        url = i['source']
+                        self.run2(url, year, season=season, episode=episode, hostDict=hostDict, imdb=imdb)
+                else:
+                    return sources
+            else:
+                self.run2(url, year, season=season, episode=episode, hostDict=hostDict, imdb=imdb)
+        except:
+            return sources
+        return self.sources
+
+===== bsto.py =====
+SIGNALS: season, episode, imdb
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        if int(season or 0) == 0 and getattr(self, 'mediatype', None) != 'tvshow':
+            return self.sources
+
+        try:
+            self._login_if_configured()
+
+            search_variants = []
+            for title in titles:
+                search_variants.extend(_all_variants(title))
+            search_variants = list(set([variant for variant in search_variants if variant]))
+
+            if log_utils:
+                logger.info('%s - Search: S%02dE%02d | variants=%s' % (SITE_NAME, int(season), int(episode), search_variants))
+
+            matches = self._find_series(titles, search_variants)
+            if not matches:
+                return self.sources
+
+            for series_url, series_title in matches[:2]:
+                if log_utils:
+                    logger.info('%s - Match: %s | %s' % (SITE_NAME, series_url, series_title))
+                self.run2(series_url, season, episode)
+
+        except Exception as exc:
+            if log_utils:
+                logger.info('%s - Error: %s' % (SITE_NAME, str(exc)))
+
+        return self.sources
+
+===== burningseries.py =====
+SIGNALS: season, episode, imdb, movie/series branch, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        if season == 0: return self.sources
+        self._checkApi()
+        t = [cleantitle.get(i) for i in set(titles) if i]
+        oRequest = cRequestHandler(self.search_link, caching=True)
+        oRequest.cacheTime = 60 * 60 * 48  # 48 Stunden
+        sHtmlContent = oRequest.request()
+        links = dom_parser.parse_dom(sHtmlContent, "div", attrs={"class": "genre"})
+        links = dom_parser.parse_dom(links, "a")
+        links = [(i.attrs["href"], i.attrs["title"]) for i in links]
+        aLinks = []
+        for sUrl, sName in links:
+            if len(sName.split('|')) >= 1:
+                aName=sName.split('|')
+                for sName in aName:
+                    if cleantitle.get(sName) in set(t) and sUrl not in aLinks:
+                        aLinks.append(sUrl)
+                        break
+            else:
+                if cleantitle.get(sName) in set(t) and sUrl not in aLinks:
+                    aLinks.append(sUrl)
+                    break
+
+            if len(aLinks) > 0: break
+
+        if len(aLinks) == 0: return self.sources
+
+        for link in aLinks: # sollte immer mur ein Link sein
+            sUrl = self.base_link + '/' + link +'/'+str(season)
+            sHtmlContent = cRequestHandler(sUrl).request()
+            table = dom_parser.parse_dom(sHtmlContent, "table", attrs={"class": "episodes"})
+            a = dom_parser.parse_dom(table, "a")
+            epUrl = [(i.attrs['href']) for i in a if i.content == str(episode)][0]
+            aHoster = [(i.attrs['href']) for i in a if epUrl in i.attrs['href'] and 'hoster' in i.content]
+            for link in aHoster:
+                hoster = link.rsplit('/', 1)[1]
+                sUrl = self.base_link + '/' + link
+                quality = 'HD'
+                isBlocked, hoster, url, prioHoster = isBlockedHoster(hoster, isResolve=False)
+                if isBlocked: continue
+                self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': sUrl, 'direct': False, 'priority': int(self.priority), 'prioHoster': prioHoster})
+
+
+        return self.sources
+
+===== cineto.py =====
+SIGNALS: season, episode, imdb
+
+    def run(self, titles, year, season=0, episode=0, imdb=''):
+        if int(season or 0) > 0:
+            return self.sources
+        try:
+            clean_titles = set([cleantitle.get(title) for title in titles if title])
+            for title in titles:
+                for entry in self._search(title):
+                    if not self._matches(entry, clean_titles, year, imdb):
+                        continue
+                    for language_id, language_code in self._language_ids(entry):
+                        self._add_links(entry.get('imdb') or entry.get('id'), language_id, language_code)
+                    if len(self.sources) >= 20:
+                        return self.sources
+        except:
+            pass
+        return self.sources
+
+===== einschalten.py =====
+SIGNALS: season, episode, imdb, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        if season > 0: return  self.sources
+        try:
+            t = [cleantitle.get(i) for i in set(titles) if i]
+            links = []
+            for sSearchText in set(titles):
+                URL_SEARCH = self.search_link % sSearchText
+                oRequest = cRequestHandler(URL_SEARCH, caching=True)
+                oRequest.cacheTime = 60 * 60 #* 48  # 48 Stunden
+                sHtmlContent = oRequest.request()
+                pattern = r'"id":(\d+).*?"title":"([^"]+).*?releaseDate":"(\d{4})'
+                isMatch, aResult = cParser.parse(sHtmlContent, pattern)
+                if not isMatch: continue
+                for sId, sName, sYear in aResult:
+                    if year == int(sYear):
+                        if cleantitle.get(sName) in set(t) and sId not in links:
+                            links.append(sId)
+                            break
+
+                if len(links) > 0: break
+
+            if len(links) == 0: return self.sources
+            for link in set(links):
+                sUrl = self.base_link + '/api/movies/' + link + '/watch'
+                sHtmlContent = cRequestHandler(sUrl).request()
+                if not 'streamUrl' in sHtmlContent: continue
+                jResult = json.loads(sHtmlContent)
+                releaseName = jResult['releaseName']
+                if '720p' in releaseName: quality = '720p'
+                elif '1080p' in releaseName: quality = '1080p'
+                else: quality = 'SD'
+                streamUrl = jResult['streamUrl']
+
+                # Kodi 21 / ResolveURL Dood fallback: use an instance-owned default
+                # urllib opener for vide0.net before falling back to ResolveURL.
+                url = self._resolve_dood_default_tls(streamUrl)
+                if url:
+                    self.sources.append({'source': 'DoodStream', 'quality': quality, 'language': 'de', 'url': url, 'direct': True, 'priority': int(self.priority), 'prioHoster': 100})
+                    continue
+
+                isBlocked, hoster, url, prioHoster = isBlockedHoster(streamUrl)
+                if isBlocked: continue
+                if url: self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': url, 'direct': True, 'priority': int(self.priority), 'prioHoster': prioHoster})
+
+            return self.sources
+        except:
+            return self.sources
+
+===== fhdfilme.py =====
+SIGNALS: season, episode, imdb, movie/series branch, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        try:
+            if season == 0:
+                ## https://meinecloud.click/movie/tt1477834
+                aResult = get_movie_links(imdb)
+                for sUrl in aResult:
+                    if sUrl.startswith('/'): sUrl = 'https:' + sUrl
+                    valid, hoster = source_utils.is_host_valid(sUrl, hostDict)
+                    if not valid: continue
+                    quality = self.parse_quality(sUrl)
+                    self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': sUrl, 'direct': False})
+
+            else:
+                oRequest = cRequestHandler(self.search_link % imdb, caching=True)
+                sHtmlContent = oRequest.request()
+                pattern = 'class="thumb".*?title="([^"]+).*?href="([^"]+).*?_year">([^<]+)'
+                isMatch, aResult = cParser.parse(sHtmlContent, pattern)
+                if not isMatch: return self.sources
+
+                sName, sUrl, sYear = aResult[0]
+                oRequest = cRequestHandler(sUrl, caching=True)
+                sHtmlContent = oRequest.request()
+                pattern = r'%sx%s\s.*?/>' % (str(season), str(episode))
+                isMatch, sLinkContainer = cParser.parseSingleResult(sHtmlContent, pattern)
+                pattern = 'href="([^"]+)'
+                isMatch, aResult = cParser.parse(sLinkContainer, pattern)
+                if not isMatch: return self.sources
+                for sUrl in aResult:
+                    if sUrl.startswith('/'): sUrl = 'https:' + sUrl
+                    valid, hoster = source_utils.is_host_valid(sUrl, hostDict)
+                    if not valid: continue
+                    quality = self.parse_quality(sUrl)
+                    self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': sUrl, 'direct': False})
+            return self.sources
+        except:
+            return self.sources
+
+===== filmfans.py =====
+SIGNALS: season, episode, imdb
+
+    def run(self, titles, year, season=0, episode=0, imdb=''):
+        if int(season or 0) > 0:
+            return self.sources
+        try:
+            for movie_url in self._find_movie_pages(titles, year):
+                self._read_movie_page(movie_url)
+                if len(self.sources) >= 20:
+                    break
+        except:
+            pass
+        return self.sources
+
+===== filmo.py =====
+SIGNALS: season, episode, imdb
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        self._dbg('run start | titles=%s | year=%s | season=%s | imdb=%s' % (titles, year, season, imdb))
+        try:
+            _pf = self._session.get(
+                self.base_link + '/',
+                timeout=12,
+                verify=False,
+                allow_redirects=True
+            )
+            self._dbg('FILMO Session Preflight | status=%s | cookies=%s' % (
+                _pf.status_code, len(self._session.cookies)
+            ))
+        except Exception as exc:
+            self._dbg('FILMO Session Preflight Fehler: %s' % exc)
+        if int(season or 0) > 0:
+            self._dbg('Abbruch: Serieninhalt')
+            return self.sources
+        try:
+            clean_titles = set([self._norm_title(title) for title in titles if title])
+            clean_titles.discard('')
+            candidates = self._candidates(titles)
+
+            # Fast path: Wenn die Suchergebnisse bereits einen eindeutigen
+            # Titel-Treffer enthalten, muessen nicht erst zahlreiche fremde
+            # Filmseiten geladen werden. Falls kein exakter Treffer vorhanden
+            # ist, bleibt das bisherige breite Fallback unveraendert erhalten.
+            exact_candidates = [
+                item for item in candidates
+                if self._norm_title(item.get('title')) in clean_titles
+            ]
+            if exact_candidates:
+                self._dbg('Exakte Kandidaten: %s/%s' % (len(exact_candidates), len(candidates)))
+                candidates = exact_candidates
+
+            self._dbg('Kandidaten gefunden: %s' % len(candidates))
+            for candidate in candidates:
+                self._dbg('Kandidat: %s | %s' % (candidate.get('title'), candidate.get('url')))
+                page = self._get(candidate.get('url'), referer=self.base_link + '/')
+                if not page:
+                    self._dbg('Filmseite leer: %s' % candidate.get('url'))
+                    continue
+                self._dbg('Filmseite geladen: %s Bytes' % len(page))
+                title = self._page_title(page) or candidate.get('title')
+                if not self._matches(title, clean_titles, year, page):
+                    self._dbg('Titel/Jahr Match fehlgeschlagen: %s' % title)
+                    continue
+                self._dbg('Titel/Jahr Match OK: %s' % title)
+                before_sources = len(self.sources)
+                self._add_chips(candidate.get('url'), page)
+                self._dbg('Streams nach _add_chips: %s' % len(self.sources))
+
+                # Ein validierter exakter Film-Treffer mit Streams ist das
+                # Ziel. Weitere gleichnamige/fremde Kandidaten wuerden nur
+                # zusaetzliche Requests verursachen.
+                if len(self.sources) > before_sources:
+                    break
+                if len(self.sources) >= 20:
+                    break
+        except Exception as exc:
+            logger.error('[Filmo] Fehler: %s' % exc)
+            self._dbg('run Exception: %s' % exc)
+        self._dbg('run Ende | Streams=%s' % len(self.sources))
+        return self.sources
+
+===== filmpalast.py =====
+SIGNALS: season, episode, imdb, staffel, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        sources = []
+        url = ''
+        moviecontent = ''
+        try:
+            titles = [t for t in titles if t and str(t).lower() != 'none']
+            for title in titles:
+                candidates = []
+                for m_url, m_title in self._search_candidates(title):
+                    if season and episode and not self._episode_matches(m_title, m_url, season, episode):
+                        continue
+                    score = self._match_score(title, m_title, m_url, year)
+                    if score <= 0:
+                        continue
+                    page_url = self._absolute_url(m_url)
+                    page_data = self._request(page_url, self.base_link)
+                    if not page_data:
+                        continue
+                    if year and not self._year_matches(page_data, year):
+                        continue
+                    candidates.append((score, page_url, page_data))
+                if candidates:
+                    candidates.sort(key=lambda item: item[0], reverse=True)
+                    _score, url, moviecontent = candidates[0]
+                    break
+
+            if not url:
+                return sources
+            if not moviecontent:
+                moviecontent = self._request(url, self.base_link)
+
+            quality = 'HD'
+            q = re.search(r'<span id="release_text"[^>]*>([^<&]+)', moviecontent, re.I)
+            if q:
+                text = q.group(1)
+                if '2160' in text or '4K' in text: quality = '4K'
+                elif '1080' in text: quality = '1080p'
+                elif '720' in text: quality = '720p'
+
+            for hoster, s_url in self._parse_streams(moviecontent):
+                if not s_url or s_url.startswith('javascript'):
+                    continue
+                is_blocked, res_host, res_url, prio = isBlockedHoster(s_url, isResolve=False)
+                if is_blocked and prio >= 100:
+                    continue
+                sources.append({
+                    'source': res_host if res_host else hoster.strip(),
+                    'quality': quality,
+                    'language': 'de',
+                    'url': res_url if res_url else s_url,
+                    'direct': False,
+                    'debridonly': False,
+                    'prioHoster': prio
+                })
+            logger.info('[Filmpalast] %d Quellen gefunden' % len(sources))
+            return sources
+        except Exception as e:
+            logger.error('[Filmpalast] Fehler: %s' % e)
+            return sources
+
+===== filmpro.py =====
+SIGNALS: season, episode, imdb, movie/series branch, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        sources = []
+        if season == 0:
+            query = 'https://meinecloud.click/ddl/%s' % imdb
+            oRequest = cRequestHandler(query)
+            oRequest.cacheTime = 60 * 60 * 24 * 2
+            sHtmlContent = oRequest.request()
+            pattern = "window.open.*?'([^']+).*?mark>([^<]+)"
+            isMatch, aResults = cParser.parse(sHtmlContent, pattern)
+            if isMatch:
+                for link, quality in aResults:
+                    isBlocked, hoster, sUrl, prioHoster = isBlockedHoster(link)
+                    if isBlocked: continue
+                    if sUrl: sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': sUrl, 'direct': True, 'prioHoster': prioHoster})
+            return sources
+        else:
+            try:
+                url = ''
+                t = [cleantitle.get(i) for i in titles if i]
+                for title in titles:
+                    try:
+                        query = self.search_link % quote_plus(title)
+                        oRequest  = cRequestHandler(query)
+                        oRequest.cacheTime = 60 * 60 * 24 * 2
+                        sHtmlContent = oRequest.request()
+                        r = dom_parser.parse_dom(sHtmlContent, 'ul', attrs={'id': 'dle-content'})
+                        if r:
+                            r = dom_parser.parse_dom(r, 'li')
+                            if len(r) == 0: continue
+                            for i in r:
+                                pattern = r'href="([^"]+).*?Title">([^<]+).*?Year">(\d+).*?Qlty">([^<]+)'
+                                sUrl, sTitle, sYear, sQuality = cParser.parse(i.content, pattern)[1][0]
+                                sTitle = sTitle.split(' - Der')[0]
+                                if sYear == str(year) and cleantitle.get(sTitle) in t:
+                                    url = sUrl
+                                if url: break
+                        if url:
+                            break
+                    except:
+                        pass
+
+                if url == '': return sources
+
+                oRequest = cRequestHandler(url)
+                oRequest.cacheTime = 60 * 60 * 24
+                sHtmlContent = oRequest.request()
+                pattern='data-num="%sx%s".*?"mirrors">(.*?)</div' % (season, episode)
+                isMatch, dataLinks= cParser.parse(sHtmlContent, pattern)
+                pattern='(http[^"]+)'
+                aResults=cParser.parse(dataLinks[0], pattern)[1]
+
+                for link in aResults:
+                    isBlocked, sDomain, sUrl, prioHoster = isBlockedHoster(link)
+                    if isBlocked: continue
+                    if url: sources.append({'source': sDomain, 'quality': 'HD', 'language': 'de', 'url': sUrl, 'direct': True, 'prioHoster': prioHoster})
+                return sources
+            except:
+                return sources
+
+===== hdfilme.py =====
+SIGNALS: season, episode, imdb, movie/series branch, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb=''):
+        sources = []
+        try:
+            t = set([cleantitle.get(i) for i in set(titles) if i])
+            links = []
+            for sSearchText in titles:
+                try:
+                    oRequest = cRequestHandler(self.search_link % quote(sSearchText))
+                    oRequest.cacheTime = 60 * 60 * 24 * 1
+                    # oRequest = cRequestHandler(self.search_link, caching=True)
+                    # oRequest.addParameters('story', sSearchText)
+                    # oRequest.addParameters('do', 'search')
+                    # oRequest.addParameters('subaction', 'search')
+                    sHtmlContent = oRequest.request()
+                    #pattern = 'class="col-md-li">.*?href="([^"]+).*?title="([^"]+).*?h2>.*?(\d+)'
+                    pattern = r'box-product(.*?)<h3.*?href="([^"]+).*?<p.*?>(.*?)(\d{4})'
+                    isMatch, aResult = cParser.parse(sHtmlContent, pattern)
+                    if not isMatch:
+                        continue
+
+                    for sDummy, sUrl, sName, sYear in aResult:
+                        sName = sName.strip()
+                        if season == 0:
+                            if cleantitle.get(sName) in t and int(sYear) == year:
+                                links.append(sUrl)
+
+                        else:
+                            if cleantitle.get(sName.split('-')[0].strip()) in t and str(season) in sName.split('-')[1]:
+                                links.append(sUrl)
+                                break
+                    if len(links) > 0: break
+                except:
+                    continue
+
+            if len(links) == 0: return sources
+
+            for url in links: # showHosters
+                oRequest = cRequestHandler(url)
+                oRequest.cacheTime = 60 * 60 * 24 * 1
+                sHtmlContent = oRequest.request()
+                quality = '720p'
+                if season > 0:
+                    pattern = r'Episoden\s%s<.*?</ul>' % episode
+                    isMatch, sHtmlContent = cParser.parseSingleResult(sHtmlContent, pattern)
+                    if not isMatch: return sources
+
+                isMatch, aResult = cParser.parse(sHtmlContent, 'link="([^"]+).*?>([^<]+)')
+
+                if isMatch:
+                    for sUrl, sName in aResult:
+                        if 'youtube' in sUrl or 'dropload' in sUrl: continue
+                        elif 'Player' in sName: continue
+                        elif sUrl.startswith('/'): sUrl = 'https:' + sUrl
+                        isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)
+                        if isBlocked: continue
+                        if url: self.sources.append({'source': hoster, 'quality': 'HD', 'language': 'de', 'url': url, 'direct': True, 'priority': int(self.priority), 'prioHoster': prioHoster})
+
+            return self.sources
+        except:
+            return sources
+
+===== huhu.py =====
+SIGNALS: season, episode, imdb, tmdb
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        self.sources = []
+        media_id = self._media_id(imdb, season, episode)
+        if not media_id:
+            return self.sources
+
+        links = self._json(self.links_link % media_id, self._headers())
+        if not isinstance(links, list):
+            return self.sources
+
+        for item in links:
+            try:
+                if not isinstance(item, dict):
+                    continue
+                raw = str(item.get('url') or '').strip()
+                if not raw:
+                    continue
+                name = str(item.get('name') or '')
+                language = str(item.get('language') or 'de').split('(')[0].strip().lower()
+                if language in ('german', 'deutsch', 'deu', 'ger'):
+                    language = 'de'
+                elif language in ('english', 'englisch', 'eng'):
+                    language = 'en'
+                elif language not in ('de', 'en'):
+                    language = 'de'
+
+                self.sources.append({
+                    'source': self._hoster(name),
+                    'quality': self._quality(name),
+                    'language': language,
+                    'url': self.get_link + raw,
+                    'direct': False,
+                    'debridonly': False,
+                    'info': name,
+                    'priority': int(self.priority),
+                    'prioHoster': 100
+                })
+            except Exception:
+                continue
+        return self.sources
+
+===== kinoger.py =====
+SIGNALS: season, episode, imdb, staffel, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        self.sources = []
+        page = self._find_page(titles, year, season)
+        if not page:
+            return self.sources
+        try:
+            req = cRequestHandler(page)
+            req.cacheTime = 60 * 60 * 12
+            html = req.request()
+            qualities = re.findall(r'title="Stream.(.+?)"', html)
+            links = re.findall(r'.show.+?,(\[\[.+?\]\])', html)
+            if not links:
+                return self.sources
+            sidx = int(season) - 1 if season else 0
+            eidx = int(episode) - 1 if episode else 0
+            for idx, block in enumerate(links):
+                try:
+                    table = ast.literal_eval(block)
+                    url = str(table[sidx][eidx]).strip()
+                    if not url:
+                        continue
+                    host = _host(url)
+                    quality = self._quality(qualities[idx] if idx < len(qualities) else '')
+                    display = host
+                    if hoster_compat.is_supported_host(host):
+                        display = hoster_compat.display_name(host)
+                    else:
+                        valid, known = source_utils.is_host_valid(url, hostDict)
+                        if valid and known:
+                            display = known
+                    if host == 'kinoger.be' and '$$' not in url:
+                        url += '$$https://kinoger.com/'
+                    url = _rewrite_dood(url)
+                    self.sources.append({'source': display or host, 'quality': quality, 'language':'de',
+                                         'url': url, 'direct': False, 'priority': int(self.priority),
+                                         'prioHoster': 100})
+                except Exception:
+                    continue
+            if not self.sources:
+                log_utils.log('Kinoger: kein Provider - %s' % (titles[0] if titles else ''), log_utils.LOGINFO)
+        except Exception:
+            pass
+        return self.sources
+
+===== kinoking.py =====
+SIGNALS: season, episode, imdb, movie/series branch, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        t = [cleantitle.get(i) for i in set(titles) if i]
+        links = []
+        hoster = []
+        for sSearchText in set(titles):
+            try:
+                URL_SEARCH = self.search_link % sSearchText
+                oRequest = cRequestHandler(URL_SEARCH, caching=True)
+                oRequest.cacheTime = 60 * 60
+                sHtmlContent = oRequest.request()
+                results = []
+                if season == 0:
+                    # KinoKing V2 (08/2026): film cards now expose id/title as data attributes.
+                    for card in re.findall(r'<[^>]+fav-data-source[^>]*>', sHtmlContent, re.I):
+                        id_m = re.search(r'data-id="(\d+)"', card, re.I)
+                        type_m = re.search(r'data-type="([^"]+)"', card, re.I)
+                        title_m = re.search(r'data-title="([^"]+)"', card, re.I)
+                        if id_m and title_m and (not type_m or type_m.group(1).lower() == 'movie'):
+                            results.append((id_m.group(1), title_m.group(1)))
+
+                    # Compatibility fallback for the previous KinoKing markup.
+                    if not results:
+                        for m in re.finditer(r'onclick="playMovie\((\d+)\)"', sHtmlContent):
+                            chunk = sHtmlContent[m.end():m.end() + 300]
+                            alt_m = re.search(r'alt="([^"]+)"', chunk)
+                            if alt_m:
+                                results.append((m.group(1), alt_m.group(1)))
+                else:
+                    # Keep the existing series parser unchanged.
+                    pattern = r"onclick=\"playContent\('(\d+)'\)\""
+                    for m in re.finditer(pattern, sHtmlContent):
+                        chunk = sHtmlContent[m.end():m.end() + 300]
+                        alt_m = re.search(r'alt="([^"]+)"', chunk)
+                        if alt_m:
+                            results.append((m.group(1), alt_m.group(1)))
+                for id, sName in results:
+                    if cleantitle.get(sName) in t:
+                        if season == 0:
+                            url = self.base_link + '/movie.php?id=%s' % id
+                        else:
+                            url = self.base_link + '/series.php?id=%s' % id
+                        if url not in links:
+                            links.append(url)
+                if len(links) > 0: break
+            except:
+                continue
+
+        if len(links) == 0: return self.sources
+
+        if season == 0:
+            self.list = []
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = [executor.submit(self.chk_year, i, year) for i in links]
+                concurrent.futures.wait(futures)
+            if len(self.list) > 0: hoster = self.list
+        else:
+            try:
+                sHtmlContent = cRequestHandler(links[0]).request()
+                episodeId = re.search(r'playEpisode\((\d+)', sHtmlContent).group(1)
+                api_url = self.base_link + '/api/episode-navigation.php?episode_id=%s' % episodeId
+                req = cRequestHandler(api_url).request()
+                jreq = json.loads(req)['links']
+                hoster.append(jreq[episode - 1])
+            except:
+                pass
+
+        for link in hoster:
+            # KinoKing V2 can expose a MeineCloud movie page as an iframe target.
+            # That URL is an intermediate page, not a playable hoster. Reuse the
+            # same shared resolver path as the working MEINECLOUD provider.
+            resolve_links = [link]
+            if 'meinecloud.click/movie/' in link:
+                try:
+                    mc_imdb = link.rstrip('/').rsplit('/', 1)[-1] or imdb
+                    resolve_links = get_movie_links(mc_imdb) or []
+                except:
+                    resolve_links = []
+
+            for resolve_link in resolve_links:
+                if resolve_link.startswith('/'):
+                    resolve_link = 'https:' + resolve_link
+                isBlocked, sDomain, sUrl, prioHoster = isBlockedHoster(resolve_link)
+                if isBlocked: continue
+                if sUrl:
+                    self.sources.append({'source': sDomain, 'quality': 'HD', 'language': 'de', 'url': sUrl, 'direct': True, 'priority': int(self.priority), 'prioHoster': prioHoster})
+
+        return self.sources
+
+===== kinokiste.py =====
+SIGNALS: season, episode, tvseries, imdb, staffel, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        self.sources = []
+        clean_titles = set(cleantitle.get(x) for x in titles or [] if x)
+        season_num = int(season or 0)
+        episode_num = int(episode or 0)
+        media_type = 'tvseries' if season_num > 0 else 'movies'
+
+        candidates = []
+        seen_ids = set()
+        for lang in ('4', '2', '3'):
+            lang_candidates = []
+            raw = []
+
+            if imdb:
+                data = self._json(self.imdb_link % (lang, imdb))
+                raw.extend(data.get('movies') if data and isinstance(data.get('movies'), list) else [])
+
+            for title in titles or []:
+                data = self._json(self.search_link % (
+                    lang, quote_plus(title), '' if season_num else year, media_type
+                ))
+                raw.extend(data.get('movies') if data and isinstance(data.get('movies'), list) else [])
+
+            for movie in raw:
+                mid = str(movie.get('_id') or '')
+                if not mid or mid in seen_ids:
+                    continue
+                if not self._candidate_matches(movie, clean_titles, year, season_num):
+                    continue
+                seen_ids.add(mid)
+                lang_candidates.append(movie)
+                if len(lang_candidates) >= 2:
+                    break
+
+            candidates.extend(lang_candidates)
+
+        per_host = {}
+        seen_urls = set()
+
+        for movie in candidates:
+            title = str(movie.get('title') or '')
+            mid = str(movie.get('_id') or '')
+            watch = self._watch(mid)
+            if not watch:
+                continue
+
+            lang_value = str(watch.get('lang') or '')
+            language = 'en' if lang_value == '3' or 'Season' in title else 'de'
+            info = 'Mehrsprachig' if lang_value == '4' else ('Englisch' if language == 'en' else 'Deutsch')
+
+            for stream in watch.get('streams') or []:
+                if season_num and str(stream.get('e') or '').lstrip('0') != str(episode_num):
+                    continue
+                url = str(stream.get('stream') or '').strip()
+                if not url:
+                    continue
+                if url.startswith('//'):
+                    url = 'https:' + url
+                if url in seen_urls:
+                    continue
+
+                host = (urlparse(url).hostname or '').lower()
+                if not host:
+                    continue
+
+                bucket = (host, language)
+                if per_host.get(bucket, 0) >= 2:
+                    continue
+
+                seen_urls.add(url)
+                per_host[bucket] = per_host.get(bucket, 0) + 1
+                quality = self._quality(stream.get('release') or movie.get('quality'))
+                self.sources.append({
+                    'source': host,
+                    'quality': quality,
+                    'language': language,
+                    'url': url,
+                    'direct': False,
+                    'priority': int(self.priority),
+                    'prioHoster': 100,
+                    'info': info
+                })
+
+        return self.sources
+
+===== kinox.py =====
+SIGNALS: season, episode, imdb, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        matches = []
+        t = [cleantitle.get(i) for i in set(titles) if i]
+        for title in titles:
+            try:
+                query = self.search_link % (quote_plus(title))
+                oRequest = cRequestHandler(query)
+                sHtmlContent = oRequest.request()
+                if not sHtmlContent:
+                    self.getdomain(True)
+                    query = self.search_link % (quote_plus(title))
+                    sHtmlContent = cRequestHandler(query).request()
+                results = self._parseSearchResults(sHtmlContent, season, year)
+                results = [i for i in results if cleantitle.get(i[1]) in t and self._wantedLanguage(i[2])]
+                if len(results) == 0:
+                    continue
+                matches.extend(results)
+                break
+            except:
+                pass
+
+        unique_matches = []
+        seen_urls = set()
+        for item in matches:
+            key = (item[0], item[2])
+            if key in seen_urls:
+                continue
+            seen_urls.add(key)
+            unique_matches.append(item)
+        matches = unique_matches
+
+        try:
+            if not matches:
+                return self.sources
+
+            for href, result_title, language_id, result_year in matches:
+                language, language_label = self._languageFromId(language_id)
+                url = urljoin(self.base_link, href)
+                oRequest = cRequestHandler(url)
+                sHtmlContent = oRequest.request()
+                if season and episode:
+                    r = dom_parser.parse_dom(sHtmlContent, 'select', attrs={'id': 'SeasonSelection'}, req='rel')[0]
+                    r = source_utils.replaceHTMLCodes(r.attrs['rel'])[1:]
+                    r = parse_qs(r)
+                    r = dict([(i, r[i][0]) if r[i] else (i, '') for i in r])
+                    r = urljoin(self.base_link, self.get_links_epi % (r['Addr'], r['SeriesID'], season, episode))
+                    oRequest = cRequestHandler(r)
+                    sHtmlContent = oRequest.request()
+                r = dom_parser.parse_dom(sHtmlContent, 'ul', attrs={'id': 'HosterList'})[0]
+                r = dom_parser.parse_dom(r, 'li', attrs={'id': re.compile(r'Hoster_\d+')}, req='rel')
+                r = [(source_utils.replaceHTMLCodes(i.attrs['rel']), i.content) for i in r if i[0] and i[1]]
+                r = [(i[0], re.findall(r'class="Named"[^>]*>([^<]+).*?(\d+)/(\d+)', i[1])) for i in r]
+                r = [(i[0], i[1][0][0].lower().rsplit('.', 1)[0], i[1][0][2]) for i in r if len(i[1]) > 0]
+                for link, hoster, mirrors in r:
+                    try:
+                        u = parse_qs('&id=%s' % link)
+                        u = dict([(x, u[x][0]) if u[x] else (x, '') for x in u])
+                        for x in range(0, int(mirrors)):
+                            tempLink = self.mirror_link % (u['id'], u['Hoster'], x + 1)
+                            if season and episode: tempLink += "&Season=%s&Episode=%s" % (season, episode)
+                            url = urljoin(self.base_link, tempLink)
+                            oRequest = cRequestHandler(url)
+                            sHtmlContent = oRequest.request()
+                            if len(sHtmlContent) < 20:
+                                time.sleep(1)  
+                                oRequest = cRequestHandler(url)
+                                sHtmlContent = oRequest.request()
+                            r = json.loads(sHtmlContent)['Stream']
+                            r = [(dom_parser.parse_dom(r, 'a', req='href'), dom_parser.parse_dom(r, 'iframe', req='src'))]
+                            r = [i[0][0].attrs['href'] if i[0] else i[1][0].attrs['src'] for i in r if i[0] or i[1]][0]
+                            if not r.startswith('http'): r = urljoin('https:', r)
+                            isBlocked, hoster, url, prioHoster = isBlockedHoster(r)
+                            if isBlocked: continue
+                            info = 'Mirror ' + str(x+1)
+                            if language_label:
+                                info += ' | ' + language_label
+                            if url: self.sources.append({'source': hoster, 'quality': 'SD', 'language': language, 'url': url, 'direct': True, 'prioHoster': prioHoster, 'info': info})
+                    except:
+                        pass
+            return self.sources
+        except:
+            return self.sources
+
+===== kkiste.py =====
+SIGNALS: season, episode, tvseries, imdb, staffel, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        sources = []
+        try:
+            clean_titles = set(cleantitle.get(x) for x in set(titles or []) if x)
+            media_type = 'tvseries' if int(season or 0) > 0 else 'movies'
+            found_ids = set()
+            hoster_count = {}
+
+            for lang in self._language_queries():
+                for title in titles or []:
+                    if not title:
+                        continue
+                    search_url = self.browse_link % (lang, quote_plus(title), '' if season else year, media_type)
+                    data = self._json(search_url, self.base_link + '/browse?keyword=%s' % quote_plus(title))
+                    if not data or not isinstance(data.get('movies'), list):
+                        continue
+                    for movie in data['movies']:
+                        media_id = str(movie.get('_id') or '')
+                        if not media_id or media_id in found_ids or not self._matches(movie, clean_titles, year, season):
+                            continue
+                        found_ids.add(media_id)
+                        watch = self._watch(media_id, self.base_link + '/browse?keyword=%s' % quote_plus(title))
+                        if not watch:
+                            continue
+                        language, lang_label = self._language(watch, movie.get('title', ''))
+                        for stream in watch.get('streams') or []:
+                            if int(season or 0) > 0 and str(stream.get('e', '')) != str(episode):
+                                continue
+                            url = str(stream.get('stream') or '').strip()
+                            if not url or 'youtube' in url.lower() or 'vod' in url.lower():
+                                continue
+                            if url.startswith('//'):
+                                url = 'https:' + url
+                            elif url.startswith('/'):
+                                url = 'https:/' + url
+                            ok, names = cParser.parse(url, '//([^/]+)/')
+                            if not ok:
+                                continue
+                            host = names[0]
+                            short = host.rsplit('.', 1)[0] if '.' in host else host
+                            rank = 0
+                            for key, value in self.hoster_priority.items():
+                                if key in short.lower():
+                                    rank = value
+                                    break
+                            if rank < self.min_priority:
+                                continue
+                            count_key = '%s:%s' % (language, short.lower())
+                            if hoster_count.get(count_key, 0) >= self.max_per_hoster:
+                                continue
+                            hoster_count[count_key] = hoster_count.get(count_key, 0) + 1
+                            release = str(stream.get('release') or '').upper()
+                            quality = 'CAM' if ('CAM' in release or 'TS' in release) else 'SD' if 'SD' in release else 'HD'
+                            sources.append({
+                                'source': short,
+                                'quality': quality,
+                                'language': language,
+                                'url': url,
+                                'direct': False,
+                                'debridonly': False,
+                                'priority': int(self.priority),
+                                'prioHoster': max(1, 20 - rank),
+                                'info': lang_label
+                            })
+            return sorted(sources, key=lambda x: x.get('prioHoster', 100))
+        except Exception:
+            return sources
+
+===== kool.py =====
+SIGNALS: season, episode, imdb, movie/series branch, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        try:
+            if season == 0: mediatype = 'movie'
+            else: mediatype = 'series'
+            t = set([cleantitle.get(i) for i in set(titles) if i])
+            links = []
+            # import pydevd
+            # pydevd.settrace('localhost', port=12345, stdoutToServer=True, stderrToServer=True)
+            for sSearchText in titles:
+                try:
+                    sSearchText = quote(sSearchText)
+                    oRequest = cRequestHandler(self.search_link %(mediatype, sSearchText ))
+                    oRequest.addHeaderEntry('Referer', self.base_link)
+                    oRequest.addHeaderEntry('Origin', 'https://' + self.domain)
+                    oRequest.removeNewLines(False)
+                    if season != 0: oRequest.cacheTime = 60 * 60 * 4  # 4 Stunden
+                    jSearch = json.loads(oRequest.request())
+                    if not jSearch: continue
+                    aResults = jSearch['data']
+                    if len(aResults) == 0: continue
+                    #isTvshow = False
+                    for i in aResults:
+                        sId = i['id']  # ID des Films / Serie für die weitere URL
+                        sName = i['name']  # Name des Films / Serie
+                        if 'releaseDate' in i and len(str(i['releaseDate'].split('-')[0].strip())) != '':
+                            sYear = str(i['releaseDate'].split('-')[0].strip())
+                        else: continue
+
+                        if cleantitle.get(sName) in t and int(sYear) == year:
+                            if season == 0:
+                                sUrl =  self.base_link + 'api/links?id=%s' % sId
+                            else:
+                                # https://kool.to/web-vod/links?id=series.94997.1.1
+                                sUrl = self.base_link + 'api/links?id=%s.%s.%s' %(sId, season, episode)
+                            if not sUrl in links: links.append(sUrl)
+                            break
+
+                    if len(links) > 0: break
+                except:
+                    continue
+
+            for hUrl in links:
+                oRequest = cRequestHandler(hUrl)
+                #if season != 0: oRequest.cacheTime = 60 * 60 * 4  # 4 Stunden
+                oRequest.addHeaderEntry('Referer', self.base_link)
+                oRequest.addHeaderEntry('Origin', 'https://' + self.domain)
+                oRequest.removeNewLines(False)
+                jSearch = json.loads(oRequest.request())
+                if not jSearch: continue
+
+                for i in jSearch:
+                    if not 'language' in str(i): language = 'de'
+                    else: language = i['language']
+                    isMatch, quality = cParser.parseSingleResult(i['name'], "\(([^\)]+)")
+                    if not isMatch: quality = '720p'
+                    url = 'https://www.kool.to/web-vod/api/get?link=%s' % i['url']
+                    _USER_AGENT = cRequestHandler.RandomUA()
+                    Request = cRequestHandler(url, caching=False)
+                    Request.addHeaderEntry('User-Agent', _USER_AGENT)
+                    Request.request()
+                    sUrl =  Request.getRealUrl()
+                    isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)
+                    if isBlocked:
+                        continue
+                    if url: self.sources.append({'source': hoster, 'quality': quality, 'language': language, 'url': url, 'info': i['name'] , 'direct': True, 'priority': int(self.priority), 'prioHoster': prioHoster})
+
+            return self.sources
+        except:
+            return self.sources
+
+===== megakino.py =====
+SIGNALS: season, episode, imdb, movie/series branch, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        t = set([cleantitle.get(i) for i in set(titles) if i])
+        links = []
+        # Suche nach 'imdb'
+        try:
+            oRequest = cRequestHandler(self.base_link)
+            oRequest.addParameters('do', 'search')
+            oRequest.addParameters('subaction', 'search')
+            oRequest.addParameters('story', imdb)
+            sHtmlContent = oRequest.request()
+            r = dom_parser.parse_dom(sHtmlContent, 'div', attrs={'id': 'dle-content'})[0].content
+            if season != 0:
+                pattern = r'<a\s+class="poster[^>]*href="([^"]+).*?alt="([^"]+)'
+            else:
+                pattern = r'<a\s+class="poster[^>]*href="([^"]+).*?alt="([^"]+)">.*?<li>.*?(\d{4}).*?</a>'
+            isMatch, aResult = cParser.parse(r, pattern)
+
+            if isMatch:
+                if season == 0:
+                    for sUrl, sName, sYear in aResult:  # sUrl, sName, sQuality, sYear
+                        links.append({'url': sUrl, 'name': sName, 'quality': 'HD', 'year': sYear})
+                elif season > 0:
+                    for sUrl, sName in aResult:
+                        if cleantitle.get(sName.split('-')[0].strip()) in t and str(season) in sName.split('-')[1]:
+                            links.append({'url': sUrl, 'name': sName.split('- S')[0].strip(), 'quality': 'HD', 'year': ''})
+
+                if len(links) == 0 and season == 0:
+                    for sUrl, sName, sYear in aResult:
+                        if not int(sYear) == year: continue
+                        for a in t:
+                            if any([a in cleantitle.get(sName)]):
+                                links.append({'url': sUrl, 'name': sName, 'quality': 'HD', 'year': sYear})
+        except:
+            pass
+
+        # wenn Suche 'imdb' nicht erfolgreich war - dann ab hier Suche nach Titel
+        if len(links)==0:
+                for sSearchText in titles:
+                    try:
+                        # url = self.search_link % (sSearchText)
+                        oRequest = cRequestHandler(self.base_link)
+                        oRequest.addParameters('do', 'search')
+                        oRequest.addParameters('subaction', 'search')
+                        # oRequest.addParameters('search_start', '0')
+                        # oRequest.addParameters('full_search', '0')
+                        # oRequest.addParameters('result_from', '1')
+                        oRequest.addParameters('story', sSearchText)
+                        oRequest.addParameters('titleonly', '3')
+                        sHtmlContent = oRequest.request()
+                        r = dom_parser.parse_dom(sHtmlContent, 'div', attrs={'id': 'dle-content'})[0].content
+                        if season != 0:
+                            pattern = '<a\s+class="poster[^>]*href="([^"]+).*?alt="([^"]+)'
+                        else:
+                            pattern = '<a\s+class="poster[^>]*href="([^"]+).*?alt="([^"]+)">.*?<li>.*?(\d{4}).*?</a>'
+                        isMatch, aResult = cParser.parse(r, pattern)
+                        if not isMatch: continue
+                        if season == 0:
+                            for sUrl, sName, sYear in aResult:  # sUrl, sName, sQuality, sYear
+                                if not int(sYear) == year: continue
+                                # if '1080' in sQuality: sQuality = '1080p'
+                                if cleantitle.get(sName) in t:
+                                    links.append({'url': sUrl, 'name': sName, 'quality': 'HD', 'year': sYear})
+
+                        elif season > 0:
+                            for sUrl, sName in aResult:
+                                if cleantitle.get(sName.split('-')[0].strip()) in t and str(season) in sName.split('-')[1]:
+                                    links.append({'url': sUrl, 'name': sName.split('- S')[0].strip(), 'quality': 'HD', 'year': ''})
+
+                        if len(links) == 0 and season == 0:
+                            for sUrl, sName, sYear in aResult:
+                                if not int(sYear) == year: continue
+                                # if '1080' in sQuality: sQuality = '1080p'
+                                for a in t:
+                                    if any([a in cleantitle.get(sName)]):
+                                        links.append({'url': sUrl, 'name': sName, 'quality': 'HD', 'year': sYear})
+                                        break
+                        if len(links) > 0: break
+                    except:
+                        continue
+
+        if len(links) == 0: return self.sources
+
+        for link in links:
+            sUrl = urljoin(self.base_link, link['url'])
+            sHtmlContent = cRequestHandler(sUrl).request()
+            challenge_pattern = r'fetch\s*\(\s*["\']([^"\']+)["\']'
+            is_challenge, match_groups = cParser.parseSingleResult(sHtmlContent, challenge_pattern)
+            if is_challenge:
+                import requests
+                from urllib.parse import urlparse
+                parsed_url = urlparse(sUrl)
+                base_url = "{}://{}".format(parsed_url.scheme, parsed_url.netloc)
+                token_path = match_groups
+                token_url = base_url + token_path if token_path.startswith('/') else base_url + '/' + token_path
+                s = requests.Session()
+                headers = {'User-Agent': cRequestHandler.RandomUA(), 'Referer': base_url + '/'}
+                s.get(base_url, headers=headers, timeout=5)
+                s.get(token_url, headers=headers, timeout=5)
+                response = s.get(sUrl, headers=headers)
+                sHtmlContent = response.text
+
+            if season > 0:
+                quality = link['quality']
+                pattern = r'<select\s+name="pmovie__select-items"\s+class="[^"]+"\s+style="[^"]+"\s+id="ep%s">\s*(.*?)\s*</select>' % str(episode)
+                isMatch, sHtmlContent = cParser.parseSingleResult(sHtmlContent, pattern)
+                isMatch, aResult = cParser.parse(sHtmlContent, 'value="(http[^"]+)')
+                if not isMatch: return self.sources
+            else:
+                pattern = r'poster__label">([^/|<]+)'
+                isMatch, sQuality = cParser.parseSingleResult(sHtmlContent, pattern)
+                if '1080' in sQuality: sQuality = '1080p'
+                quality = sQuality if isMatch else link['quality']
+                pattern=r'iframe.*?src="(http[^"]+)'
+                isMatch, aResult = cParser.parse(sHtmlContent, pattern)
+                if not isMatch: return self.sources
+            for sUrl in aResult:
+                if 'youtube' in sUrl.lower(): continue
+                # if sUrl.startswith('/'): sUrl = re.sub('//', 'https://', sUrl)
+                # if sUrl.startswith('/'): sUrl = 'https:/' + sUrl
+                isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)
+                if isBlocked: continue
+                if url:
+                    self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': url, 'direct': True, 'priority': int(self.priority), 'prioHoster': prioHoster})
+
+        return self.sources
+
+===== meinecloud.py =====
+SIGNALS: season, episode, imdb
+
+    def run(self, titles, year, season=0, episode=0, imdb=''):
+        self.sources = []
+        try:
+            if int(season or 0) == 0:
+                self._add_links(get_movie_links(imdb, self.base_link))
+            else:
+                self._add_links(
+                    get_series_links(imdb, int(season), int(episode), self.base_link),
+                    numbered=True
+                )
+            return self.sources
+        except Exception:
+            return self.sources
+
+===== moflix.py =====
+SIGNALS: season, episode, imdb
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        try:
+            item = self._best_match(titles, year, season, imdb)
+            if not item:
+                log_utils.log('[MOFLIX-XVAULT] no matching title found', log_utils.LOGINFO)
+                return self.sources
+
+            if int(season or 0) > 0 and int(episode or 0) > 0:
+                videos = self._episode_videos(item.get('id'), season, episode)
+            else:
+                detail = self._json(self.detail_link % item.get('id'), self.base_link + '/')
+                title_data = detail.get('title') if isinstance(detail.get('title'), dict) else {}
+                videos = title_data.get('videos') or []
+
+            self._add_videos(videos)
+        except Exception as exc:
+            log_utils.log('[MOFLIX-XVAULT] error: %s' % exc, log_utils.LOGERROR)
+        return self.sources
+
+===== movie2k.py =====
+SIGNALS: season, episode, tvseries, imdb, staffel
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        try:
+            streams = self._search(titles, year, season, episode)
+            if not streams:
+                return self.sources
+
+            streams = sorted(streams, key=lambda item: item.get('added', ''), reverse=True)
+            total = 0
+            checked = 0
+
+            for item in streams:
+                if checked >= 50 or total >= 10:
+                    break
+                checked += 1
+
+                stream_url = item.get('stream', '')
+                if not stream_url:
+                    continue
+
+                quality = self._quality(item.get('release', ''))
+                is_blocked, hoster, clean_url, prio_hoster = isBlockedHoster(stream_url, isResolve=False)
+                if is_blocked or not clean_url:
+                    continue
+
+                language = item.get('_xship_language', 'de')
+                language_label = item.get('_xship_language_label', '')
+                self.sources.append({
+                    'source': hoster,
+                    'quality': quality,
+                    'language': language,
+                    'url': clean_url,
+                    'info': language_label,
+                    'direct': False,
+                    'priority': int(self.priority),
+                    'prioHoster': prio_hoster
+                })
+                total += 1
+        except Exception:
+            pass
+
+        return self.sources
+
+===== movie2k2.py =====
+SIGNALS: season, episode, imdb, staffel, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        sources = []
+        if not titles:
+            return sources
+        logger.info('Load %s - Start run for: %s' % (SITE_NAME, titles[0]))
+        links = self.search(titles, year, season, episode)
+        if not links:
+            logger.info('Load %s - No movie links found' % SITE_NAME)
+            return sources
+
+        for url in links:
+            try:
+                oRequest = cRequestHandler(url)
+                oRequest.addHeaderEntry('User-Agent', self.ua)
+                oRequest.addHeaderEntry('Referer', self.base_link)
+                html = oRequest.request()
+                if not html:
+                    continue
+
+                pattern = r"loadMirror\s*\(\s*'([^']+)'\s*\).*?>\s*(?:&nbsp;)*\s*([^<|\s|&]+)"
+                isMatch, aResult = cParser().parse(html, pattern)
+                if not isMatch:
+                    continue
+
+                logger.info('Load %s - Found %s potential mirrors' % (SITE_NAME, len(aResult)))
+                for sStreamUrl, sHosterName in aResult:
+                    if sStreamUrl.startswith('//'):
+                        sStreamUrl = 'https:' + sStreamUrl
+                    elif sStreamUrl.startswith('/'):
+                        sStreamUrl = self.base_link + sStreamUrl
+
+                    isBlocked, hoster, sFinalUrl, prioHoster = isBlockedHoster(sStreamUrl, isResolve=False)
+                    if isBlocked:
+                        continue
+
+                    sources.append({
+                        'source': hoster or sHosterName.replace('.com', '').replace('.to', '').strip(),
+                        'quality': 'HD' if 'hd.gif' in html.lower() else 'SD',
+                        'language': 'de',
+                        'url': sFinalUrl or sStreamUrl,
+                        'direct': False,
+                        'prioHoster': prioHoster
+                    })
+            except Exception as e:
+                logger.info('Load %s - Error in hoster parsing: %s' % (SITE_NAME, str(e)))
+        return sources
+
+===== movie4k.py =====
+SIGNALS: season, episode, imdb, staffel, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb=''):
+        try:
+            streams = self.search(titles, year, season, episode)
+            if not streams:
+                return self.sources
+
+            total = 0
+            for item in streams:
+                stream_url = self._clean_stream_url(item.get('stream', ''))
+                if not stream_url:
+                    continue
+
+                is_blocked, hoster, url, prio_hoster = isBlockedHoster(stream_url, isResolve=self.checkHoster)
+                if is_blocked or not url:
+                    continue
+
+                self.sources.append({
+                    'source': hoster,
+                    'quality': self._quality(item),
+                    'language': item.get('_xvault_language', 'de'),
+                    'url': url,
+                    'direct': True if self.checkHoster else False,
+                    'prioHoster': prio_hoster,
+                    'info': item.get('_xvault_language_label', '')
+                })
+                total += 1
+                if total >= 10:
+                    break
+        except:
+            pass
+        return self.sources
+
+===== moviedream.py =====
+SIGNALS: season, episode, imdb, staffel, movie/series branch, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        imdb = cParser.parse(imdb, '\d+')[1][0]
+        if season == 0:
+            URL_SEARCH = self.base_link + '/film/%s/deutsch' % imdb
+        else:
+            URL_SEARCH = self.base_link + '/serie/%s/deutsch/staffel-%s/episode-%s' % (imdb, str(season), str(episode))
+        REFERER = self.base_link + '/suchergebnisse.php?sprache=Deutsch&imdbid=%s' % imdb
+        oRequest = cRequestHandler(URL_SEARCH, caching=True)
+        oRequest.addHeaderEntry('Referer', REFERER)
+        sHtmlContent = oRequest.request()
+        pattern = 'decrypt(\([^\)]+\))'
+        isMatch, aResult = cParser.parse(sHtmlContent, pattern)
+        for Result in aResult:
+            password = eval(Result)[1].encode()
+            decryptdict = eval(eval(Result)[0])
+            ciphertext = base64.b64decode(decryptdict['ct'])
+            salt = bytes.fromhex(decryptdict['s'])
+            keyIv = self.bytesToKey(salt, password)
+            key = keyIv[:32]
+            iv = keyIv[32:]  # from key derivation
+            cipher = AES.new(key, AES.MODE_CBC, iv)
+            decryptedstring = unpad(cipher.decrypt(ciphertext), 16)
+            url = eval(decryptedstring.decode())
+            sUrl = url.replace('\\', '')
+            isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)
+            if isBlocked: continue
+            quality = 'HD'
+            if '1080' in sUrl: quality = '1080p'
+            self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': url, 'direct': True, 'prioHoster': prioHoster})
+        return self.sources
+
+===== netzkino.py =====
+SIGNALS: season, episode, imdb, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        self.sources = []
+        if season or not titles:
+            return self.sources
+        query = min([str(x) for x in titles if x], key=len).lower()
+        try:
+            raw = self._request(self._search_url(query))
+            data = json.loads(raw) if raw else {}
+            nodes = data.get('data', {}).get('search', {}).get('nodes', [])
+            wanted = set(cleantitle.get(x) for x in titles if x)
+            for node in nodes if isinstance(nodes, list) else []:
+                content_id = node.get('id')
+                if not content_id:
+                    continue
+                detail = self._details(content_id)
+                if not detail:
+                    continue
+                if cleantitle.get(detail.get('title') or '') not in wanted:
+                    continue
+                try:
+                    if detail.get('year') and year and int(detail['year']) != int(year):
+                        continue
+                except Exception:
+                    pass
+                stream = str(detail.get('pmd') or '')
+                if not stream:
+                    continue
+                if not stream.startswith('http'):
+                    stream = 'https://pmd.netzkino-seite.netzkino.de/' + stream.lstrip('/')
+                self.sources.append({'source': 'Netzkino', 'quality': 'HD', 'language': 'de',
+                                     'url': stream, 'direct': True, 'priority': int(self.priority),
+                                     'prioHoster': 1})
+        except Exception:
+            pass
+        return self.sources
+
+===== nox.py =====
+SIGNALS: season, episode, imdb
+
+    def run(self, titles, year, season=0, episode=0, imdb=''):
+        try:
+            clean_titles = set([cleantitle.get(title) for title in titles if title])
+            for title in titles:
+                data = self._request_json(self.search_link % quote_plus(title), self.base_link)
+                media_items = data.get('result', {}).get('media', []) if isinstance(data, dict) else []
+                for media in media_items:
+                    if not self._matches_media(media, clean_titles, year, season, imdb):
+                        continue
+                    detail = self._request_json(self.media_link % media.get('slug'), self.base_link + '/download/Filme/%s' % media.get('slug'))
+                    self._add_ready_links(detail.get('result', detail), season, episode)
+                    if len(self.sources) >= 20:
+                        return self.sources
+        except:
+            pass
+        return self.sources
+
+===== serienfans.py =====
+SIGNALS: season, episode, imdb
+
+    def run(self, titles, year, season=0, episode=0, imdb=''):
+        if int(season or 0) <= 0:
+            return self.sources
+        try:
+            for series_url in self._find_series_pages(titles):
+                self._read_season(series_url, season, episode)
+                if len(self.sources) >= 20:
+                    break
+        except:
+            pass
+        return self.sources
+
+===== serienstream.py =====
+SIGNALS: season, episode, imdb, tmdb, staffel
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        if int(season or 0) == 0 and getattr(self, 'mediatype', None) != 'tvshow':
+            return self.sources
+
+        try:
+            t = []
+            for i in titles:
+                if i:
+                    t.extend(_all_variants(i))
+            t = list(set([x for x in t if x]))
+
+            if log_utils:
+                logger.info('SerienStream - Search: S%02dE%02d | all title variants: %s' % (season, episode, t))
+
+            login, password = self._getLogin()
+
+            if not login or not password:
+                if log_utils:
+                    logger.info('SerienStream - No credentials, skipping scraper')
+
+                if not self.credentials_checked:
+                    self.credentials_checked = True
+                    try:
+                        import xbmcgui
+                        xbmcgui.Dialog().ok(
+                            'SerienStream',
+                            'Keine Login-Daten in den Einstellungen eingetragen.\n\nBitte Email und Passwort fuer SerienStream eintragen.\nBis dahin wird SerienStream uebersprungen.'
+                        )
+                    except Exception as e:
+                        if log_utils:
+                            logger.info('SerienStream - Dialog error: %s' % str(e))
+
+                return self.sources
+
+            if log_utils:
+                logger.info('SerienStream - Credentials found, attempting login')
+
+            login_success = self._do_login(login, password)
+            if not login_success:
+                if log_utils:
+                    logger.info('SerienStream - Login failed, but continuing anyway')
+
+            aLinks = []
+
+            if imdb:
+                try:
+                    try:
+                        from urllib import quote
+                    except:
+                        from urllib.parse import quote
+
+                    imdb_search_url = urljoin(self.base_link, self.search_link + quote(imdb))
+
+                    if log_utils:
+                        logger.info('SerienStream - IMDB search URL: %s' % imdb_search_url)
+
+                    oRequest = cRequestHandler(imdb_search_url, caching=False)
+                    oRequest.addHeaderEntry('User-Agent', 'Mozilla/5.0')
+                    sHtmlContent = oRequest.request()
+
+                    links = self._parse_search_results(sHtmlContent)
+
+                    if links:
+                        if log_utils:
+                            logger.info('SerienStream - IMDB search found %d results' % len(links))
+                        href, series_title = links[0]
+                        aLinks.append({'source': href})
+                        if log_utils:
+                            logger.info('SerienStream - IMDB match: %s | title: %s' % (href, series_title))
+
+                except Exception as e:
+                    if log_utils:
+                        logger.info('SerienStream - IMDB search error: %s' % str(e))
+
+            if not aLinks:
+                if log_utils:
+                    logger.info('SerienStream - No IMDB result, falling back to title search')
+
+                # SerienStream search is punctuation-sensitive. TMDB and SerienStream
+                # can use different separators for the same title, e.g.
+                # "ES - Welcome to Derry" vs "ES: Welcome to Derry".
+                search_titles = []
+                for raw_title in titles:
+                    if not raw_title:
+                        continue
+
+                    candidates = [raw_title]
+                    try:
+                        # Dash separator -> colon separator
+                        alt = re.sub(r'\s+[-–—]\s+', ': ', raw_title)
+                        if alt != raw_title:
+                            candidates.append(alt)
+                    except:
+                        pass
+                    try:
+                        # Colon separator -> dash separator (reverse case)
+                        alt = re.sub(r'\s*:\s*', ' - ', raw_title)
+                        if alt != raw_title:
+                            candidates.append(alt)
+                    except:
+                        pass
+
+                    for candidate in candidates:
+                        if candidate and candidate not in search_titles:
+                            search_titles.append(candidate)
+
+                if log_utils:
+                    logger.info('SerienStream - Raw search title variants: %s' % search_titles)
+
+                for title in search_titles:
+                    if not title:
+                        continue
+
+                    try:
+                        try:
+                            from urllib import quote
+                        except:
+                            from urllib.parse import quote
+
+                        if isinstance(title, str):
+                            try:
+                                search_term = quote(title)
+                            except:
+                                search_term = quote(title.encode('utf-8'))
+                        else:
+                            search_term = quote(title)
+
+                        search_url = urljoin(self.base_link, self.search_link + search_term)
+
+                        if log_utils:
+                            logger.info('SerienStream - Search URL: %s' % search_url)
+
+                        oRequest = cRequestHandler(search_url, caching=False)
+                        oRequest.addHeaderEntry('User-Agent', 'Mozilla/5.0')
+                        sHtmlContent = oRequest.request()
+
+                        links = self._parse_search_results(sHtmlContent)
+
+                        if links:
+
+===== streamcloud.py =====
+SIGNALS: season, episode, imdb, movie/series branch, season branch
+
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        try:
+            if season == 0:
+                aResult = get_movie_links(imdb)
+                for sUrl in aResult:
+                    if sUrl.startswith('/'): sUrl = 'https:' + sUrl
+                    valid, hoster = source_utils.is_host_valid(sUrl, hostDict)
+                    if not valid: continue
+                    quality = self.parse_quality(sUrl)
+                    self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': sUrl, 'direct': False})
+
+            else:
+                oRequest = cRequestHandler(self.search_link % imdb, caching=True)
+                sHtmlContent = oRequest.request()
+                pattern = 'class="thumb".*?title="([^"]+).*?href="([^"]+).*?_year">([^<]+)'
+                isMatch, aResult = cParser.parse(sHtmlContent, pattern)
+                if not isMatch: return self.sources
+
+                sName, sUrl, sYear = aResult[0]
+                oRequest = cRequestHandler(sUrl, caching=True)
+                sHtmlContent = oRequest.request()
+                pattern = r'%sx%s\s.*?/>' % (str(season), str(episode))
+                isMatch, sLinkContainer = cParser.parseSingleResult(sHtmlContent, pattern)
+                pattern = 'href="([^"]+)'
+                isMatch, aResult = cParser.parse(sLinkContainer, pattern)
+                if not isMatch: return self.sources
+                for sUrl in aResult:
+                    if sUrl.startswith('/'): sUrl = 'https:' + sUrl
+                    valid, hoster = source_utils.is_host_valid(sUrl, hostDict)
+                    if not valid: continue
+                    quality = self.parse_quality(sUrl)
+                    self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': sUrl, 'direct': False})
+            return self.sources
+        except:
+            return self.sources
+
+===== streamcloudforum.py =====
+SIGNALS: season, episode, serial, imdb, tmdb
+
+    def run(self, titles, year, season=0, episode=0, imdb=''):
+        try:
+            if int(season or 0) > 0:
+                self._run_episode(titles, season, episode, imdb)
+            else:
+                self._run_movie(titles, year, imdb)
+        except:
+            pass
+        return self.sources
+
+===== topstreamfilm.py =====
+SIGNALS: season, episode, imdb, movie/series branch, season branch
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        try:
+            if season == 0:
+                aResult = get_movie_links(imdb)
+                for sUrl in aResult:
+                    if sUrl.startswith('/'): sUrl = 'https:' + sUrl
+                    valid, hoster = source_utils.is_host_valid(sUrl, hostDict)
+                    if not valid: continue
+                    quality = self.parse_quality(sUrl)
+                    self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': sUrl, 'direct': False})
+
+            else:
+                oRequest = cRequestHandler(self.search_link % imdb, caching=True)
+                sHtmlContent = oRequest.request()
+                pattern = 'class="thumb".*?title="([^"]+).*?href="([^"]+).*?_year">([^<]+)'
+                isMatch, aResult = cParser.parse(sHtmlContent, pattern)
+                if not isMatch: return self.sources
+
+                sName, sUrl, sYear = aResult[0]
+                oRequest = cRequestHandler(sUrl, caching=True)
+                sHtmlContent = oRequest.request()
+                pattern = r'%sx%s\s.*?/>' % (str(season), str(episode))
+                isMatch, sLinkContainer = cParser.parseSingleResult(sHtmlContent, pattern)
+                pattern = 'href="([^"]+)'
+                isMatch, aResult = cParser.parse(sLinkContainer, pattern)
+                if not isMatch: return self.sources
+                for sUrl in aResult:
+                    if sUrl.startswith('/'): sUrl = 'https:' + sUrl
+                    valid, hoster = source_utils.is_host_valid(sUrl, hostDict)
+                    if not valid: continue
+                    quality = self.parse_quality(sUrl)
+                    self.sources.append({'source': hoster, 'quality': quality, 'language': 'de', 'url': sUrl, 'direct': False})
+            return self.sources
+        except:
+            return self.sources
+
+===== vavoo.py =====
+SIGNALS: season, episode, imdb, tmdb, movie/series branch, season branch
+
+
+    def run(self, titles, year, season=0, episode=0, imdb=''):
+        sources = []
+        #if season != 0: return sources
+        #imdb = '48866' # 'tt2661044'
+        action = 'links'
+        params = dict()
+        params['language'] = 'de'
+        if season == 0:
+            mediatype = 'movie'
+            params['id'] = '%s.%s' % (mediatype, imdb)
+        else:
+            V2_API_KEY = '4a65e1e644af74c98f9f2b3884669deb3fac9531ee71f39babf1dee46d264d17'
+            headers = {'Content-Type': 'application/json', 'trakt-api-key': V2_API_KEY, 'trakt-api-version': '2'}
+            sUrl = 'https://api.trakt.tv/shows/{0}'.format(imdb)
+            result = requests.get(sUrl, headers=headers)
+            #if result.status_code == 200:
+            result = json.loads(result.content)
+            id = result['ids']['tmdb']
+            mediatype = 'series'
+            params['id'] = '%s.%s.%s.%s' % (mediatype, id, str(season), str(episode))
+
+        data = self.callApi(action, params)
+
+        for i in data:
+            try:
+                url = i['url']
+                if 'filemoon' in url: continue
+                if not 'language' in str(i): language = 'de'
+                else: language = i['language']
+                isMatch, quality = cParser.parseSingleResult(i['name'], "\(([^\)]+)")
+                if not isMatch: quality = '720p'
+                isBlocked, hoster, sUrl, prioHoster = isBlockedHoster(url)
+                if isBlocked: continue
+                if sUrl:
+                    sources.append({'source': hoster, 'quality': quality, 'language': language, 'url': sUrl, 'info': i['name'], 'direct': True, 'priority': int(self.priority), 'prioHoster': prioHoster})
+            except:
+                pass
+        return sources
+
+===== vixstream.py =====
+SIGNALS: season, episode, imdb, tmdb
+
+    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+        try:
+            tmdb_id = self._get_tmdb_id(imdb)
+            if not tmdb_id:
+                logger.warning('[%s] Keine TMDB-ID gefunden fuer IMDB: %s' % (SITE_NAME, imdb))
+                return self.sources
+
+            # VixSrc wird direkt ueber die TMDb-ID angesprochen.
+            # Keine Sprachsuche/-verifikation: VixSrc liefert primaer EN und
+            # kann weitere Audiospuren (z. B. IT) direkt im HLS enthalten.
+            language = 'en'
+            embed_url, referer = self._fresh_embed_url(tmdb_id, season, episode, language)
+            if not embed_url:
+                logger.warning('[%s] Kein Embed fuer tmdb=%s gefunden' % (SITE_NAME, tmdb_id))
+                return self.sources
+
+            stable_url = self._stable_url(tmdb_id, season, episode, language)
+            self.sources.append({
+                'source': 'VixCloud',
+                'quality': '1080p',
+                'language': 'en',
+                'url': stable_url,
+                'direct': False,
+                'info': 'VixSrc'
+            })
+            logger.info('[%s] Quelle gefunden: tmdb=%s (ohne Sprachfilter)' % (SITE_NAME, tmdb_id))
+
+        except Exception as exc:
+            logger.error('[%s] run() Fehler: %s' % (SITE_NAME, str(exc)))
+            import traceback
+            logger.debug('[%s] Traceback: %s' % (SITE_NAME, traceback.format_exc()))
+
+        return self.sources
