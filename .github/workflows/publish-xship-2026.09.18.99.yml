@@ -81,12 +81,14 @@ jobs:
               compile(data.decode('utf-8'), rel, 'exec')
           print('ALL TEST5 FILE HASHES OK')
 
-          news = """2026.09.18.99
-- KinoKiste: Serienunterstützung verbessert; Titel, Staffel und Episode werden strikt geprüft, damit keine falschen Massentreffer mehr entstehen.
-- MeineCloud: neue Base64-codierte Film-Mirrors werden wieder korrekt erkannt; Serien- und Linkerkennung robuster.
-- Serien-Scraper: KinoKing, Huhu, Movie4K, HDFilme, BurningSeries, SerienFans und NOX an aktuelle Seiten-/API-Strukturen sowie robustere Titel-, Staffel- und Episodensuche angepasst.
-- MediaInfo: globaler 10-Sekunden-Sicherheits-Timeout verhindert Hänger durch festgefahrene ResolveURL-Prüfungen; die betroffene Quelle bleibt für die Wiedergabe erhalten.
-- AniWorld und bewusst film-only geführte Provider bleiben unverändert."""
+          news = '\n'.join([
+              '2026.09.18.99',
+              '- KinoKiste: Serienunterstützung verbessert; Titel, Staffel und Episode werden strikt geprüft, damit keine falschen Massentreffer mehr entstehen.',
+              '- MeineCloud: neue Base64-codierte Film-Mirrors werden wieder korrekt erkannt; Serien- und Linkerkennung robuster.',
+              '- Serien-Scraper: KinoKing, Huhu, Movie4K, HDFilme, BurningSeries, SerienFans und NOX an aktuelle Seiten-/API-Strukturen sowie robustere Titel-, Staffel- und Episodensuche angepasst.',
+              '- MediaInfo: globaler 10-Sekunden-Sicherheits-Timeout verhindert Hänger durch festgefahrene ResolveURL-Prüfungen; die betroffene Quelle bleibt für die Wiedergabe erhalten.',
+              '- AniWorld und bewusst film-only geführte Provider bleiben unverändert.'
+          ])
 
           addon = root / 'addon.xml'
           s = addon.read_text(encoding='utf-8')
