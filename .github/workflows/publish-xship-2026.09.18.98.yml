@@ -1,0 +1,140 @@
+name: Publish xShip 2026.09.18.98
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.release-payload/xship-2026.09.18.98.ready'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build xShip 2026.09.18.98
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import shutil
+          import tempfile
+          import zipfile
+
+          repo = Path.cwd()
+          old_zip = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.09.17.97.zip'
+          new_zip = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.09.18.98.zip'
+          addons_xml = repo / 'zips/addons.xml'
+          md5_file = repo / 'zips/addons.xml.md5'
+          moflix_source = repo / 'tools/moflix-test/moflix_movie_localtest.py'
+
+          if not old_zip.exists():
+              raise SystemExit(f'Missing base ZIP: {old_zip}')
+          if not moflix_source.exists():
+              raise SystemExit(f'Missing tested MoFlix scraper: {moflix_source}')
+
+          release_news = (
+              '2026.09.18.98\n'
+              '- MoFlix: Filmsuche deutlich robuster gemacht. Alternative Titelvarianten und mehr Suchtreffer werden berücksichtigt.\n'
+              '- MoFlix: IMDb-ID wird bei Filmen stärker gewichtet; Titelabgleich und Jahresprüfung sind toleranter, damit vorhandene Filme nicht unnötig verworfen werden.\n'
+              '- MoFlix: Serienlogik und Wiedergabe bleiben unverändert auf dem erfolgreich getesteten Stand.\n\n'
+          )
+
+          with tempfile.TemporaryDirectory() as td:
+              td = Path(td)
+              with zipfile.ZipFile(old_zip, 'r') as zf:
+                  zf.extractall(td)
+
+              root = td / 'plugin.video.xship'
+              addon = root / 'addon.xml'
+              moflix_target = root / 'scrapers/scrapers_source/de/moflix.py'
+
+              if not addon.exists():
+                  raise SystemExit('addon.xml missing in base ZIP')
+              if not moflix_target.exists():
+                  raise SystemExit('MoFlix scraper missing in base ZIP')
+
+              # Use the exact movie-matching scraper that passed local TEST3.
+              shutil.copyfile(moflix_source, moflix_target)
+
+              # Release metadata inside ZIP.
+              text = addon.read_text(encoding='utf-8')
+              if 'version="2026.09.17.97"' not in text:
+                  raise SystemExit('Base version not found in addon.xml')
+              text = text.replace('version="2026.09.17.97"', 'version="2026.09.18.98"', 1)
+              marker = '<news>2026.09.17.97'
+              if marker not in text:
+                  raise SystemExit('2026.09.17.97 news marker not found in addon.xml')
+              text = text.replace(marker, '<news>' + release_news + '2026.09.17.97', 1)
+              addon.write_text(text, encoding='utf-8', newline='\n')
+
+              # Remove stale bytecode.
+              for cache in list(root.rglob('__pycache__')):
+                  shutil.rmtree(cache, ignore_errors=True)
+              for pyc in root.rglob('*.pyc'):
+                  try:
+                      pyc.unlink()
+                  except FileNotFoundError:
+                      pass
+
+              # Syntax check.
+              compile(moflix_target.read_text(encoding='utf-8'), str(moflix_target), 'exec')
+
+              if new_zip.exists():
+                  new_zip.unlink()
+              with zipfile.ZipFile(new_zip, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+                  for p in sorted(root.rglob('*')):
+                      if p.is_file():
+                          zf.write(p, p.relative_to(td).as_posix())
+
+          # Repository metadata.
+          text = addons_xml.read_text(encoding='utf-8')
+          if 'id="plugin.video.xship" version="2026.09.17.97"' not in text:
+              raise SystemExit('Current xShip version not found in zips/addons.xml')
+          text = text.replace(
+              'id="plugin.video.xship" version="2026.09.17.97"',
+              'id="plugin.video.xship" version="2026.09.18.98"',
+              1
+          )
+          marker = '<news>2026.09.17.97'
+          if marker not in text:
+              raise SystemExit('Current news marker not found in zips/addons.xml')
+          text = text.replace(marker, '<news>' + release_news + '2026.09.17.97', 1)
+          addons_xml.write_text(text, encoding='utf-8', newline='\n')
+          md5_file.write_text(hashlib.md5(addons_xml.read_bytes()).hexdigest() + '\n', encoding='ascii')
+
+          # Final package verification.
+          with zipfile.ZipFile(new_zip, 'r') as zf:
+              bad = zf.testzip()
+              if bad:
+                  raise SystemExit(f'Corrupt ZIP member: {bad}')
+              built_addon = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+              built_moflix = zf.read('plugin.video.xship/scrapers/scrapers_source/de/moflix.py').decode('utf-8')
+              if 'version="2026.09.18.98"' not in built_addon:
+                  raise SystemExit('Built ZIP has wrong addon version')
+              if '[MOFLIX-MATCH]' not in built_moflix:
+                  raise SystemExit('Tested MoFlix movie matching not present in built ZIP')
+
+          print('Built:', new_zip)
+          print('ZIP MD5:', hashlib.md5(new_zip.read_bytes()).hexdigest())
+          print('addons.xml MD5:', hashlib.md5(addons_xml.read_bytes()).hexdigest())
+          PY
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -f .release-payload/xship-2026.09.18.98.ready
+          git rm -f .github/workflows/publish-xship-2026.09.18.98.yml
+          git add zips/plugin.video.xship/plugin.video.xship-2026.09.18.98.zip zips/addons.xml zips/addons.xml.md5
+          git commit -m "Publish xShip 2026.09.18.98 MoFlix movie search fix"
+          git push
