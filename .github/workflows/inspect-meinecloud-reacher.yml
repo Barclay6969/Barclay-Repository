@@ -1,0 +1,73 @@
+name: Inspect MeineCloud Reacher
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.inspect-meinecloud-reacher'
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch MeineCloud structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, urllib.request
+
+          url='https://meinecloud.click/serial/9288030'
+          req=urllib.request.Request(url, headers={
+              'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+              'Referer':'https://meinecloud.click/'
+          })
+          try:
+              with urllib.request.urlopen(req, timeout=20) as r:
+                  html=r.read().decode('utf-8','replace')
+                  status=getattr(r,'status',None)
+                  final=r.geturl()
+          except Exception as e:
+              html=''
+              status='ERR'
+              final=str(e)
+
+          lines=[
+              f'STATUS={status}',
+              f'FINAL={final}',
+              f'LENGTH={len(html)}',
+              f'DATA_LINK_COUNT={len(re.findall(r"data-link",html,re.I))}',
+              f'DATA_LABEL_COUNT={len(re.findall(r"data-label",html,re.I))}',
+              f'SEASON_EPS_COUNT={len(re.findall(r"_season-eps",html,re.I))}',
+              f'EP_CLASS_COUNT={len(re.findall(r"class=[\\\'\"][^\\\'\"]*_ep",html,re.I))}',
+              '',
+              '--- TAGS WITH data-link (first 40) ---'
+          ]
+          tags=re.findall(r'<[^>]+data-link[^>]*>',html,flags=re.I|re.S)
+          for tag in tags[:40]:
+              lines.append(re.sub(r'\s+',' ',tag)[:1500])
+          lines += ['', '--- S1 E1 CONTEXT ---']
+          for m in re.finditer(r'S0*1\s*E0*1', html, flags=re.I):
+              a=max(0,m.start()-800); b=min(len(html),m.end()+1200)
+              lines.append(re.sub(r'\s+',' ',html[a:b])[:2500])
+              break
+          lines += ['', '--- HEAD ---', re.sub(r'\s+',' ',html[:3000])]
+          Path('test-builds/meinecloud-reacher-diagnostic.txt').write_text('\n'.join(lines),encoding='utf-8')
+          PY
+
+      - name: Commit diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -f .inspect-meinecloud-reacher
+          git rm -f .github/workflows/inspect-meinecloud-reacher.yml
+          git add test-builds/meinecloud-reacher-diagnostic.txt
+          git commit -m "Inspect current MeineCloud Reacher markup"
+          git push
