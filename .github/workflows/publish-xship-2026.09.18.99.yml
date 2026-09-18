@@ -1,0 +1,158 @@
+name: Publish xShip 2026.09.18.99
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.release-payload/xship-2026.09.18.99.ready'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build and publish xShip 2026.09.18.99
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, hashlib, re, shutil, tempfile, zipfile, subprocess
+
+          repo = Path.cwd()
+          base_zip = repo / 'test-builds/plugin.video.xship-2026.09.18.98.3-MEINECLOUD-TEST3.zip'
+          out_zip = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.09.18.99.zip'
+          payload = repo / '.release-payload/xship-2026.09.18.99'
+          addons_xml = repo / 'zips/addons.xml'
+          md5_file = repo / 'zips/addons.xml.md5'
+
+          if not base_zip.exists():
+              raise SystemExit(f'Missing TEST3 base: {base_zip}')
+
+          # Reconstruct the exact locally-tested TEST5 delta.
+          chunks = sorted(payload.glob('patch.*.b64'))
+          if len(chunks) != 6:
+              raise SystemExit(f'Expected 6 patch chunks, found {len(chunks)}')
+          patch_bytes = base64.b64decode(''.join(p.read_text(encoding='utf-8').strip() for p in chunks))
+
+          release_news = (
+              '2026.09.18.99\n'
+              '- KinoKiste: Seriensuche deutlich präziser und robuster; Staffel/Episode werden sauber validiert und falsche Treffer bzw. Quellenfluten verhindert.\n'
+              '- MeineCloud: Filmquellen wiederhergestellt; aktuelle Base64-kodierte Mirror-Links werden erkannt und korrekt dekodiert. Serienstruktur ebenfalls aktualisiert.\n'
+              '- Serien-Scraper: KinoKing, Huhu, Movie4K, HDFilme, BurningSeries, SerienFans und NOX modernisiert bzw. toleranteres Titel-/Staffel-/Episoden-Matching ergänzt.\n'
+              '- MediaInfo: globaler 10-Sekunden-Sicherheits-Timeout für hängende Hintergrund-Resolver. Eine blockierende Quelle kann die Quellenliste nicht mehr dauerhaft bei z. B. 4 % festhalten; die Quelle bleibt erhalten.\n'
+              '- MoFlix-Filmsuche und alle bisherigen Fixes aus 2026.09.18.98 bleiben enthalten.\n\n'
+          )
+
+          with tempfile.TemporaryDirectory() as td:
+              td = Path(td)
+              with zipfile.ZipFile(base_zip, 'r') as zf:
+                  zf.extractall(td)
+
+              root = td / 'plugin.video.xship'
+              patch_file = td / 'test5.patch'
+              patch_file.write_bytes(patch_bytes)
+
+              # Patch paths are a/plugin.video.xship/... and b/plugin.video.xship/...
+              proc = subprocess.run(
+                  ['patch', '-p1', '--forward', '--batch', '-i', str(patch_file)],
+                  cwd=td, text=True, capture_output=True
+              )
+              if proc.returncode != 0:
+                  raise SystemExit('Patch failed:\n' + proc.stdout + '\n' + proc.stderr)
+
+              addon = root / 'addon.xml'
+              text = addon.read_text(encoding='utf-8')
+              text, n = re.subn(
+                  r'(<addon\b[^>]*\bid="plugin\.video\.xship"[^>]*\bversion=")[^"]+(")',
+                  r'\g<1>2026.09.18.99\2',
+                  text, count=1, flags=re.I
+              )
+              if n != 1:
+                  raise SystemExit('Could not update addon version')
+              if '<news>' not in text:
+                  raise SystemExit('News marker missing')
+              text = text.replace('<news>', '<news>' + release_news, 1)
+              addon.write_text(text, encoding='utf-8', newline='\n')
+
+              changed = [
+                  root/'scrapers/scrapers_source/de/kinoking.py',
+                  root/'scrapers/scrapers_source/de/huhu.py',
+                  root/'scrapers/scrapers_source/de/movie4k.py',
+                  root/'scrapers/scrapers_source/de/hdfilme.py',
+                  root/'scrapers/scrapers_source/de/burningseries.py',
+                  root/'scrapers/scrapers_source/de/serienfans.py',
+                  root/'scrapers/scrapers_source/de/nox.py',
+                  root/'resources/lib/sources.py',
+              ]
+              for p in changed:
+                  if not p.exists():
+                      raise SystemExit(f'Missing patched file: {p}')
+                  compile(p.read_text(encoding='utf-8'), str(p), 'exec')
+
+              for cache in list(root.rglob('__pycache__')):
+                  shutil.rmtree(cache, ignore_errors=True)
+              for pyc in root.rglob('*.pyc'):
+                  pyc.unlink(missing_ok=True)
+
+              if out_zip.exists():
+                  out_zip.unlink()
+              out_zip.parent.mkdir(parents=True, exist_ok=True)
+              with zipfile.ZipFile(out_zip, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+                  for p in sorted(root.rglob('*')):
+                      if p.is_file():
+                          zf.write(p, p.relative_to(td).as_posix())
+
+          with zipfile.ZipFile(out_zip, 'r') as zf:
+              bad = zf.testzip()
+              if bad:
+                  raise SystemExit('Corrupt ZIP member: ' + bad)
+              addon_text = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+              if 'version="2026.09.18.99"' not in addon_text:
+                  raise SystemExit('Release version missing from ZIP')
+              if 'globaler 10-Sekunden-Sicherheits-Timeout' not in addon_text:
+                  raise SystemExit('Release news missing from ZIP')
+
+          # Update repository index.
+          x = addons_xml.read_text(encoding='utf-8')
+          x, n = re.subn(
+              r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+(")',
+              r'\g<1>2026.09.18.99\2',
+              x, count=1
+          )
+          if n != 1:
+              raise SystemExit('Could not update xShip version in addons.xml')
+          if '<news>' not in x:
+              raise SystemExit('addons.xml news marker missing')
+          # Only prepend within xShip metadata: first news after xShip addon start.
+          start = x.find('<addon id="plugin.video.xship"')
+          pos = x.find('<news>', start)
+          if start < 0 or pos < 0:
+              raise SystemExit('xShip news section not found')
+          x = x[:pos+6] + release_news + x[pos+6:]
+          addons_xml.write_text(x, encoding='utf-8', newline='\n')
+          md5_file.write_text(hashlib.md5(addons_xml.read_bytes()).hexdigest() + '\n', encoding='ascii')
+
+          print('Release ZIP:', out_zip)
+          print('ZIP sha256:', hashlib.sha256(out_zip.read_bytes()).hexdigest())
+          PY
+
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          # Clean temporary release/build scaffolding from main.
+          git rm -rf .release-payload/xship-2026.09.18.99 || true
+          git rm -f .release-payload/xship-2026.09.18.99.ready || true
+          git rm -f .github/workflows/publish-xship-2026.09.18.99.yml || true
+          git rm -f .build-series-test4 .build-series-test4-v2 .fast-build-test4 || true
+          git rm -f .github/workflows/build-series-test4.yml .github/workflows/build-series-test4-v2.yml .github/workflows/fast-build-test4.yml || true
+
+          git add zips/plugin.video.xship/plugin.video.xship-2026.09.18.99.zip zips/addons.xml zips/addons.xml.md5
+          git commit -m "Publish xShip 2026.09.18.99 series and MediaInfo fixes"
+          git push
