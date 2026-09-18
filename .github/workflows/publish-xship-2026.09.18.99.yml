@@ -142,7 +142,7 @@ jobs:
           repo_xml = repo_xml_path.read_text(encoding='utf-8')
           addon_block = re.sub(r'^<\?xml[^>]+>\s*', '', s, count=1).strip()
           addon_block = '\n'.join('  '+line if line else line for line in addon_block.splitlines())
-          pattern = r'(?ms)^  <addon id="plugin\.video\.xship"\b.*?^  </addon>\s*'
+          pattern = r'(?ms)^  <addon id="plugin\.video\.xship".*?^  </addon>\s*'
           repo_xml, n = re.subn(pattern, addon_block+'\n', repo_xml, count=1)
           if n != 1:
               raise SystemExit('Could not replace xShip block in addons.xml')
