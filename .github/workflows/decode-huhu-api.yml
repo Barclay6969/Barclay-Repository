@@ -1,0 +1,68 @@
+name: Decode Huhu API
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.decode-huhu-api'
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode Huhu API
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, urllib.request, urllib.parse
+
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          def get(url):
+              req=urllib.request.Request(url,headers={'User-Agent':UA})
+              with urllib.request.urlopen(req,timeout=20) as r:
+                  return r.read().decode('utf-8','replace')
+
+          home=get('https://www.huhu.to/')
+          m=re.search(r'<script[^>]+src=["\']([^"\']*index-[^"\']+\.js)',home,re.I)
+          if not m:
+              raise SystemExit('No app JS found')
+          jsurl=urllib.parse.urljoin('https://www.huhu.to/',m.group(1))
+          js=get(jsurl)
+          out=[f'JS={jsurl}',f'LEN={len(js)}']
+
+          needles=['async function at','function at','const at=','let at=','var at=','fetch(','/api/','backend','catalog','source']
+          for needle in needles:
+              pos=0
+              hits=0
+              while hits<20:
+                  pos=js.find(needle,pos)
+                  if pos<0:
+                      break
+                  out.append('\n=== %s @ %s ===' % (needle,pos))
+                  out.append(js[max(0,pos-1800):pos+4200])
+                  pos += len(needle)
+                  hits += 1
+
+          urls=sorted(set(re.findall(r'https?://[^"\'\\\s]+',js)))
+          out.append('\n=== ABS URLS ===')
+          out.extend(urls[:300])
+
+          Path('test-builds/huhu-api-diagnostic.txt').write_text('\n'.join(out),encoding='utf-8')
+          PY
+      - name: Commit diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -f .decode-huhu-api
+          git rm -f .github/workflows/decode-huhu-api.yml
+          git add test-builds/huhu-api-diagnostic.txt
+          git commit -m "Decode current Huhu API client"
+          git push
