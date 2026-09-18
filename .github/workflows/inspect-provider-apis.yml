@@ -1,0 +1,133 @@
+name: Inspect provider APIs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.inspect-provider-apis'
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect KinoKing Huhu Movie4K
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re,urllib.request,urllib.parse
+
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          def get(url):
+              req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept-Language':'de-DE,de;q=0.9,en;q=0.8'})
+              try:
+                  with urllib.request.urlopen(req,timeout=20) as r:
+                      return r.status,r.geturl(),r.read().decode('utf-8','replace')
+              except Exception as e:
+                  return 'ERR',url,str(e)
+
+          out=[]
+
+          # KinoKing map headings/seasons -> episode ids
+          st,fu,html=get('https://kinoking.cc/series.php?id=196')
+          out += ['=== KINOKING MAP ===',f'STATUS={st}',f'FINAL={fu}']
+          if st==200:
+              # dump compact lines containing playEpisode and nearby season markers
+              compact=re.sub(r'>\s*<','>\n<',html)
+              lines=compact.splitlines()
+              for i,line in enumerate(lines):
+                  if 'playEpisode' in line or re.search(r'Staffel\s*\d+',line,re.I) or 'season' in line.lower():
+                      ctx=' '.join(lines[max(0,i-3):i+4])
+                      out.append(re.sub(r'\s+',' ',ctx)[:2200])
+              # ids in order
+              ids=re.findall(r'playEpisode\([\'\"](\d+)[\'\"]\)',html,re.I)
+              out.append('EPISODE_IDS='+json.dumps(ids))
+              # possible season buttons
+              for pat in [
+                  r'<[^>]+(?:data-[^=]*season[^=]*|id=["\'][^"\']*season[^"\']*)[^>]*>.*?</[^>]+>',
+                  r'<button[^>]*>[^<]*(?:Staffel|Season)[^<]*</button>'
+              ]:
+                  vals=re.findall(pat,html,re.I|re.S)
+                  for v in vals[:30]:
+                      out.append('SEASON_TAG='+re.sub(r'\s+',' ',v)[:1400])
+
+              # inspect API output for first few episode ids
+              for eid in ids[:10]:
+                  s,u,b=get('https://kinoking.cc/api/episode-navigation.php?episode_id=%s' % eid)
+                  out.append('API %s STATUS=%s BODY=%s' % (eid,s,re.sub(r'\s+',' ',b)[:2500]))
+
+          # Huhu JS API endpoints
+          st,fu,home=get('https://www.huhu.to/')
+          out += ['', '=== HUHU JS ===', f'HOME_STATUS={st}']
+          if st==200:
+              m=re.search(r'<script[^>]+src=["\']([^"\']+index-[^"\']+\.js)',home,re.I)
+              if m:
+                  jsurl=urllib.parse.urljoin('https://www.huhu.to/',m.group(1))
+                  s,u,js=get(jsurl)
+                  out += [f'JS_URL={jsurl}',f'JS_STATUS={s}',f'JS_LEN={len(js)}']
+                  for needle in ['/api/','api/','links','tmdb','imdb','series.','movie.','fetch(']:
+                      out.append(f'{needle}_COUNT={js.count(needle)}')
+                  # collect string literals that look like API URLs/paths
+                  strings=re.findall(r'["\']([^"\']{1,250})["\']',js)
+                  useful=[]
+                  for x in strings:
+                      xl=x.lower()
+                      if ('api' in xl or 'tmdb' in xl or 'imdb' in xl or 'link' in xl) and x not in useful:
+                          useful.append(x)
+                  for x in useful[:150]:
+                      out.append('STR='+x)
+                  # contexts around api / links
+                  for needle in ['api/','/api','links','tmdb','imdb']:
+                      pos=0
+                      count=0
+                      while count<20:
+                          pos=js.find(needle,pos)
+                          if pos<0: break
+                          out.append('CTX='+re.sub(r'\s+',' ',js[max(0,pos-400):pos+1000])[:1500])
+                          pos+=len(needle); count+=1
+
+          # Movie4K browse / imdb endpoints
+          tests=[
+            'https://movie4k.sx/data/browse/?lang=2&keyword=Reacher&year=&type=tvseries&page=1',
+            'https://movie4k.sx/data/browse/?lang=4&keyword=Reacher&year=&type=tvseries&page=1',
+            'https://movie4k.sx/data/browse/?lang=2&order_by=new&page=1&imdb=tt9288030',
+            'https://movie4k.sx/data/browse/?lang=4&order_by=new&page=1&imdb=tt9288030',
+          ]
+          out += ['', '=== MOVIE4K BROWSE ===']
+          for url in tests:
+              s,u,b=get(url)
+              out += [f'URL={url}',f'STATUS={s}',f'LEN={len(b)}']
+              if s==200:
+                  try:
+                      d=json.loads(b)
+                      if isinstance(d,dict):
+                          items=d.get('movies') or d.get('results') or []
+                      elif isinstance(d,list):
+                          items=d
+                      else:
+                          items=[]
+                      out.append('COUNT='+str(len(items)))
+                      for item in items[:20]:
+                          if isinstance(item,dict):
+                              out.append('ITEM='+json.dumps({k:item.get(k) for k in ['_id','title','year','lang','tv','s','imdb_id','imdb']},ensure_ascii=False)[:2200])
+                  except Exception as e:
+                      out.append('JSONERR='+str(e))
+
+          Path('test-builds/provider-api-diagnostic.txt').write_text('\n'.join(out),encoding='utf-8')
+          PY
+      - name: Commit diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -f .inspect-provider-apis
+          git rm -f .github/workflows/inspect-provider-apis.yml
+          git add test-builds/provider-api-diagnostic.txt
+          git commit -m "Inspect current series provider APIs"
+          git push
