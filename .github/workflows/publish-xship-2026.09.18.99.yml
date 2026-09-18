@@ -32,7 +32,21 @@ jobs:
           p3 = (root/'patch.03.b64').read_text().strip()
           p5 = (root/'patch.05.b64').read_text().strip()
 
-          b64 = p0[:9000] + p1 + p2 + p3[:9000] + p3[9000:18000] + p5
+          segments = [p0[:9000], p1, p2, p3[:9000], p3[9000:18000], p5]
+          segment_hashes = [
+              'e4e7199cd2ef876c296a4d1069df71efa2e6249b1d59d33993612030aa2e196e',
+              'f260c2f4e557bb913d5cc9368451596f57bed27590de12272a3cdf201d849856',
+              'c6f2f972010e36eb43242bb11442db34811c54dbadfa9d554e0eb7cb270b2eaf',
+              '023393193f9012f5dc19f3c4b9734222070075256653824a8ff10d4247db26eb',
+              '8640bcc9958b6999462461689282d0a0501dd8e4e15eb90b013008367324e9ef',
+              'a9b0c33848712be9e5bce55d6e3a5b8cddf41f5f9e04e339bfeee78cba08123e',
+          ]
+          for idx, (segment, wanted) in enumerate(zip(segments, segment_hashes)):
+              got = hashlib.sha256(segment.encode('ascii')).hexdigest()
+              print('SEGMENT', idx, len(segment), got)
+              if got != wanted:
+                  raise SystemExit('Segment %d mismatch: %s' % (idx, got))
+          b64 = ''.join(segments)
           if len(b64) != 50296:
               raise SystemExit('Unexpected patch base64 length: %d' % len(b64))
           patch = base64.b64decode(b64)
