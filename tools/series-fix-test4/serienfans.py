@@ -2,11 +2,9 @@
 
 import json
 import re
-from difflib import SequenceMatcher
 
 from resources.lib.control import getSetting, quote_plus, urljoin
 from resources.lib.requestHandler import cRequestHandler
-from resources.lib.domain_manager import resolve_domain
 from resources.lib.utils import isBlockedHoster
 from scrapers.modules import cleantitle, source_utils
 
@@ -25,7 +23,7 @@ class source:
     def __init__(self):
         self.priority = 8
         self.language = ['de', 'en']
-        self.domain = resolve_domain(SITE_IDENTIFIER, SITE_DOMAIN)
+        self.domain = getSetting('provider.' + SITE_IDENTIFIER + '.domain', SITE_DOMAIN)
         self.base_link = 'https://' + self.domain
         self.sources = []
         self._seen = set()
@@ -116,6 +114,8 @@ class source:
 
     def _request_json(self, url, referer):
         request = cRequestHandler(url, caching=False)
+        request.addHeaderEntry('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+        request.addHeaderEntry('Accept-Language', 'de-DE,de;q=0.9,en;q=0.8')
         request.addHeaderEntry('Accept', 'application/json, text/javascript, */*; q=0.01')
         request.addHeaderEntry('X-Requested-With', 'XMLHttpRequest')
         request.addHeaderEntry('Referer', referer)
@@ -141,9 +141,8 @@ class source:
 
     @staticmethod
     def _title_matches(title, clean_titles):
-        values = re.split(r'\s*\|\s*', str(title or ''))
-        for value in values:
-            value = re.sub(r'\s*\(\d{4}\)\s*
+        for value in re.split(r'\\s*\\|\\s*', str(title or '')):
+            value = re.sub(r'\\s*\\(\\d{4}\\)\\s*
     @staticmethod
     def _language(text):
         text = (text or '').lower()
@@ -183,8 +182,6 @@ class source:
                 if not wanted or min(len(current), len(wanted)) < 6:
                     continue
                 if current.startswith(wanted) or wanted.startswith(current):
-                    return True
-                if SequenceMatcher(None, current, wanted).ratio() >= 0.92:
                     return True
         return False
 
