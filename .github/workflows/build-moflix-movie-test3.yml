@@ -44,3 +44,5 @@ jobs:
           git add test-builds/plugin.video.xship-2026.09.17.97-MOFLIX-MOVIE-TEST3.zip
           git commit -m 'Add MoFlix movie-only TEST3' || exit 0
           git push
+
+# trigger after corrected scraper
