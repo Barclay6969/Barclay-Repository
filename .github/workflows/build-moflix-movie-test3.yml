@@ -1,0 +1,46 @@
+name: Build MoFlix movie TEST3
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-moflix-movie-test3.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build TEST3
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.09.17.97.zip'
+          OUT='test-builds/plugin.video.xship-2026.09.17.97-MOFLIX-MOVIE-TEST3.zip'
+          WORK="$RUNNER_TEMP/moflix-test3"
+          rm -rf "$WORK"
+          mkdir -p "$WORK" test-builds
+          unzip -q "$BASE" -d "$WORK"
+          TARGET=$(find "$WORK" -path '*/scrapers/scrapers_source/de/moflix.py' -print -quit)
+          [ -n "$TARGET" ] || { echo 'moflix.py not found'; exit 1; }
+          cp tools/moflix-test/moflix_movie_localtest.py "$TARGET"
+          python -m py_compile "$TARGET"
+          grep -q '\[MOFLIX-MATCH\]' "$TARGET"
+          ROOT=$(find "$WORK" -maxdepth 2 -name addon.xml -printf '%h\n' | head -n1)
+          [ -n "$ROOT" ] || { echo 'addon root not found'; exit 1; }
+          echo 'MoFlix movie-only tolerant matching TEST3 based on xShip 2026.09.17.97' > "$ROOT/MOFLIX_MOVIE_TEST.txt"
+          rm -f "$OUT"
+          (cd "$(dirname "$ROOT")" && zip -qr "$GITHUB_WORKSPACE/$OUT" "$(basename "$ROOT")")
+          unzip -t "$OUT" >/dev/null
+          unzip -l "$OUT" | grep -E 'moflix.py|MOFLIX_MOVIE_TEST.txt|addon.xml'
+      - name: Commit TEST3
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add test-builds/plugin.video.xship-2026.09.17.97-MOFLIX-MOVIE-TEST3.zip
+          git commit -m 'Add MoFlix movie-only TEST3' || exit 0
+          git push
