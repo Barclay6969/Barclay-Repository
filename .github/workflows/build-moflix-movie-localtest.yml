@@ -28,15 +28,13 @@ jobs:
           unzip -q "$BASE" -d "$WORK"
 
           TARGET=$(find "$WORK" -path '*/scrapers/scrapers_source/de/moflix.py' -print -quit)
-          if [ -z "$TARGET" ]; then
-            echo 'MoFlix scraper not found in base ZIP' >&2
-            exit 1
-          fi
+          [ -n "$TARGET" ] || { echo 'MoFlix scraper not found' >&2; exit 1; }
 
           TARGET="$TARGET" python - <<'PY'
           import os
           import pathlib
           import re
+          import textwrap
 
           path = pathlib.Path(os.environ['TARGET'])
           s = path.read_text(encoding='utf-8')
@@ -48,6 +46,9 @@ jobs:
 
           s = s.replace('&limit=8', '&limit=20')
 
+          def class_block(src):
+              return textwrap.indent(textwrap.dedent(src).strip('\n'), '    ')
+
           def replace_block(text, start, end, new):
               a = text.find(start)
               if a < 0:
@@ -57,7 +58,8 @@ jobs:
                   raise RuntimeError('End marker missing: ' + end)
               return text[:a] + new.rstrip() + '\n\n' + text[b:]
 
-          best_match = r'''    def _best_match(self, titles, year, season, imdb):
+          best_match = class_block(r'''
+          def _best_match(self, titles, year, season, imdb):
               candidates = []
               seen = set()
               queries = self._search_titles(titles, season)
@@ -89,9 +91,11 @@ jobs:
                       chosen.get('id'), chosen.get('name') or chosen.get('title'), candidates[0][0]))
                   return chosen
               logger.info('[MOFLIX-MATCH] no match')
-              return None'''
+              return None
+          ''')
 
-          match_score = r'''    def _match_score(self, item, titles, year, season, imdb):
+          match_score = class_block(r'''
+          def _match_score(self, item, titles, year, season, imdb):
               want_series = int(season or 0) > 0
               is_series = bool(item.get('is_series'))
               if want_series != is_series:
@@ -174,9 +178,11 @@ jobs:
               except Exception:
                   pass
 
-              return score, ','.join(reasons) or 'matched' '''
+              return score, ','.join(reasons) or 'matched'
+          ''')
 
-          search_titles = r'''    def _search_titles(self, titles, season=0):
+          search_titles = class_block(r'''
+          def _search_titles(self, titles, season=0):
               seen = set()
               result = []
 
@@ -210,26 +216,27 @@ jobs:
 
               return result[:16]
 
-              @staticmethod
-              def _words(value):
-                  return [w.lower() for w in re.findall(r"[0-9A-Za-zÀ-ÿ]+", html_unescape(str(value or ''))) if w]
+          @staticmethod
+          def _words(value):
+              return [w.lower() for w in re.findall(r"[0-9A-Za-zÀ-ÿ]+", html_unescape(str(value or ''))) if w]
 
-              @staticmethod
-              def _best_token_ratio(wanted_titles, item_titles):
-                  best = 0.0
-                  for wanted in wanted_titles:
-                      ws = set(wanted)
-                      if not ws:
+          @staticmethod
+          def _best_token_ratio(wanted_titles, item_titles):
+              best = 0.0
+              for wanted in wanted_titles:
+                  ws = set(wanted)
+                  if not ws:
+                      continue
+                  for current in item_titles:
+                      cs = set(current)
+                      if not cs:
                           continue
-                      for current in item_titles:
-                          cs = set(current)
-                          if not cs:
-                              continue
-                          common = len(ws.intersection(cs))
-                          ratio = (2.0 * common) / float(len(ws) + len(cs))
-                          if ratio > best:
-                              best = ratio
-                  return best'''
+                      common = len(ws.intersection(cs))
+                      ratio = (2.0 * common) / float(len(ws) + len(cs))
+                      if ratio > best:
+                          best = ratio
+              return best
+          ''')
 
           s = replace_block(s, '    def _best_match(self, titles, year, season, imdb):', '    def _match_score(self, item, titles, year, season, imdb):', best_match)
           s = replace_block(s, '    def _match_score(self, item, titles, year, season, imdb):', '    def _episode_videos(self, title_id, season, episode):', match_score)
@@ -240,14 +247,12 @@ jobs:
           PY
 
           python -m py_compile "$TARGET"
+          grep -q '\[MOFLIX-MATCH\]' "$TARGET"
 
           ROOT=$(find "$WORK" -maxdepth 2 -name addon.xml -printf '%h\n' | head -n1)
-          if [ -z "$ROOT" ] || [ ! -f "$ROOT/addon.xml" ]; then
-            echo 'Addon root not found' >&2
-            exit 1
-          fi
-          echo 'MoFlix movie matching local test based on xShip 2026.09.17.97' > "$ROOT/MOFLIX_MOVIE_TEST.txt"
+          [ -n "$ROOT" ] && [ -f "$ROOT/addon.xml" ] || { echo 'Addon root not found' >&2; exit 1; }
 
+          echo 'MoFlix movie matching local test based on xShip 2026.09.17.97' > "$ROOT/MOFLIX_MOVIE_TEST.txt"
           rm -f "$OUT"
           (cd "$(dirname "$ROOT")" && zip -qr "$GITHUB_WORKSPACE/$OUT" "$(basename "$ROOT")")
           unzip -l "$OUT" | grep -E 'moflix.py|MOFLIX_MOVIE_TEST.txt|addon.xml'
