@@ -156,6 +156,7 @@ class source:
                 'episode': int(episode)
             }
 
+        per_host = {}
         for item in self._post_source(payload):
             if not isinstance(item, dict) or item.get('type') != 'url':
                 continue
@@ -171,10 +172,16 @@ class source:
             if blocked or not clean_url:
                 continue
 
+            language = self._language(item)
+            host_key = (str(hoster or self._fallback_hoster(item)).lower(), language)
+            if per_host.get(host_key, 0) >= 2:
+                continue
+            per_host[host_key] = per_host.get(host_key, 0) + 1
+
             self.sources.append({
                 'source': hoster or self._fallback_hoster(item),
                 'quality': self._quality(item),
-                'language': self._language(item),
+                'language': language,
                 'url': clean_url,
                 'direct': False,
                 'debridonly': False,
@@ -183,7 +190,7 @@ class source:
                 'prioHoster': prio_hoster
             })
 
-            if len(self.sources) >= 20:
+            if len(self.sources) >= 12:
                 break
 
         return self.sources
