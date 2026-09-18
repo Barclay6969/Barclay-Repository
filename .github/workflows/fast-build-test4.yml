@@ -1,0 +1,66 @@
+name: Fast build TEST4
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.fast-build-test4'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build TEST4
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil,tempfile,zipfile
+          repo=Path.cwd()
+          base=repo/'test-builds/plugin.video.xship-2026.09.18.98.3-MEINECLOUD-TEST3.zip'
+          out=repo/'test-builds/plugin.video.xship-2026.09.18.98.4-SERIES-TEST4.zip'
+          staged=repo/'tools/series-fix-test4'
+          names=['kinoking.py','huhu.py','movie4k.py','hdfilme.py','burningseries.py','serienfans.py']
+          for n in names:
+              p=staged/n
+              compile(p.read_text(encoding='utf-8'),str(p),'exec')
+          with tempfile.TemporaryDirectory() as td:
+              td=Path(td)
+              with zipfile.ZipFile(base,'r') as z: z.extractall(td)
+              root=td/'plugin.video.xship'
+              for n in names:
+                  shutil.copyfile(staged/n,root/'scrapers/scrapers_source/de'/n)
+              addon=root/'addon.xml'
+              s=addon.read_text(encoding='utf-8')
+              s=s.replace('version="2026.09.18.98.3"','version="2026.09.18.98.4"',1)
+              addon.write_text(s,encoding='utf-8')
+              if out.exists(): out.unlink()
+              with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+                  for p in sorted(root.rglob('*')):
+                      if p.is_file(): z.write(p,p.relative_to(td).as_posix())
+          with zipfile.ZipFile(out,'r') as z:
+              bad=z.testzip()
+              if bad: raise SystemExit('Bad zip member '+bad)
+              assert 'version="2026.09.18.98.4"' in z.read('plugin.video.xship/addon.xml').decode('utf-8')
+              for n in names:
+                  compile(z.read('plugin.video.xship/scrapers/scrapers_source/de/'+n).decode('utf-8'),n,'exec')
+          print(out)
+          PY
+      - name: Commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -f .fast-build-test4
+          git rm -f .github/workflows/fast-build-test4.yml
+          git add test-builds/plugin.video.xship-2026.09.18.98.4-SERIES-TEST4.zip
+          git commit -m "Build xShip series TEST4 fast"
+          git push
