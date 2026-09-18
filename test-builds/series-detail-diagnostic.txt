@@ -1,0 +1,106 @@
+=== KINOKING_REACHER ===
+STATUS=200
+FINAL=https://kinoking.cc/series.php?id=196
+LENGTH=182852
+PLAYEPISODE_COUNT=14
+EPISODE-NAVIGATION_COUNT=0
+DATA-SEASON_COUNT=0
+DATA-EPISODE_COUNT=0
+SEASON_COUNT=67
+STAFFEL_COUNT=8
+1X1_COUNT=0
+S1 E1_COUNT=0
+SERIAL_COUNT=0
+API/_COUNT=0
+WEB-VOD_COUNT=0
+LINKS?ID_COUNT=0
+TMDB_COUNT=43
+REACHER_COUNT=56
+[playepisode]  <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-black/50 border border-white/5 rounded-lg text-[9px] font-black font-mono text-white/40">SOURCE: OK</div> <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div> </div> </div> <div class="flex-1 overflow-y-auto p-3 md:p-6 space-y-2 max-h-[500px] md:max-h-none" id="episodeListContainer"> <div id="ep-row-4975" class="episode-row flex items-center p-3 md:p-5 rounded-2xl transition-colors border relative overflow-hidden group/item bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10 cursor-pointer" onclick="playEpisode('4975')"> <div class="watched-overlay absolute inset-0 pointer-events-none overflow-hidden select-none watched-pattern hidden"> <div class="absolute inset-0 flex flex-col gap-6 rotate-[-12deg] scale-150 items-center justify-center"> <div class="flex gap-12 whitespace-nowrap translate-x-[60px]"> <span class="text-[10px] font-black font-display uppercase tracking-[0.4em] text-emerald-400">BEREITS GESEHEN</span> <span class="text-[10px] font-black font-display uppercase tracking-[0.4em] text-emerald-400">BEREITS GESEHEN</span> <span class="text-[10px] font-black font-display uppercase tracking-[0.4em] text-emerald-400">BEREITS GESEHEN</span> <span class="text-[10px] font-black font-display uppercase tracking-[0.4em] text-emerald-400">BEREITS GESEHEN</span> <span class="text-[10px] font-black font-display uppercase tracking-[0.4em] text-emerald-400">BEREITS GESEHEN</span> <span class="text-[10px] font-black font-display uppercase tracking-[0.4em] text-emerald-400">BEREITS GESEHEN</span> </div> <div class="flex gap-12 whitespace-nowrap -translate-x-[60px]"> <span class="text-[10px] font-black font-display uppercase tracking-[0.4em] text-emerald-400">BEREITS GESEHEN</span> <span class="text-[10px] font-black font-display uppercase tracking-[0.4em] text-emerald-400">BEREITS GESEHEN</span> <span class="text-[10px] font-black font-display uppercase tracking-[0.4em] text-emerald-400">BEREITS GES
+[reacher] <!DOCTYPE html> <html lang="de"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Reacher (2022) - Kostenlos Online Schauen ⭐8.1 | Premium Serie Streaming HD</title> <meta name="description" content="Schauen Sie Reacher 2022 kostenlos online in HD-Qualität. Alle Staffeln verfügbar. Als Ex Militärpolizist Jack Reacher wegen eines Mordes, den er nicht "> <meta name="keywords" content="Reacher, Reacher kostenlos, Reacher stream, Reacher online schauen, Reacher ganze serie, Reacher alle staffeln, HD, 4K, Reacher 2022, Action &amp; Adventure serien kostenlos, Drama serien kostenlos, Krimi serien kostenlos, serie kostenlos, serien online schauen, gratis serien, serienstream, ohne anmeldung, premium streaming, alle episoden"> <link rel="preconnect" href="https://fonts.googleapis.com"> <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> <link rel="preconnect" href="https://image.tmdb.org" crossorigin> <link rel="preload" as="image" href="https://image.tmdb.org/t/p/w500/n5qHxX9OybwH5EFfa5DEeXKFCCQ.jpg" fetchpriority="high"> <script src="https://cdn.tailwindcss.com"></script> <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"> <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script> <script> tailwind.config = { theme: { extend: { colors: { bg: '#050505', surface: '#0f0f0f', 'surface-hover': '#161616', border: '#1f1f1f', accent: '#6366f1', 'text-p': '#ffffff', 'text-s': '#888888', }, fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], display: ['Outfit', 'sans-serif'], mono: ['JetBrains Mono', 'ui-monospace', 'monospace'], } } } } // Anti-FOUC Lader window.addEventListener('load', () => document.body.classList.add('tw-loaded')); setTimeout(() => document.body.classList.add('tw-loaded'), 1000); </script> <style> /* PERFORMANCE: Anti-FOUC & Fast GPU Rendering */ bo
+SCRIPT_SRCS=["https://cdn.tailwindcss.com", "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit", "//acscdn.com/script/aclib.js", "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495"]
+
+=== STREAMCLOUD_REACHER ===
+STATUS=200
+FINAL=https://streamcloud.download/31575-reacher-stream-deutsch.html
+LENGTH=42528
+PLAYEPISODE_COUNT=0
+EPISODE-NAVIGATION_COUNT=0
+DATA-SEASON_COUNT=0
+DATA-EPISODE_COUNT=0
+SEASON_COUNT=1
+STAFFEL_COUNT=3
+1X1_COUNT=0
+S1 E1_COUNT=0
+SERIAL_COUNT=3
+API/_COUNT=0
+WEB-VOD_COUNT=0
+LINKS?ID_COUNT=0
+TMDB_COUNT=1
+REACHER_COUNT=23
+[reacher] <!DOCTYPE html> <html lang="de-DE"> <head> <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport"> <title>Reacher - Stream Serie online Anschauen</title> <meta charset="utf-8"> <meta name="description" content="Reacher ansehen stream serien 2022 auf deutsch Kostenlos online, Als Ex Militärpolizist Jack Reacher wegen eines Mordes, den er nicht begangen hat, verhaftet wird, findet er sich inmitten einer tödlichen Verschwörung korrupter Polizisten, dubioser Geschäftsleute und intriganter Politiker wieder und muss herausfinden, was in Margrave, Georgia, vor sich geht. Die"> <meta name="keywords" content="Reacher stream serien deutsch, serien kostenlos, Reacher stream online Anschauen, serien Kostenlos"> <meta name="generator" content="DataLife Engine (https://dle-news.ru)"> <link rel="canonical" href="https://streamcloud.download/31575-reacher-stream-deutsch.html"> <link rel="alternate" type="application/rss+xml" title="StreamCloud - Stream HD Filme Online Kostenlos RSS Dzen" href="https://streamcloud.download/rssdzen.xml"> <link rel="preconnect" href="https://streamcloud.download/" fetchpriority="high"> <meta property="twitter:card" content="summary"> <meta property="twitter:title" content="Reacher - Stream Serie online Anschauen"> <meta property="twitter:url" content="https://streamcloud.download/31575-reacher-stream-deutsch.html"> <meta property="twitter:description" content="Als Ex Militärpolizist Jack Reacher wegen eines Mordes, den er nicht begangen hat, verhaftet wird, findet er sich inmitten einer tödlichen Verschwörung korrupter Polizisten, dubioser Geschäftsleute und intriganter Politiker wieder und muss herausfinden, was in Margrave, Georgia, vor sich geht. Die"> <meta property="og:type" content="article"> <meta property="og:site_name" content="StreamCloud - Stream HD Filme Online Kostenlos"> <meta property="og:title" content="Reacher - Stream Serie online Anschauen"> <meta property="og:url" content="https://streamcloud.download/31575-reacher-stream-deutsch.html"> <meta property="og:description" content="Als Ex Militärpolizist Jack Reacher wegen eines Mordes, den er nicht begangen hat, verhaftet wird, findet er sich inmitten einer tödlichen Verschwörung korrupter Polizisten, dubioser Geschäftsleute und intriganter Politiker wieder und muss herausfinden, was in Margrave, Georgia, vor sich geht. Die"> <link href="/templates/streamcloud/images/favicon.png" rel="shortcut icon"> <link href="/templates/streamcloud/css/style.css" rel="stylesheet"> <link href="/templates/streamcloud/css/responsive.css?v=3" rel="stylesheet"> <link href="/templates/streamcloud/cs
+SCRIPT_SRCS=["/public/js/jquery3.js?v=55f17", "/public/js/jqueryui.js?v=55f17", "/public/js/dle_js.js?v=55f17", "https://kit.fontawesome.com/f7908d494b.js", "//xx.thilkariste.com/rQE9UdEkv6pc/135528", "//ll.cheefulfrary.com/sRbETGiOcKW8/135707", "https://meinecloud.click/ddl/tt9288030", "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495"]
+
+=== HDFILME_REACHER ===
+STATUS=200
+FINAL=https://hd-filme.lol/25204-reacher-stream-deutsch-kostenlos.html
+LENGTH=189319
+PLAYEPISODE_COUNT=0
+EPISODE-NAVIGATION_COUNT=0
+DATA-SEASON_COUNT=0
+DATA-EPISODE_COUNT=0
+SEASON_COUNT=1
+STAFFEL_COUNT=61
+1X1_COUNT=0
+S1 E1_COUNT=0
+SERIAL_COUNT=9
+API/_COUNT=0
+WEB-VOD_COUNT=0
+LINKS?ID_COUNT=0
+TMDB_COUNT=0
+REACHER_COUNT=23
+[reacher] <!DOCTYPE html> <html lang="de"> <head> <meta charset="utf-8"> <title>Reacher - Staffel 4 stream German HD</title> <meta name="description" content="Jack Reacher (Alan Ritchson) war als Sohn eines US-Soldaten auf Militärbasen überall auf der Welt aufgewachsen, ohne irgendwo Wurzeln zu schlagen – einzig seinem Bruder Joe blieb er verbunden. Als Jack erwachsen wurde, schloss er sich selbst dem Militär an und folgte seinem starken"> <meta name="keywords" content="Reacher Kino, Reacher kkiste.io, Reacher stream german, Reacher auf deutsch"> <meta name="generator" content="DataLife Engine (http://dle-news.ru)"> <meta property="og:site_name" content="HD-Filme: Kino stream HD schauen 2026 kostenlos bei HDFilme ✓"> <meta property="og:type" content="article"> <meta property="og:title" content="Reacher - Staffel 4"> <meta property="og:url" content="https://hd-filme.lol/25204-reacher-stream-deutsch-kostenlos.html"> <meta property="og:description" content="Jack Reacher (Alan Ritchson) war als Sohn eines US-Soldaten auf Militärbasen überall auf der Welt aufgewachsen, ohne irgendwo Wurzeln zu schlagen – einzig seinem Bruder Joe blieb er verbunden. Als Jack erwachsen wurde, schloss er sich selbst dem Militär an und folgte seinem starken"> <link rel="search" type="application/opensearchdescription+xml" href="https://hd-filme.lol/index.php?do=opensearch" title="HD-Filme: Kino stream HD schauen 2026 kostenlos bei HDFilme ✓"> <link rel="canonical" href="https://hd-filme.lol/25204-reacher-stream-deutsch-kostenlos.html"> <link rel="alternate" type="application/rss+xml" title="HD-Filme: Kino stream HD schauen 2026 kostenlos bei HDFilme ✓" href="https://hd-filme.lol/rss.xml"> <script type="text/javascript">(function() {function prgcum3(m,S){var e=prgcum2();return prgcum3=function(r,N){r=r-0x181;var X=e[r];return X;},prgcum3(m,S);}function prgcum2(){var cf=['networkProtocol','&tz=','findUpTag','transpLinkId','chrome','onerror','hidden','beforePInit','incrementPagesTemplateCookies','text/javascript','25.6.4847','substr','Android','arg','safari','dispatchEvent','Invalid\x20attempt\x20to\x20spread\x20non-iterable\x20instance.\x0aIn\x20order\x20to\x20be\x20iterable,\x20non-array\x20objects\x20must\x20have\x20a\x20[Symbol.iterator]()\x20method.','aa_redirect','3000','preparePScriptRequestData','this\x20hasn\x27t\x20been\x20initialised\x20-\x20super()\x20hasn\x27t\x20been\x20called','transpLayerId','\x20is\x20not\x20iterable','protocol','style','parse','dedicatedDomain','browser','innerHeight','contentWindow','getItem','initEvent','inherit','resol
+SCRIPT_SRCS=["https://adaptdivinity.com/79/46/68/7946681438002dc2fe18521a43bb5472.js", "https://hdfilme.trustedvpn.site/api_ip_info.php?js=99&aggressive=true", "/templates/hdfilme1/js/series.js", "/engine/classes/js/jquery.js?v=25", "/engine/classes/js/jqueryui.js?v=25", "/engine/classes/js/dle_js.js?v=25", "/engine/classes/masha/masha.js?v=25", "/engine/skins/codemirror/js/code.js?v=25", "/engine/editor/jscripts/froala/editor.js?v=25", "/engine/editor/jscripts/froala/languages/en.js?v=25", "/templates/hdfilme1/js/bootstrap.js", "/templates/hdfilme1/js/slimscroll.min.js", "/templates/hdfilme1/js/lazyload.min.js", "/templates/hdfilme1/js/script.js", "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495"]
+
+=== HUHU_HOME ===
+STATUS=200
+FINAL=https://www.huhu.to/
+LENGTH=636
+PLAYEPISODE_COUNT=0
+EPISODE-NAVIGATION_COUNT=0
+DATA-SEASON_COUNT=0
+DATA-EPISODE_COUNT=0
+SEASON_COUNT=0
+STAFFEL_COUNT=0
+1X1_COUNT=0
+S1 E1_COUNT=0
+SERIAL_COUNT=0
+API/_COUNT=0
+WEB-VOD_COUNT=0
+LINKS?ID_COUNT=0
+TMDB_COUNT=0
+REACHER_COUNT=0
+SCRIPT_SRCS=["/assets/index-CyRgdH9q.js"]
+
+=== HUHU_WEBVOD ===
+STATUS=ERR
+FINAL=https://www.huhu.to/web-vod/
+LENGTH=25
+HTTP Error 404: Not Found
+
+=== MOVIE4K_LANG_2 ===
+STATUS=200
+LENGTH=224044
+CANDIDATE={"_id": "6195193358607cdfb9facc85", "title": "Preacher - Staffel 1", "year": 2016, "lang": 2, "tv": 1, "s": 1, "imdb": "{\"title\":\"Pamokslininkas\",\"year\":null,\"certificate\":null,\"released\":1463875200,\"runtime\":\"60 min\",\"genres\":\" Adventure,  Drama,  Fantasy,  Horror,  Mystery\",\"director\":\"\",\"stars\":[{\"starsUrl\":\"\\/name\\/nm1002641\\/?ref_=tt_ov_st_sm\",\"starsName\":\"Dominic Cooper\"},{\"starsUrl\":\"\\/name\\/nm0318543\\/?ref_=tt_ov_st_sm\",\"starsName\":\"Joseph Gilgun\"},{\"starsUrl\":\"\\/name\\/nm1550948\\/?ref_=tt_ov_st_sm\",\"starsName\":\"Ruth Negga\"}],\"cast\":null,\"storyline\":\"What if an angel and a demon procreate? What would that offspring be? Would it be holy or demonic or both? Preacher Is that tale. The offspring has no body, just a soul. That soul needs a body and chose Jessie. A preacher from Texas with a loss of faith and a drinking problem. The offspring called Genesis bonds with Jesse giving him the word of God. What he says is done.\\n               \",\"language\":\"English\",\"country\":\"\",\"rating\":\"8.0\",\"votes\":\"61504\",\"screenshot\":null,\"poster\":\"https:\\/\\/m.media-amazon.com\\/images\\/M\\/MV5BNzIyMDY4NmUtMGRhZS00ZjE4LWI5YWYtYTYxMzcwZWNlZWRkXkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_UX310_CR0,0,310_AL_.jpg\",\"imdb_url\":\"https:\\/\\/www.imdb.com\\/title\\/tt5016504\\/?ref_=fn_tv_tt_1\"}", "imdb_id": "tt5016504", "totalSeasons": 4, "totalEpisodes": 43}
+WATCH_STATUS=200 LEN=56092
+WATCH_KEYS=_id,id,title,year,views,lang,res,res_yts,res_m3u8,quality,quality_filter,server,slug_original,slug,old_format,tv,s,totalSeasons,totalEpisodes,subs,tmdb,imdb,certificate,language,networks,backdrop_path,poster_path,poster_path_season,overview,overview_season,first_air_date,last_air_date,air_date_season,status,imdb_id,credits,original_title,released,country,runtime,rating,votes,directors,stars,cast,genres,storyline,links,added,updated,updated_tmdb,requested,updated_server,updated_subs,img_link,filmpalast_url,kinox_url,thewatchseries_url,imdb_url,started,uploaded,rapidvideo_list_720_updated,rapidvideo_list_CAM_updated,error,last_updated_epi,converting,trailerURL,trailerUpdated,streams,has_checked_on_column,email_notifications,img,last_update_kinox,last_update_pending_streams
+WATCH_STREAMS=33
+WATCH_E1=[{"_id": "620469915f4003249f7f56d9", "stream": "https://dl.streamcloud.club/files/tvshows/1080p/6195193358607cdfb9facc85-e1.mp4", "res": "1080p", "release": "99285 S-01 E-01 Preacher s01e01", "e": 1, "url": "https://streamcrypt.net/streamz.cc/1aafef629e19e441525853343ac778585ab26b34bc461aa2d154ccf996e99144", "server": 1, "added": "2022-02-10T01:25:37.135Z"}, {"_id": "64850a497119e47bdcc2ba76", "stream": "https://clipwatching.com/u1lux7536xfc/Preacher.S01E01.German.BDRip.x264-iNTENTiON.mp4.html", "e": "1", "checked_on": "", "url": "http://kinox.to/Stream/Preacher.html,s1e1", "source": "kinox.to", "added": "2023-06-10T23:42:01.274Z"}, {"_id": "648afd202dfd286367b8b5b4", "stream": "https://supervideo.tv/embed-r3m2x8vs26mt.html", "e": "1", "checked_on": "", "url": "https://freeproxy.io/o.php?b=5&_senable_sig=&pv=1&mobile=&u=MTkzLjEwNi4zMC41OHxzOi8vc3RyZWFtY2xvdWQuYmVzdC8yOTUwMC1wcmVhY2hlci1zdHJlYW0tZGV1dHNjaC5odG1sfE1vemlsbGEvNS4wIChYMTE7IExpbnV4IHg4Nl82NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgSGVhZGxlc3NDaHJvbWUvMTAxLjAuNDk1MC4wIFNhZmFyaS81MzcuMzZ8OTM3MTI4", "source": "streamcloud.best", "added": "2023-06-15T11:59:28.169Z"}, {"_id": "6636165f42e8d17308955390", "stream": "https://dropload.io/embed-spj4pozrtv2f.html", "e": "1", "checked_on": "", "url": "https://freeproxy.io/o.php?b=5&_senable_sig=&pv=2&mobile=&u=MTkzLjEwNi4zMS4yMjZ8czovL3N0cmVhbWNsb3VkLm1vdmllLzI5NTAwLXByZWFjaGVyLXN0cmVhbS1kZXV0c2NoLmh0bWx8TW96aWxsYS81LjAgKFgxMTsgTGludXggeDg2XzY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBIZWFkbGVzc0Nocm9tZS8xMDEuMC40OTUwLjAgU2FmYXJpLzUzNy4zNnw5NTI2Nzg%3D", "source": "streamcloud.best", "added": "2024-05-04T11:05:03.720Z"}]
+
+=== MOVIE4K_LANG_3 ===
+STATUS=200
+LENGTH=120770
+
+=== MOVIE4K_LANG_4 ===
+STATUS=200
+LENGTH=211009
