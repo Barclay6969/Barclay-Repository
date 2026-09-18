@@ -1,0 +1,117 @@
+name: Build KinoKiste MeineCloud TEST1
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.build-kino-mc-test1'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, shutil, tempfile, zipfile
+
+          repo = Path.cwd()
+          base_zip = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.09.18.98.zip'
+          out_zip = repo / 'test-builds/plugin.video.xship-2026.09.18.98.1-KINOKISTE-MEINECLOUD-TEST1.zip'
+          staged = repo / 'tools/provider-inspect'
+
+          if not base_zip.exists():
+              raise SystemExit(f'Missing base ZIP: {base_zip}')
+
+          replacements = {
+              'scrapers/scrapers_source/de/kinokiste.py': staged / 'kinokiste.py',
+              'scrapers/scrapers_source/de/meinecloud.py': staged / 'meinecloud.py',
+              'scrapers/modules/meinecloud_shared.py': staged / 'meinecloud_shared.py',
+          }
+          for rel, src in replacements.items():
+              if not src.exists():
+                  raise SystemExit(f'Missing staged source: {src}')
+              compile(src.read_text(encoding='utf-8'), str(src), 'exec')
+
+          with tempfile.TemporaryDirectory() as td:
+              td = Path(td)
+              with zipfile.ZipFile(base_zip, 'r') as zf:
+                  zf.extractall(td)
+
+              root = td / 'plugin.video.xship'
+              for rel, src in replacements.items():
+                  dst = root / rel
+                  if not dst.exists():
+                      raise SystemExit(f'Missing target in base ZIP: {rel}')
+                  shutil.copyfile(src, dst)
+
+              addon = root / 'addon.xml'
+              text = addon.read_text(encoding='utf-8')
+              text, count = re.subn(
+                  r'(<addon\b[^>]*\bid="plugin\.video\.xship"[^>]*\bversion=")2026\.09\.18\.98(")',
+                  r'\g<1>2026.09.18.98.1\2',
+                  text,
+                  count=1
+              )
+              if count != 1:
+                  # Attribute order fallback.
+                  text, count = re.subn(
+                      r'(<addon\b[^>]*\bversion=")2026\.09\.18\.98("[^>]*\bid="plugin\.video\.xship"[^>]*>)',
+                      r'\g<1>2026.09.18.98.1\2',
+                      text,
+                      count=1
+                  )
+              if count != 1:
+                  raise SystemExit('Could not set xShip test version')
+              addon.write_text(text, encoding='utf-8', newline='\n')
+
+              for cache in list(root.rglob('__pycache__')):
+                  shutil.rmtree(cache, ignore_errors=True)
+              for pyc in root.rglob('*.pyc'):
+                  pyc.unlink(missing_ok=True)
+
+              out_zip.parent.mkdir(parents=True, exist_ok=True)
+              if out_zip.exists():
+                  out_zip.unlink()
+              with zipfile.ZipFile(out_zip, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+                  for p in sorted(root.rglob('*')):
+                      if p.is_file():
+                          zf.write(p, p.relative_to(td).as_posix())
+
+          with zipfile.ZipFile(out_zip, 'r') as zf:
+              bad = zf.testzip()
+              if bad:
+                  raise SystemExit(f'Corrupt ZIP member: {bad}')
+              addon = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+              if 'version="2026.09.18.98.1"' not in addon:
+                  raise SystemExit('Wrong test version in ZIP')
+              for rel in replacements:
+                  data = zf.read('plugin.video.xship/' + rel).decode('utf-8')
+                  compile(data, rel, 'exec')
+
+          print('BUILT', out_zip)
+          PY
+
+      - name: Commit test and cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -f .build-kino-mc-test1
+          git rm -f .github/workflows/build-kino-mc-test1.yml
+          git rm -f .github/workflows/inspect-xship-providers.yml
+          git rm -rf tools/provider-inspect
+          git add test-builds/plugin.video.xship-2026.09.18.98.1-KINOKISTE-MEINECLOUD-TEST1.zip
+          git commit -m "Build KinoKiste and MeineCloud TEST1"
+          git push
