@@ -1,69 +1,66 @@
+# -*- coding: UTF-8 -*-
 
-# movie4k
-# 2022-11-11
-# edit 2026-05-23
-
-# Wichtige Info: dieser Scraper ersetzt u.a. Movie4k, Streamcloud, Fhdfilme, Filmpro
-# Alle diese Seiten nutzen die gleiche DataBase
+# MeineCloud provider
+# Movie4k family database source
 
 from resources.lib.utils import isBlockedHosterFast as isBlockedHoster
-import re
-from scrapers.modules.tools import cParser  # re - alternative
-from resources.lib.requestHandler import cRequestHandler
-from scrapers.modules import cleantitle
-from scrapers.modules.meinecloud_shared import get_movie_links
+from scrapers.modules.meinecloud_shared import get_movie_links, get_series_links
 from resources.lib.control import getSetting
+from resources.lib.domain_manager import resolve_domain
 
 SITE_IDENTIFIER = 'meinecloud'
 SITE_DOMAIN = 'meinecloud.click'
 SITE_NAME = SITE_IDENTIFIER.upper()
 
+
 class source:
     def __init__(self):
-        self.priority = getSetting('provider.' + SITE_IDENTIFIER + '.priority', 100) # je kleiner der Wert um so höher die Priorität
+        self.priority = getSetting('provider.' + SITE_IDENTIFIER + '.priority', 100)
         self.language = ['de']
-        self.domain = getSetting('provider.' + SITE_IDENTIFIER + '.domain', SITE_DOMAIN)
+        self.domain = resolve_domain(SITE_IDENTIFIER, SITE_DOMAIN)
         self.base_link = 'https://' + self.domain
         self.sources = []
 
+    def _add_links(self, links, numbered=False):
+        seen = set()
+        index = 0
+        for sUrl in links or []:
+            if not sUrl or sUrl in seen:
+                continue
+            seen.add(sUrl)
+
+            isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)
+            if isBlocked or not url:
+                continue
+
+            index += 1
+            source_name = hoster
+            if numbered and index > 1:
+                source_name = '%s(%s)' % (hoster, index)
+
+            self.sources.append({
+                'source': source_name,
+                'quality': '1080p',
+                'language': 'de',
+                'url': url,
+                'direct': True,
+                'priority': int(self.priority),
+                'prioHoster': prioHoster
+            })
 
     def run(self, titles, year, season=0, episode=0, imdb=''):
+        self.sources = []
         try:
-            if season == 0:
-                ## https://meinecloud.click/movie/tt1477834
-                aResult = get_movie_links(imdb)
-                for sUrl in aResult:
-                    if sUrl.startswith('/'): sUrl = 'https:' + sUrl
-                    isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)
-                    if isBlocked: continue
-                    if url:
-                        self.sources.append({'source': hoster, 'quality': '1080p', 'language': 'de', 'url': url, 'direct': True, 'priority': int(self.priority), 'prioHoster': prioHoster})
-                return self.sources
-
+            if int(season or 0) == 0:
+                self._add_links(get_movie_links(imdb, self.base_link))
             else:
-                # https://meinecloud.click/serial/7772588
-                sImdb = str(imdb[2:])
-                oRequest = cRequestHandler('https://meinecloud.click/serial/%s' % sImdb, caching=True)
-                sHtmlContent = oRequest.request()
-                pattern = r'data-link="([^"]+)"\s+data-label="S%s\sE%s' %(season,episode)
-                isMatch, aResult = cParser.parse(sHtmlContent, pattern)
-                i=0
-                for sUrl in dict.fromkeys(aResult):
-                    # if 'railer' in sName or 'youtube'in sUrl or 'vod'in sUrl: continue
-                    # if sUrl.startswith('/'): sUrl = re.sub('//', 'https://', sUrl)
-                    if sUrl.startswith('/'): sUrl = 'https:' + sUrl
-                    isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)
-                    if isBlocked: continue
-                    if url:
-                        i += 1  # z.B. Serie "For All Mankind" S2 E1 werden 2 Streams gefunden, der 2.Stream ist NOK
-                        self.sources.append({'source': hoster+'(%s)' %i, 'quality': '1080p', 'language': 'de', 'url': url, 'direct': True, 'priority': int(self.priority), 'prioHoster': prioHoster})
-                        if i==1: break
+                self._add_links(
+                    get_series_links(imdb, int(season), int(episode), self.base_link),
+                    numbered=True
+                )
             return self.sources
-        except:
+        except Exception:
             return self.sources
 
     def resolve(self, url):
-        try:
-            return url
-        except:
-            return
+        return url
