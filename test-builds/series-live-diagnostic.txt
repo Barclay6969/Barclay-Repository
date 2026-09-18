@@ -1,0 +1,141 @@
+=== KINOKING_SEARCH ===
+STATUS=200
+FINAL=https://kinoking.cc/index.php?search=Reacher
+LENGTH=234303
+REACHER_COUNT=14
+PLAYCONTENT=0
+PLAYEPISODE=0
+DATA_LINK=0
+STAFFEL=0
+SEASON=1
+SERIAL=0
+[reacher] class="fixed inset-0 z-[100] flex flex-col items-center pt-24 px-6 hidden-element transition-opacity duration-300"> <div class="w-full max-w-3xl space-y-8 pl-0 sm:pl-[64px]"> <div class="relative"> <div class="fade-line-h mb-6 opacity-30"></div> <form action="index.php" method="GET" class="relative"> <input type="text" name="search" id="searchInput" placeholder="Filme & Serien durchsuchen..." value="Reacher" autocomplete="off" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 sm:py-6 px-12 sm:px-16 text-lg sm:text-2xl font-black text-white focus:outline-none focus:border-brand transition-colors placeholder:text-neutral-700 uppercase tracking-tight font-display"> <i class="fas fa-search absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-brand text-xl sm:text-2xl"></i> <button type="button" onclick="closeSearch()" class="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-full text-neutral-400 transition-colors"> <i class="fas fa-times text-lg sm:text-xl"></i> </button> </form> <div class="fade-line-h mt-6 opacity-30"></div> </div> </div> </div> <div id="azOverlay" class="fixed inset-0 z-[60] bg-background/95 backdrop-blur-md hidden-element transition-opacity duration-300"></div> <div id="azModal" class="fixed inset-0 z-[100] flex flex-col items-center pt-24 px-6 hidden-element transition-opacity duration-300"> <div class="w-full max-w-4xl space-y-8 pl-0 sm:pl-[64px]"> <div class="relative bg-neutral-900/80 border border-white/10 rounded-3xl p-8 shadow-2xl backdrop-blur-xl"> <h2 class="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight font-display mb-8 text-center flex items-center justify-center gap-3"> <i class="fas fa-sort-a
+[series.php]  </div> <div class="group/card relative fav-data-source cursor-pointer" data-id="196" data-type="series" data-tmdb="108978" data-title="Reacher" data-img="https://image.tmdb.org/t/p/w500/n5qHxX9OybwH5EFfa5DEeXKFCCQ.jpg" data-quality="HDTV"> <div class="relative w-full aspect-[2/3] rounded-2xl overflow-hidden bg-surface border border-white/10 movie-card-shadow" onclick="trackHistoryAndGo(this, 'series.php?id=196')"> <img src="https://image.tmdb.org/t/p/w500/n5qHxX9OybwH5EFfa5DEeXKFCCQ.jpg" alt="Poster" class="w-full h-full object-cover opacity-80 group-hover/card:opacity-100 group-hover/card:scale-105 transition-transform duration-700" loading="lazy" decoding="async"> <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 sm:opacity-70 group-hover/card:opacity-90 transition-opacity"></div> <div class="absolute top-3 left-3 px-2 py-1 bg-emerald-600 text-[9px] font-black text-white rounded-lg uppercase tracking-widest shadow-lg"> SERIE </div> <div class="absolute top-3 right-3 px-2 py-1 bg-brand/30 backdrop-blur-md border border-white/20 rounded-lg text-[9px] font-black text-white uppercase tracking-widest">HDTV</div> <div class="absolute bottom-0 left-0 right-0 p-4 pt-10 bg-gradient-to-t from-black to-transparent flex flex-col justify-end translate-y-2 group-hover/card:translate-y-0 transition-transform z-20"> <p class="text-xs font-bold text-white uppercase tracking-wider truncate">Reacher</p> <div class="flex justify-between it
+
+=== HDFILME_OLD_SEARCH ===
+STATUS=200
+FINAL=https://hd-filme.lol/index.php?do=search&subaction=search&story=Reacher
+LENGTH=193485
+REACHER_COUNT=37
+PLAYCONTENT=0
+PLAYEPISODE=0
+DATA_LINK=0
+STAFFEL=72
+SEASON=0
+SERIAL=2
+[reacher] o" id="do" value="search" /> <input type="hidden" name="subaction" id="subaction" value="search" /> <input type="hidden" name="search_start" id="search_start" value="0" /> <input type="hidden" name="full_search" id="full_search" value="0" /> <input type="hidden" name="result_from" id="result_from" value="1" /><table cellpadding="4" cellspacing="0" width="100%"> <tr> <td class="search"> <div style="margin:10px;"> <input type="text" name="story" id="searchinput" value="Reacher" class="textin" style="width:250px" onchange="document.getElementById('result_from').value = 1" /><br /><br /> <input type="button" class="bbcodes" name="dosearch" id="dosearch" value="Suche starten" onclick="javascript:list_submit(-1); return false;" /> <input type="button" class="bbcodes" name="dofullsearch" id="dofullsearch" value="Erweiterte Suche " onclick="javascript:full_submit(1); return false;" /> </div> </td> </tr> </table> </form></div> <p>Filme 14 gefunden (Abfrageergebnisse 1 - 10) :</p><br> </div> </article> <script type="text/javascript"> document.addEventListener("DOMContentLoaded", function() { $('.textin').addClass('form-control'); $('.bbcodes').addClass('btn btn-search'); $('td.search > div').attr('style', ''); }); </script> <script> <!-- function clearform(frmname){ var frm = document.getElementById(frmname); for (var i=0;i<frm.length;i++) { var el=frm.elements[i]; if (el.type=="checkbox" || el.type=="radio") { if (el.name=='showposts') {document.getElementById('rb_showposts_0').checked=1; } else {el.checked=0; } } if ((el.type=="text") || (el.type=="textarea") || (el.type == "password")) { el.value=""; continue; } if ((el.type=="select-one") || (el.type=="select-multiple")) { el.selectedIndex=0; } } document.getElementById('replylimit').value = 0; document.getElementById('search_start').value = 0; document.getElementById('result_from').value = 1; } function list_submit(prm){ var frm = document.getElementById('fullsearc
+[staffel 1] d('fullsearch'); if (prm == -1) { prm=0; frm.result_from.value=1; } else { frm.result_from.value=(prm-1) * 10 + 1; } frm.search_start.value=prm; frm.submit(); return false; } function full_submit(prm){ document.getElementById('fullsearch').full_search.value=prm; list_submit(-1); } //--> </script> <li> <div class="box-product clearfix" data-popover="movie-data-popover-25579"> <a href="https://hd-filme.lol/25579-neagley-stream-deutsch-kostenlos.html" title="Neagley - Staffel 1 stream"> <figure> <img class="img lazyload" data-src="/uploads/thumb/271x408-0-75/2026-09/1789565448_qns9l9fxjxddw9fsjhiqd7spujc.jpg" onerror="this.src='/templates/hdfilme1/images/default_thumb.jpg'" alt="Nomadland stream" width="215" height="auto"> <figcaption class="hidden">Neagley - Staffel 1 poster</figcaption> </figure> </a> <div class="decaption"> <div class="title-product height-50"> <h3 class="font-size-12 mt0 mr0 mb0 ml0"> <a href="https://hd-filme.lol/25579-neagley-stream-deutsch-kostenlos.html" title="Neagley - Staffel 1 stream"> Neagley - Staffel 1 </a> </h3> <p class="text-capitalize mt5 mr0 mb0 ml0"> Neagley - Staffel 1 2026 </p> </div> <span class="view-product"> <i class="fa fa-eye" aria-hidden="true"></i>6 389 </span> <span class="quality-product">HDTV</span> </div> <div class="clear"></div> <a href="https://hd-filme.lol/25579-neagley-stream-deutsch-kostenlos.html" title="Neagley - Staffel 1 stream"> <span class="over_play bg-sprites bg-play"></span> </a> </div> </li> <li> <div class="box-product clearfix" data-popover="movie-data-popover-25204"> <a href="https://hd-filme.lol/25204-reacher-stream-deutsch-kostenlos.html" title="Reacher - Staffel 4 stream"> <figure> <img class="img lazyload" data-src="/uploads/thumb/271x408-0-75/2026-08/1786540554_vcomtg8o9m22c7jg9jhbekjbz5q.jpg" onerror="this.src='/templates/hdfilme1/images/default_thumb.jpg'" alt="Nomadland stream" width="215" height="auto"> <figcaption class="hidden">Reacher - Staffel 4 poster</figca
+
+=== HDFILME_WIN_SEARCH ===
+STATUS=200
+FINAL=https://hdfilme.cafe/?story=Reacher&do=search&subaction=search
+LENGTH=747
+REACHER_COUNT=0
+PLAYCONTENT=0
+PLAYEPISODE=0
+DATA_LINK=0
+STAFFEL=0
+SEASON=0
+SERIAL=0
+
+=== FHDFILME_IMDB ===
+STATUS=200
+FINAL=https://hdfilme.cafe/?story=tt9288030&do=search&subaction=search
+LENGTH=747
+REACHER_COUNT=0
+PLAYCONTENT=0
+PLAYEPISODE=0
+DATA_LINK=0
+STAFFEL=0
+SEASON=0
+SERIAL=0
+
+=== STREAMCLOUD_IMDB ===
+STATUS=200
+FINAL=https://streamcloud.download/index.php?story=tt9288030&do=search&subaction=search
+LENGTH=23705
+REACHER_COUNT=5
+PLAYCONTENT=0
+PLAYEPISODE=0
+DATA_LINK=0
+STAFFEL=0
+SEASON=0
+SERIAL=0
+[reacher] .action = dle_root +'index.php'; if (prm == -1) { prm=0; } frm.search_start.value=prm; frm.submit(); return false; } function full_submit(prm){ document.getElementById('fullsearch').full_search.value=prm; list_submit(-1); } //--> </script> </form> <div class="item cf item-video post-1515412 post type-post status-publish format-video has-post-thumbnail hentry category-fear-the-walking-dead post_format-post-format-video" style="position:relative;"> <div class="thumb" title="Reacher"> <a href="https://streamcloud.download/31575-reacher-stream-deutsch.html"><img src="/uploads/thumb/300x450-0-80/2023-06/1686840992-966502028.jpg" alt="Reacher"><span class="overlay"></span></a> </div> <div class="f_title"><a href="https://streamcloud.download/31575-reacher-stream-deutsch.html">Reacher</a></div> <div class="f_year">2022</div> </div> </div> </div> </div> <div class="clear"></div> <footer id="footer"> <div role="contentinfo"> <div class="wrap cf"> <p id="copyright"> <div style="width:100%;float:left;overflow:auto;"> <div class="seperator"> <h1>Filme</h1> <li><a href="/neue-filme/">Neu</a></li> <li><a href="/beliebte-filme/">Beliebt</a></li> <li><a href="/filme-stream/">Updates</a></li> <li><a href="/beliebte-filme/">Trending</a></li> <li><a href="/kinofilme/">Kinofilme</a></li> </div> <div class="seperator"> <h1>Entdecke</h1> <li><a href="#">FAQ</a></li> <li><a href="#">Schauspieler</a></li> <li><a rel="nofollow" target="_blank" href="https://t.me/streamcloud_movie"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;" width="14" height="14"><circle cx="120" cy="120" r="120" fill="#29b6f6"/><path fill="#fff" d="M53 122l24 9 9 30 15-17 26 20 24-114z"/></svg>Telegram</a></li> </div> <div class="seperator"> <h1>Mehr</h1> <li><a href="#" target="_blank">Streams eintragen</a></li> <li><a href="/dns.html">DNS Server ändern</a></li> <li>
+
+=== TOPSTREAM_IMDB ===
+STATUS=ERR
+FINAL=https://www.topstreamfilm.live/?story=tt9288030&do=search&subaction=search
+LENGTH=25
+HTTP Error 403: Forbidden
+
+=== MOVIE4K_DE ===
+STATUS=200
+FINAL=https://movie4k.sx/data/search/?lang=2&keyword=Reacher
+LENGTH=224044
+REACHER_COUNT=226
+PLAYCONTENT=0
+PLAYEPISODE=0
+DATA_LINK=0
+STAFFEL=1
+SEASON=49
+SERIAL=0
+[reacher] [{"_id":"6195193358607cdfb9fb5107","id":1510248,"title":"Jack Reacher 2: Kein Weg zurück","year":2016,"views":338029,"lang":2,"res":"","res_yts":"","res_m3u8":"","quality":"","quality_filter":"","server":null,"slug_original":"","slug":"jack-reacher-2-kein-weg-zurck","old_format":"","tv":0,"s":0,"totalSeasons":0,"totalEpisodes":0,"subs":"","tmdb":"{\"movie\":[{\"movie_details\":null,\"movie_credits\":null,\"movie_external_ids\":null}]}","imdb":"","certificate":"","language":"","networks":"","backdrop_path":"","poster_path":"","poster_path_season":"","overview":"","overview_season":"","first_air_date":0,"last_air_date":0,"air_date_season":0,"status":"","imdb_id":"","credits":"","original_title":"","released":0,"country":"","runtime":"118 min","rating":"6.4","votes":0,"directors":"\nEdward Zwick\n","stars":"","cast":"Tom Cruise, Cobie Smulders, Aldis Hodge, Danika Yarosh, Patrick Heusinger","genres":"Thriller, Mystery, Krimi, Action, \nEdward Zwick\n, Tom Cruise, Cobie Smulders, Aldis Hodge, Danika Yarosh, Patrick Heusinger","storyline":"Seit er die Stimme von Major Susan Turner am Telefon gehört hat, geht sie Jack Reacher (Tom Cruise) nicht mehr aus dem Kopf. Deswegen ist er nun an den Ort zurückgekehrt, der dem Begriff „Heimat“ am nahsten in seinem Leben war: dem Hauptquartier seiner alten Einheit in Virginia. Dort müsste Susan Turner an dem Schreibtisch sitzen, an dem er einst saß als er noch der Kommandant war. Doch in Virginia erlebt er eine Überraschung. Es gibt einen neuen Kommandanten. Susan Turner sitzt wegen Verrats im Gefängnis. Und damit nicht genug: Reacher selbst wird wieder zum Militär eingezogen und gleich mit zwe
+[staffel 1] ":"https://streamplay.to/wkv1biah3682","release":"HD","added":"2026-01-11T10:34:15.927Z"}],"email_notifications":0,"last_update_cinemathek":"2023-06-05T18:02:27.017Z","last_update_moviedream":"2023-05-20T20:57:48.083Z","last_update_streamcloud_best":"2023-06-11T16:26:13.046Z","img":"/usr/share/nginx/html/cdn.vodlocker.to/data/my_videos/_SY450/6195193258607cdfb9fa7f93.jpg","last_update_pending_streams":"2025-04-12T23:24:17.018Z"},{"_id":"6195193358607cdfb9facc85","id":1473748,"title":"Preacher - Staffel 1","year":2016,"views":61346,"lang":2,"res":"","res_yts":"","res_m3u8":"","quality":"","quality_filter":"","server":1,"slug_original":"preacher","slug":"preacher","old_format":"","tv":1,"s":1,"totalSeasons":4,"totalEpisodes":43,"subs":"","tmdb":"{\"tv\":[{\"tv_details\":{\"backdrop_path\":\"\\/osdreIgSeM9KuKH4I3RzhnQpQPI.jpg\",\"created_by\":[{\"id\":19274,\"credit_id\":\"577d2f3d9251415d980008d3\",\"name\":\"Seth Rogen\",\"gender\":2,\"profile_path\":\"\\/xCt0MWnPkk1tJIYYPT6fekgQRMg.jpg\"},{\"id\":54734,\"credit_id\":\"577d2f45c3a36817f40008b0\",\"name\":\"Evan Goldberg\",\"gender\":2,\"profile_path\":\"\\/uKZFcTB7FS47WvRFcp5wv3f7hJM.jpg\"},{\"id\":1223194,\"credit_id\":\"57533347925141272b0004b2\",\"name\":\"Sam Catlin\",\"gender\":2,\"profile_path\":\"\\/5Xt7ONeJpF3x2XZ9JwQO9vGDuJ1.jpg\"}],\"episode_run_time\":[60,45],\"first_air_date\":\"2016-05-22\",\"genres\":[{\"id\":10765,\"name\":\"Sci-Fi & Fantasy\"},{\"id\":9648,\"name\":\"Mystery\"},{\"id\":18,\"name\":\"Drama\"}],\"homepage\":\"http:\\/\\/www.amc.com\\/shows\\/preacher\",\"id\":64230,\"in_production\":false,\"languages\":[\"en\"],\"last_air_date\":\"2019-09-29\",\"last_episode_to_air\":{\"air_date\":\"2019-09-29\",\"episode_number\":10,\"id\":1867328,\"name\":\"End of the World\",\"overview\":\"The fate of the world is decided as the long journey of a preacher and his friends comes to an end.\",\"production_code\":\"\",\"season_number\":4,\"still_path\":\"\\/iKdAiwtiUaqX0vRH9N2vri3dEWS.jpg\",\"vote_average\":10,\"vote_count\":1},\"name\":\"Preacher\",\"next_episode_to_air\":null,\"networks\":[{\"name\":
+[season 1] ,\"name\":\"Kickstart\",\"origin_country\":\"US\"},{\"id\":33728,\"logo_path\":null,\"name\":\"NightSky Productions\",\"origin_country\":\"US\"}],\"production_countries\":[{\"iso_3166_1\":\"US\",\"name\":\"United States of America\"}],\"seasons\":[{\"air_date\":\"2016-05-22\",\"episode_count\":1,\"id\":77303,\"name\":\"Specials\",\"overview\":\"\",\"poster_path\":\"\\/9WHTgr0aTBWpetdpEWqvCjlly06.jpg\",\"season_number\":0},{\"air_date\":\"2016-05-22\",\"episode_count\":10,\"id\":71585,\"name\":\"Season 1\",\"overview\":\"Jesse Custer, a conflicted Preacher in a small Texas town who is inhabited by a mysterious entity that allows him to develop a highly unconventional power. Jesse, his ex-girlfriend, Tulip, and an Irish vampire named Cassidy embark on a journey to, literally, find God.\",\"poster_path\":\"\\/sizXOmF5GZtiTL2qNPwa3bURcz0.jpg\",\"season_number\":1},{\"air_date\":\"2017-06-25\",\"episode_count\":13,\"id\":80598,\"name\":\"Season 2\",\"overview\":\"In Season 2, after Jesse accidentally discovered that God is absent from Heaven, the three of them set out on a road trip to find Him, all while being hunted by the Saint of Killers, an unstoppable, mythical killer from Hell. The trio\\u00e2\\u0080\\u0099s pursuit led them to New Orleans, where they dodged local gangsters, dangerous agents, and other unimaginable mayhem on their way to uncovering an even bigger secret. Now, with Tulip\\u00e2\\u0080\\u0099s life and Cassidy\\u00e2\\u0080\\u0099s friendship in the balance, Jesse must rely on a mysterious figure from his past in order to save his friends and continue on with his mission.\",\"poster_path\":\"\\/14fyPi9EvDdPakPR6ZUoIZet4zN.jpg\",\"season_number\":2},{\"air_date\":\"2018-06-24\",\"episode_count\":10,\"id\":102257,\"name\":\"Season 3\",\"overview\":\"In Season 3, Jesse Custer\\u00e2\\u0080\\u0099s quest for God takes him back to the place he\\u00e2\\u0080\\u0099s been avoiding his whole life: home. Jesse, Tulip, and Cassidy return to Angelville, the Louisiana Plantation where Jesse was raised, and find old grudges and deadly obligations await them. W
+JSON_TYPE=list
+JSON_LEN=5
+JSON_FIRST=[{"_id": "6195193358607cdfb9fb5107", "id": 1510248, "title": "Jack Reacher 2: Kein Weg zurück", "year": 2016, "views": 338029, "lang": 2, "res": "", "res_yts": "", "res_m3u8": "", "quality": "", "quality_filter": "", "server": null, "slug_original": "", "slug": "jack-reacher-2-kein-weg-zurck", "old_format": "", "tv": 0, "s": 0, "totalSeasons": 0, "totalEpisodes": 0, "subs": "", "tmdb": "{\"movie\":[{\"movie_details\":null,\"movie_credits\":null,\"movie_external_ids\":null}]}", "imdb": "", "certificate": "", "language": "", "networks": "", "backdrop_path": "", "poster_path": "", "poster_path_season": "", "overview": "", "overview_season": "", "first_air_date": 0, "last_air_date": 0, "air_date_season": 0, "status": "", "imdb_id": "", "credits": "", "original_title": "", "released": 0, "country": "", "runtime": "118 min", "rating": "6.4", "votes": 0, "directors": "\nEdward Zwick\n", "stars": "", "cast": "Tom Cruise,  Cobie Smulders,  Aldis Hodge,  Danika Yarosh,  Patrick Heusinger", "genres": "Thriller, Mystery, Krimi, Action, \nEdward Zwick\n, Tom Cruise,  Cobie Smulders,  Aldis Hodge,  Danika Yarosh,  Patrick Heusinger", "storyline": "Seit er die Stimme von Major Susan Turner am Telefon gehört hat, geht sie Jack Reacher (Tom Cruise) nicht mehr aus dem Kopf. Deswegen ist er nun an den Ort zurückgekehrt, der dem Begriff „Heimat“ am nahsten in seinem Leben war: dem Hauptquartier seiner alten Einheit in Virginia. Dort müsste Susan Turner an dem Schreibtisch sitzen, an dem er einst saß als er noch der Kommandant war. Doch in Virginia erlebt er eine Überraschung. Es gibt einen neuen Kommandanten. Susan Turner sitzt wegen Verrats im Gefängnis. Und damit nicht genug: Reacher selbst wird wieder zum Militär eingezogen und gleich mit zwei Anklagen konfrontiert. Er soll vor sechszehn Jahren einen Mord begangen haben und eine Frau behauptet, dass er der Vater ihrer Tochter ist. Reacher ist klar: Irgendetwas stimmt hier ganz und gar nicht. Jemand will ihn ablenken, den neugierigen Ermittler kalt stellen. Doch damit hat er erst recht seine Aufmerksamkeit bekommen. Reacher beschließt der Sache auf den Grund zu gehen, doch dazu muss er erst einmal Susan Turner aus dem Gefängnis befreien…", "links": 9, "added": "2020-10-12T21:40:57.000Z", "updated": "2026-03-04T18:54:56.455Z", "updated_tmdb": 0, "requested": 0, "updated_server": 0, "updated_subs": 0, "img_link": "", "filmpalast_url": "http://filmpalast.to/stream/jack-reacher-2-kein-weg-zuruck", "kinox_url": "", "thewatchseries_url": "", "imdb_url": "", "started": 0, "uploaded": 0, "rapidvideo_list_720_updated": 0, "rapidvideo_list_CAM_updated": 0, "error": "", "last_updated_epi": 0, "converting": 0, "trailerURL": "", "trailerUpdated": 0, "streams": [{"_id": "619567069662481f2d4ee3ec", "stream": "https://streamtape.com/e/YpkoBv3yK9svxRZ", "release": "", "source": "vip_user", "url": "", "user_id": 6459, "added": "2021-05-17T17:10:44.000Z"}, {"_id": "6195670a9662481f2d4f2161", "stream": "https://streamtape.com/e/Zq88Y
+
+=== MOVIE4K_MULTI ===
+STATUS=200
+FINAL=https://movie4k.sx/data/search/?lang=4&keyword=Reacher
+LENGTH=211009
+REACHER_COUNT=140
+PLAYCONTENT=0
+PLAYEPISODE=0
+DATA_LINK=0
+STAFFEL=0
+SEASON=21
+SERIAL=0
+[reacher] [{"_id":"6195193258607cdfb9fa7d48","id":135180,"title":"Jack Reacher: Never Go Back","year":2016,"views":11130903,"lang":3,"res":"","res_yts":"720p","res_m3u8":"","quality":"Jack.Reacher.Never.Go.Back.2016.720p.BluRay.x264-[YTS.AG].mp4","quality_filter":"HD","server":1,"slug_original":"","slug":"jack-reacher-never-go-back","old_format":"","tv":0,"s":0,"totalSeasons":0,"totalEpisodes":0,"subs":"Arabic,Brazilian-Portuguese,Croatian,Dutch,English,Farsi-Persian,French,Greek,Hebrew,Hungarian,Indonesian,Norwegian,Romanian,Serbian,Spanish,Swedish,","tmdb":"{\"movie\":[{\"movie_details\":{\"adult\":false,\"backdrop_path\":\"\\/nDS8rddEK74HfAwCC5CoT6Cwzlt.jpg\",\"belongs_to_collection\":{\"id\":403374,\"name\":\"Jack Reacher Collection\",\"poster_path\":\"\\/7baSUtFKi8PQ9SLo6ECYBfAW2K8.jpg\",\"backdrop_path\":\"\\/vViRXFnSyGJ2fzMbcc5sqTKswcd.jpg\"},\"budget\":60000000,\"genres\":[{\"id\":28,\"name\":\"Action\"},{\"id\":53,\"name\":\"Thriller\"}],\"homepage\":\"http:\\/\\/www.jackreachermovie.com\\/\",\"id\":343611,\"imdb_id\":\"tt3393786\",\"original_language\":\"en\",\"original_title\":\"Jack Reacher: Never Go Back\",\"overview\":\"Jack Reacher must uncover the truth behind a major government conspiracy in order to clear his name. On the run as a fugitive from the law, Reacher uncovers a potential secret from his past that could change his life forever.\",\"popularity\":18.262,\"poster_path\":\"\\/IfB9hy4JH1eH6HEfIgIGORXi5h.jpg\",\"production_companies\":[{\"id\":21777,\"logo_path\":null,\"name\":\"TC Productions\",\"origin_country\":\"\"},{\"id\":4,\"logo_path\":\"\\/fycMZt242LVjagMByZOLUGbCvv3.png\",\"name\":\"Paramount\",\"origin_country\
+JSON_TYPE=list
+JSON_LEN=5
+JSON_FIRST=[{"_id": "6195193258607cdfb9fa7d48", "id": 135180, "title": "Jack Reacher: Never Go Back", "year": 2016, "views": 11130903, "lang": 3, "res": "", "res_yts": "720p", "res_m3u8": "", "quality": "Jack.Reacher.Never.Go.Back.2016.720p.BluRay.x264-[YTS.AG].mp4", "quality_filter": "HD", "server": 1, "slug_original": "", "slug": "jack-reacher-never-go-back", "old_format": "", "tv": 0, "s": 0, "totalSeasons": 0, "totalEpisodes": 0, "subs": "Arabic,Brazilian-Portuguese,Croatian,Dutch,English,Farsi-Persian,French,Greek,Hebrew,Hungarian,Indonesian,Norwegian,Romanian,Serbian,Spanish,Swedish,", "tmdb": "{\"movie\":[{\"movie_details\":{\"adult\":false,\"backdrop_path\":\"\\/nDS8rddEK74HfAwCC5CoT6Cwzlt.jpg\",\"belongs_to_collection\":{\"id\":403374,\"name\":\"Jack Reacher Collection\",\"poster_path\":\"\\/7baSUtFKi8PQ9SLo6ECYBfAW2K8.jpg\",\"backdrop_path\":\"\\/vViRXFnSyGJ2fzMbcc5sqTKswcd.jpg\"},\"budget\":60000000,\"genres\":[{\"id\":28,\"name\":\"Action\"},{\"id\":53,\"name\":\"Thriller\"}],\"homepage\":\"http:\\/\\/www.jackreachermovie.com\\/\",\"id\":343611,\"imdb_id\":\"tt3393786\",\"original_language\":\"en\",\"original_title\":\"Jack Reacher: Never Go Back\",\"overview\":\"Jack Reacher must uncover the truth behind a major government conspiracy in order to clear his name. On the run as a fugitive from the law, Reacher uncovers a potential secret from his past that could change his life forever.\",\"popularity\":18.262,\"poster_path\":\"\\/IfB9hy4JH1eH6HEfIgIGORXi5h.jpg\",\"production_companies\":[{\"id\":21777,\"logo_path\":null,\"name\":\"TC Productions\",\"origin_country\":\"\"},{\"id\":4,\"logo_path\":\"\\/fycMZt242LVjagMByZOLUGbCvv3.png\",\"name\":\"Paramount\",\"origin_country\":\"US\"},{\"id\":82819,\"logo_path\":\"\\/5Z8WWr0Lf1tInVWwJsxPP0uMz9a.png\",\"name\":\"Skydance Media\",\"origin_country\":\"US\"},{\"id\":83645,\"logo_path\":null,\"name\":\"Huahua Media\",\"origin_country\":\"CN\"},{\"id\":3407,\"logo_path\":\"\\/iVMjKOFyRvm9PW45lW1wW6TSvnj.png\",\"name\":\"Shanghai Film Group\",\"origin_country\":\"CN\"}],\"production_countries\":[{\"iso_3166_1\":\"CN\",\"name\":\"China\"},{\"iso_3166_1\":\"US\",\"name\":\"United States of America\"}],\"release_date\":\"2016-10-19\",\"revenue\":162146076,\"runtime\":118,\"spoken_languages\":[{\"iso_639_1\":\"en\",\"name\":\"English\"}],\"status\":\"Released\",\"tagline\":\"Justice is Coming.\",\"title\":\"Jack Reacher: Never Go Back\",\"video\":false,\"vote_average\":5.6,\"vote_count\":2939},\"movie_credits\":{\"id\":343611,\"cast\":[{\"cast_id\":0,\"character\":\"Jack Reacher\",\"credit_id\":\"5573971c9251413f6600024d\",\"gender\":2,\"id\":500,\"name\":\"Tom Cruise\",\"order\":0,\"profile_path\":\"\\/3oWEuo0e8Nx8JvkqYCDec2iMY6K.jpg\"},{\"cast_id\":5,\"character\":\"Susan Turner\",\"credit_id\":\"55fdcf53c3a368133b0016bb\",\"gender\":1,\"id\":71189,\"name\":\"Cobie Smulders\",\"order\":1,\"profile_path\":\"\\/7TIENKNwDdKSuYqyTENKtCznkCG.jpg\"},{\"cast_id\":6,\"character\":\"Espin\",\"credit_id\":\"55fdcf5a9
+
+=== NOX_SEARCH ===
+STATUS=ERR
+FINAL=https://nox.to/api/frontend/search/Reacher
+LENGTH=25
+HTTP Error 403: Forbidden
+
+=== SERIENFANS_R ===
+STATUS=ERR
+FINAL=https://serienfans.org/index/r
+LENGTH=25
+HTTP Error 403: Forbidden
+
+=== BURNINGSERIES_INDEX ===
+STATUS=200
+FINAL=https://burningseries.ac/andere-serien
+LENGTH=1332991
+REACHER_COUNT=6
+PLAYCONTENT=0
+PLAYEPISODE=0
+DATA_LINK=0
+STAFFEL=3
+SEASON=24
+SERIAL=12
+[reacher] ><a href="serie/Power-Rangers-Zeo" title="Power Rangers Zeo">Power Rangers Zeo</a></li> <li><a href="serie/Prison-Break" title="Prison Break">Prison Break</a></li> <li><a href="serie/Profugos-Auf-der-Flucht" title="Profugos - Auf der Flucht">Profugos - Auf der Flucht</a></li> <li><a href="serie/Queen-Woo" title="Queen Woo">Queen Woo</a></li> <li><a href="serie/R-J-Decker" title="R.J. Decker">R.J. Decker</a></li> <li><a href="serie/Reacher-2022" title="Reacher (2022)">Reacher (2022)</a></li> <li><a href="serie/ReBoot-Der-Waechter-Code" title="ReBoot: Der Wächter-Code">ReBoot: Der Wächter-Code</a></li> <li><a href="serie/Redbad-The-Legend" title="Redbad - The Legend">Redbad - The Legend</a></li> <li><a href="serie/Renegade-Gnadenlose-Jagd" title="Renegade - Gnadenlose Jagd">Renegade - Gnadenlose Jagd</a></li> <li><a href="serie/Rescue-HI-Surf" title="Rescue: HI-Surf">Rescue: HI-Surf</a></li> <li><a href="serie/Revolution" title="Revolution">Revolution</a></li> <li><a href="serie/Ride-or-Die" title="Ride or Die">Ride or Die</a></li> <li><a href="serie/RoboCop-Die-Serie" title="RoboCop - Die Serie">RoboCop - Die Serie</a></li> <li><a href="serie/RoboCop-Prime-Directives" title="RoboCop: Prime Directives">RoboCop: Prime Directives</a></li> <li><a href="serie/Romanzo-Criminale" title="Romanzo Criminale">Romanzo Criminale</a></li> <li><a href="serie/Rush" title="Rush">Rush</a></li> <li><a href="serie/Rush-AUS" title="Rush (AUS)">Rush (AUS)</a></li> <li><a href="serie/Rush-Hour" title="Rush Hour">Rush Hour</a></li> <li><a href="serie/S-W-A-T" title="S.W.A.T.">S.W.A.T.</a></li> <li><a href="serie/Salamander-Salamander-Gradius" title="Salamander | Salamander Gradius">Salamander | Salamander Gradius</a></li> <li><a href="serie/Samurai-Girl" title="Samurai Girl">Samurai Girl</a></li> <li><a href="serie/Santo
+
+=== BSTO_INDEX ===
+STATUS=ERR
+FINAL=https://bs.to/andere-serien
+LENGTH=52
+<urlopen error [Errno -2] Name or service not known>
+
+=== HUHU_REACHER ===
+STATUS=ERR
+FINAL=https://www.huhu.to/web-vod/api/links?id=series.108978.1.1
+LENGTH=25
+HTTP Error 404: Not Found
