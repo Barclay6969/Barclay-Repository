@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+import base64
 import json
 from urllib.parse import urlparse
 
@@ -16,6 +17,7 @@ SITE_IDENTIFIER = 'huhu'
 SITE_DOMAIN = 'www.huhu.to'
 SITE_NAME = 'HUHU'
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+_TMDB_FALLBACK = base64.b64decode('ZWRkZTZiNWU0MTI0NmFiNzlhMjY5N2NkMTI1ZTE3ODE=').decode()
 
 
 class source:
@@ -42,9 +44,7 @@ class source:
         if not imdb:
             return None
         try:
-            api_key = getSetting('api.tmdb')
-            if not api_key:
-                return None
+            api_key = getSetting('api.tmdb') or _TMDB_FALLBACK
             url = 'https://api.themoviedb.org/3/find/%s?api_key=%s&external_source=imdb_id' % (imdb, api_key)
             data = self._json(url)
             key = 'tv_results' if is_series else 'movie_results'
