@@ -1,0 +1,96 @@
+name: Diagnose series providers live
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.diagnose-series-live'
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe provider structures
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re,urllib.request,urllib.parse
+
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          def get(url, timeout=18):
+              req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept-Language':'de-DE,de;q=0.9,en;q=0.8'})
+              try:
+                  with urllib.request.urlopen(req,timeout=timeout) as r:
+                      return r.status,r.geturl(),r.read().decode('utf-8','replace')
+              except Exception as e:
+                  return 'ERR',url,str(e)
+
+          out=[]
+          urls=[
+            ('KINOKING_SEARCH','https://kinoking.cc/index.php?search=Reacher'),
+            ('HDFILME_OLD_SEARCH','https://hdfilme-tv.lat/index.php?do=search&subaction=search&story=Reacher'),
+            ('HDFILME_WIN_SEARCH','https://hdfilme.win/?story=Reacher&do=search&subaction=search'),
+            ('FHDFILME_IMDB','https://hdfilme.win/?story=tt9288030&do=search&subaction=search'),
+            ('STREAMCLOUD_IMDB','https://streamcloud.bid/index.php?story=tt9288030&do=search&subaction=search'),
+            ('TOPSTREAM_IMDB','https://www.topstreamfilm.live/?story=tt9288030&do=search&subaction=search'),
+            ('MOVIE4K_DE','https://movie4k.sx/data/search/?lang=2&keyword=Reacher'),
+            ('MOVIE4K_MULTI','https://movie4k.sx/data/search/?lang=4&keyword=Reacher'),
+            ('NOX_SEARCH','https://nox.to/api/frontend/search/Reacher'),
+            ('SERIENFANS_R','https://serienfans.org/index/r'),
+            ('BURNINGSERIES_INDEX','https://burningseries.ac/andere-serien'),
+            ('BSTO_INDEX','https://bs.to/andere-serien'),
+            ('HUHU_REACHER','https://www.huhu.to/web-vod/api/links?id=series.108978.1.1'),
+          ]
+          for label,url in urls:
+              status,final,body=get(url)
+              out += [f'=== {label} ===',f'STATUS={status}',f'FINAL={final}',f'LENGTH={len(body)}']
+              if status=='ERR':
+                  out += [body[:600],'']
+                  continue
+              low=body.lower()
+              out += [
+                  f'REACHER_COUNT={low.count("reacher")}',
+                  f'PLAYCONTENT={low.count("playcontent")}',
+                  f'PLAYEPISODE={low.count("playepisode")}',
+                  f'DATA_LINK={low.count("data-link")}',
+                  f'STAFFEL={low.count("staffel")}',
+                  f'SEASON={low.count("season")}',
+                  f'SERIAL={low.count("serial")}',
+              ]
+              # useful contexts
+              for needle in ['reacher','playcontent','playepisode','series.php','serial/','data-link','s1 e1','1x1','staffel 1','season 1']:
+                  pos=low.find(needle)
+                  if pos>=0:
+                      snippet=re.sub(r'\s+',' ',body[max(0,pos-500):pos+1600])
+                      out.append(f'[{needle}] {snippet[:2200]}')
+              if body.lstrip().startswith(('{','[')):
+                  try:
+                      data=json.loads(body)
+                      out.append('JSON_TYPE='+type(data).__name__)
+                      if isinstance(data,dict):
+                          out.append('JSON_KEYS='+','.join(list(data.keys())[:30]))
+                      elif isinstance(data,list):
+                          out.append('JSON_LEN='+str(len(data)))
+                          out.append('JSON_FIRST='+json.dumps(data[:3],ensure_ascii=False)[:3000])
+                  except Exception as e:
+                      out.append('JSON_ERROR='+str(e))
+              out.append('')
+          Path('test-builds/series-live-diagnostic.txt').write_text('\n'.join(out),encoding='utf-8')
+          PY
+      - name: Commit diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -f .diagnose-series-live
+          git rm -f .github/workflows/diagnose-series-live.yml
+          git add test-builds/series-live-diagnostic.txt
+          git commit -m "Diagnose live series provider structures"
+          git push
