@@ -1,0 +1,74 @@
+name: Inspect NOX current main
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.inspect-nox-current'
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect NOX
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, urllib.request, urllib.parse
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          def get(url):
+              req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8'})
+              try:
+                  with urllib.request.urlopen(req,timeout=20) as r:
+                      return r.status,r.geturl(),r.read().decode('utf-8','replace')
+              except Exception as e:
+                  return 'ERR',url,str(e)
+
+          out=[]
+          st,fu,home=get('https://nox.to/')
+          out += [f'HOME_STATUS={st}',f'HOME_FINAL={fu}',f'HOME_LEN={len(home)}']
+          scripts=re.findall(r'<script[^>]+src=["\']([^"\']+)',home,re.I)
+          out.append('SCRIPTS='+repr(scripts))
+          for src in scripts:
+              url=urllib.parse.urljoin('https://nox.to/',src)
+              s,u,js=get(url)
+              if s!=200: continue
+              if not any(k in js.lower() for k in ['api','search','media/','release']):
+                  continue
+              out += [f'\n=== JS {url} len={len(js)} ===']
+              for needle in ['/api/','api/','search','/media/','frontend','releases','imdb','tmdb','fetch(']:
+                  pos=0; hits=0
+                  while hits<15:
+                      pos=js.lower().find(needle.lower(),pos)
+                      if pos<0: break
+                      out.append('CTX '+needle+' = '+js[max(0,pos-700):pos+1800])
+                      pos += len(needle); hits += 1
+
+          # Common current search-route guesses.
+          for url in [
+              'https://nox.to/search?q=Reacher',
+              'https://nox.to/?q=Reacher',
+              'https://nox.to/suche?query=Reacher',
+              'https://nox.to/api/search?q=Reacher',
+              'https://nox.to/api/frontend/search/Reacher',
+          ]:
+              s,u,b=get(url)
+              out += [f'\n=== URL {url} ===',f'STATUS={s}',f'FINAL={u}',f'LEN={len(b)}',b[:5000]]
+          Path('test-builds/nox-current-diagnostic.txt').write_text('\n'.join(out),encoding='utf-8')
+          PY
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -f .inspect-nox-current
+          git rm -f .github/workflows/inspect-nox-current.yml
+          git add test-builds/nox-current-diagnostic.txt
+          git commit -m "Inspect current NOX main"
+          git push
