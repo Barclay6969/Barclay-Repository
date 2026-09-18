@@ -1,0 +1,61 @@
+name: Inspect HDFilme page2
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.inspect-hdfilme-page2'
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect page2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, urllib.request, urllib.parse
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          def get(url):
+              req=urllib.request.Request(url,headers={'User-Agent':UA})
+              with urllib.request.urlopen(req,timeout=20) as r:
+                  return r.geturl(),r.read().decode('utf-8','replace')
+          url='https://hd-filme.lol/index.php?do=search&subaction=search&search_start=2&full_search=0&result_from=11&titleonly=3&story=Reacher'
+          final,html=get(url)
+          out=[f'FINAL={final}',f'LEN={len(html)}']
+          results=[]
+          for m in re.finditer(r'<a[^>]+href=["\']([^"\']+)["\'][^>]+title=["\']([^"\']*Reacher[^"\']*)["\']',html,re.I):
+              pair=m.groups()
+              if pair not in results: results.append(pair)
+          out.append('RESULTS='+repr(results))
+          s1=[x for x in results if re.search(r'Staffel\s*1\b',x[1],re.I)]
+          if s1:
+              detail=urllib.parse.urljoin(final,s1[0][0])
+              fu,body=get(detail)
+              out += [f'S1={detail}',f'S1_FINAL={fu}',f'S1_LEN={len(body)}']
+              for needle in ['Episoden 1','Episoden\s*1','ep1','id="ep1"','pmovie__select-items','link=','data-link','iframe','meinecloud','serial']:
+                  p=body.lower().find(needle.lower().replace('\\s*',' '))
+                  out.append(f'NEEDLE={needle} POS={p}')
+              # snippets around all likely episode controls
+              for pat in [r'id=["\']ep1["\']',r'Episoden\s*1',r'pmovie__select-items',r'link=["\']',r'data-link=',r'<iframe']:
+                  m=re.search(pat,body,re.I)
+                  if m:
+                      out.append('CTX '+pat+' = '+re.sub(r'\s+',' ',body[max(0,m.start()-1800):m.start()+7000])[:9000])
+          Path('test-builds/hdfilme-page2-diagnostic.txt').write_text('\n'.join(out),encoding='utf-8')
+          PY
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -f .inspect-hdfilme-page2
+          git rm -f .github/workflows/inspect-hdfilme-page2.yml
+          git add test-builds/hdfilme-page2-diagnostic.txt
+          git commit -m "Inspect HDFilme second search page"
+          git push
