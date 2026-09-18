@@ -1,0 +1,47 @@
+STATUS=200
+FINAL=https://meinecloud.click/serial/9288030
+LENGTH=29014
+DATA_LINK_COUNT=32
+DATA_LABEL_COUNT=32
+SEASON_EPS_COUNT=8
+EP_CLASS_COUNT=130
+
+--- TAGS WITH data-link (first 40) ---
+<div class="_ep active " data-link="//dr0pstream.com/e/6vu8ma21ouce" data-label="S1 E1 — Episode 1">
+<div class="_ep " data-link="//dr0pstream.com/e/lcei36qznv46" data-label="S1 E2 — Episode 2">
+<div class="_ep " data-link="//dr0pstream.com/e/8qc418qnkhng" data-label="S1 E3 — Episode 3">
+<div class="_ep " data-link="//dr0pstream.com/e/njqy63wtz44z" data-label="S1 E4 — Episode 4">
+<div class="_ep " data-link="//dr0pstream.com/e/hn5ly76ozpz6" data-label="S1 E5 — Episode 5">
+<div class="_ep " data-link="//dr0pstream.com/e/sjssrf3s28b8" data-label="S1 E6 — Episode 6">
+<div class="_ep " data-link="//dr0pstream.com/e/zzq5pgah9am1" data-label="S1 E7 — Episode 7">
+<div class="_ep " data-link="//dr0pstream.com/e/8ysmaqobgtep" data-label="S1 E8 — Episode 8">
+<div class="_ep " data-link="//dr0pstream.com/e/5932jspxllyj" data-label="S2 E1 — Episode 1">
+<div class="_ep " data-link="//dr0pstream.com/e/anvw412eq1xs" data-label="S2 E2 — Episode 2">
+<div class="_ep " data-link="//dr0pstream.com/e/blivwmoabzxq" data-label="S2 E3 — Episode 3">
+<div class="_ep " data-link="//dr0pstream.com/e/rakst5nimxbk" data-label="S2 E4 — Episode 4">
+<div class="_ep " data-link="//dr0pstream.com/e/yqlnovmrhou3" data-label="S2 E5 — Episode 5">
+<div class="_ep " data-link="//dr0pstream.com/e/94d54evcv8h4" data-label="S2 E6 — Episode 6">
+<div class="_ep " data-link="//dr0pstream.com/e/hw63fo4g6r6r" data-label="S2 E7 — Episode 7">
+<div class="_ep " data-link="//dr0pstream.com/e/cdm503hh96vl" data-label="S2 E8 — Episode 8">
+<div class="_ep " data-link="//dr0pstream.com/e/jcwhj6e98dde" data-label="S3 E1 — Episode 1">
+<div class="_ep " data-link="//dr0pstream.com/e/861h4cisi9sr" data-label="S3 E2 — Episode 2">
+<div class="_ep " data-link="//dr0pstream.com/e/padqokc9f7r3" data-label="S3 E3 — Episode 3">
+<div class="_ep " data-link="//dr0pstream.com/e/96y6snsy91wp" data-label="S3 E4 — Episode 4">
+<div class="_ep " data-link="//dr0pstream.com/e/evf8h8kchbp2" data-label="S3 E5 — Episode 5">
+<div class="_ep " data-link="//dr0pstream.com/e/xaeejnyz74vd" data-label="S3 E6 — Episode 6">
+<div class="_ep " data-link="//dr0pstream.com/e/7gap4hsavxx8" data-label="S3 E7 — Episode 7">
+<div class="_ep " data-link="//dr0pstream.com/e/omvy4v868t59" data-label="S3 E8 — Episode 8">
+<div class="_ep " data-link="//dropload.co/embed-phz2cf7alxeq.html" data-label="S4 E1 — Episode 1">
+<div class="_ep " data-link="//dropload.co/embed-8ddfi5feu52m.html" data-label="S4 E2 — Episode 2">
+<div class="_ep " data-link="//dropload.co/embed-15ml4dtalgrh.html" data-label="S4 E3 — Episode 3">
+<div class="_ep " data-link="//dropload.co/embed-vsaop9v56kxi.html" data-label="S4 E4 — Episode 4">
+<div class="_ep " data-link="//dropload.co/embed-kiywfqxuszwv.html" data-label="S4 E5 — Episode 5">
+<div class="_ep " data-link="//dropload.co/embed-3bjrk49b17dl.html" data-label="S4 E6 — Episode 6">
+<div class="_ep " data-link="//dropload.co/embed-7h5n5aj18lfz.html" data-label="S4 E7 — Episode 7">
+<div class="_ep " data-link="//dropload.co/embed-szxghj1y00pc.html" data-label="S4 E8 — Episode 8">
+
+--- S1 E1 CONTEXT ---
+padding:8px 8px 0} ._eps{min-width:unset} ._now{min-width:unset} } </style> </head> <body> <div class="_sw"> <!-- PLAYER --> <div class="_sp"> <div class="_player"> <ul class="_player-mirrors"></ul> <div class="_player-container"></div> <iframe id="_player" allowfullscreen="" src="" scrolling="no"></iframe> <div class="spinner-container" style="display:none"><div class="spinner-border"></div></div> </div> <!-- Overlay --> <div class="_play-overlay" id="playOverlay" style="background-image:url('https://image.tmdb.org/t/p/w1280/pF0qkRsrHkdYadPWY9AMeFZfcwk.jpg')" > <div class="_ep-label"> <strong id="overlayLabel">S1 E1 — Episode 1</strong> Reacher </div> <div class="_play-btn" id="playBtn"> <svg xmlns="http://www.w3.org/2000/svg" width="28" height="30" viewBox="0 0 35.3 38"> <path d="M33.5 22l-28 15.6c-2.4 1.3-5.5-.3-5.5-3V3.4C0 .7 3-.9 5.4.5l28 15.6c1.7.9 2.3 3 1.3 4.6-.2.5-.7 1-1.2 1.3z" fill="#fff"/> </svg> </div> </div> </div> <!-- SIDEBAR --> <div class="_sidebar-wrap"> <div class="_sidebar" id="sidebar"> <div class="_stabs"> <div class="_stab active" data-season="9400"> S1 </div> <div class="_stab " data-season="9401"> S2 </div> <div class="_stab " data-season="9402"> S3 </div> <div class="_stab " data-season="9403"> S4 </div> </div> <div class="_now">Wähle eine 
+
+--- HEAD ---
+<!DOCTYPE html> <html lang="de"> <head> <meta charset="utf-8"> <title>Reacher</title> <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"> <link rel="stylesheet" href="/static/css/bootstrap.min.css"> <link rel="stylesheet" href="/static/css/main.css?v=1.2.7"> <style> html,body{margin:0;padding:0;background:#0a0a0f;height:100%;overflow:hidden} ._sw{display:flex;height:100vh;background:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;position:relative;overflow:hidden} ._sp{flex:1;min-width:0;position:relative;background:#0d1117} ._sp ._player{height:100vh;display:flex;flex-direction:column;position:relative;overflow:visible} ._sp ._player ul._player-mirrors{display:none} ._sp ._player ._player-container{display:none} ._sp ._player iframe#_player{flex:1;width:100%;height:100%;display:none;border:none;background:#000;position:relative;z-index:1} /* Play overlay */ ._play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;z-index:10;background:#0d1117;transition:opacity .4s ease;background-size:cover;background-position:center} ._play-overlay::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);z-index:0} ._play-overlay>*{position:relative;z-index:1} ._play-overlay.hidden{opacity:0;pointer-events:none} ._ep-label{font-size:13px;color:rgba(255,255,255,.4);font-weight:500;letter-spacing:.03em;text-align:center;padding:0 24px;line-height:1.6} ._ep-label strong{color:rgba(255,255,255,.8);display:block;font-size:15px;margin-bottom:2px} ._play-btn{width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s ease;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)} ._play-btn:hover{background:rgba(255,255,255,.2);transform:scale(1.06);border-color:rgba(255,255,255,.4)} ._play-btn svg{margin-left:5px} /* Sidebar wrap */ ._sidebar-wrap{display:flex;align-items:stretch;flex-shrink:0;z-index:20} ._sidebar{width:270px;overflow:clip;background:rgba(10,10,20,.88);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border-left:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;transition:width .4s cubic-bezier(.4,0,.2,1);flex-shrink:0} ._sidebar.collapsed{width:0} /* Hint tab */ ._hint{width:28px;background:rgba(255,255,255,.04);border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:background .2s;flex-shrink:0} ._hint:hover{background:rgba(255,255,255,.09)} ._hd{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.25)} ._ha{display:flex;a
