@@ -1,0 +1,36 @@
+name: TEMP xShip 99 manifest
+
+on:
+  push:
+    branches:
+      - xship-release-103-manifest
+    paths:
+      - .github/workflows/xship-release-103-manifest.yml
+
+permissions:
+  contents: write
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: xship-release-103-manifest
+          fetch-depth: 0
+
+      - name: Hash public 2026.09.18.99 payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/xship99
+          mkdir -p /tmp/xship99
+          unzip -q zips/plugin.video.xship/plugin.video.xship-2026.09.18.99.zip -d /tmp/xship99
+          cd /tmp/xship99/plugin.video.xship
+          find . -type f -print0 | sort -z | xargs -0 sha256sum > "$GITHUB_WORKSPACE/test-builds/xship-2026.09.18.99-manifest.txt"
+          cd "$GITHUB_WORKSPACE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-builds/xship-2026.09.18.99-manifest.txt
+          git commit -m "TEMP add xShip 2026.09.18.99 manifest"
+          git push origin HEAD:xship-release-103-manifest
