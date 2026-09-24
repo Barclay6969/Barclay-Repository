@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.09.18.99" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.09.24.103" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -54,12 +54,12 @@
         <screenshot>resources/media/screenshot-02.jpg</screenshot>
         <screenshot>resources/media/screenshot-04.jpg</screenshot>
       </assets>
-      <news>2026.09.18.99
-  - KinoKiste: Serienunterstützung verbessert; Titel, Staffel und Episode werden strikt geprüft, damit keine falschen Massentreffer mehr entstehen.
-  - MeineCloud: neue Base64-codierte Film-Mirrors werden wieder korrekt erkannt; Serien- und Linkerkennung robuster.
-  - Serien-Scraper: KinoKing, Huhu, Movie4K, HDFilme, BurningSeries, SerienFans und NOX an aktuelle Seiten-/API-Strukturen sowie robustere Titel-, Staffel- und Episodensuche angepasst.
-  - MediaInfo: globaler 10-Sekunden-Sicherheits-Timeout verhindert Hänger durch festgefahrene ResolveURL-Prüfungen; die betroffene Quelle bleibt für die Wiedergabe erhalten.
-  - AniWorld und bewusst film-only geführte Provider bleiben unverändert.
+      <news>2026.09.24.103
+  - KinoGer: Hauptdomain auf kinoger.fun aktualisiert; alte .com/.to/.ch-Einstellungen werden auf .fun migriert.
+  - KinoGer: aktuelle data-link-Quellen werden ausgewertet; die bisherige .show()-Array-Logik bleibt als Fallback erhalten.
+  - KinoGer: Serienquellen werden nach Moeglichkeit auf den angeforderten Episodenblock begrenzt.
+  - KinoGer: YouTube-, Trailer- und Premium-Hinweis-/Pseudoquellen werden ausgeblendet, damit unbrauchbare Eintraege nicht in der Quellenliste erscheinen.
+  - KinoGer: FSST/Incvideo sowie kinoger.ru und kinoger.be werden als eigene Hoster erkannt bzw. benannt; bestehende Resolver-/Referer-Kompatibilitaet bleibt erhalten.
 
   2026.09.18.98
   - MoFlix: Filmsuche deutlich robuster gemacht. Alternative Titelvarianten und mehr Suchtreffer werden berücksichtigt.
