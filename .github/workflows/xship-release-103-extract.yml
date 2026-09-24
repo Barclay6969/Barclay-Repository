@@ -1,0 +1,39 @@
+name: TEMP extract xShip 99 release files
+
+on:
+  push:
+    branches:
+      - xship-release-103-manifest
+    paths:
+      - .github/workflows/xship-release-103-extract.yml
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: xship-release-103-manifest
+          fetch-depth: 0
+      - name: Extract six release base files
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/x99 test-builds/xship99-base
+          mkdir -p /tmp/x99 test-builds/xship99-base/resources/lib test-builds/xship99-base/resources test-builds/xship99-base/scrapers/scrapers_source/de
+          unzip -q zips/plugin.video.xship/plugin.video.xship-2026.09.18.99.zip -d /tmp/x99
+          ROOT=/tmp/x99/plugin.video.xship
+          cp "$ROOT/addon.xml" test-builds/xship99-base/addon.xml
+          cp "$ROOT/changelog.txt" test-builds/xship99-base/changelog.txt
+          cp "$ROOT/resources/settings.xml" test-builds/xship99-base/resources/settings.xml
+          cp "$ROOT/resources/lib/domain_manager.py" test-builds/xship99-base/resources/lib/domain_manager.py
+          cp "$ROOT/resources/lib/hoster_compat.py" test-builds/xship99-base/resources/lib/hoster_compat.py
+          cp "$ROOT/scrapers/scrapers_source/de/kinoger.py" test-builds/xship99-base/scrapers/scrapers_source/de/kinoger.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-builds/xship99-base
+          git commit -m "TEMP extract xShip 99 release files"
+          git push origin HEAD:xship-release-103-manifest
