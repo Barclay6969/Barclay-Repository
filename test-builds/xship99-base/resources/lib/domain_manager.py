@@ -24,6 +24,11 @@ _USER_AGENT = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 # Verified migrations from domains already known to xShip.
 # Redirect discovery remains active, so later changes can be learned automatically.
 _KNOWN_MIGRATIONS = {
+    'kinoger': {
+        'kinoger.com': 'kinoger.fun',
+        'kinoger.to': 'kinoger.fun',
+        'kinoger.ch': 'kinoger.fun',
+    },
     'fhdfilme': {
         'hdfilme.my': 'hdfilme.win',
         'hdfilme.blog': 'hdfilme.win',
