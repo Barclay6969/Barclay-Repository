@@ -1,0 +1,217 @@
+name: LOCAL TEST xShip KinoGer fun
+
+on:
+  push:
+    branches:
+      - xship-kinoger-fun-test-20260924
+    paths:
+      - .github/workflows/xship-kinoger-fun-test.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build isolated KinoGer test
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf work out
+          mkdir -p work out
+          unzip -q zips/plugin.video.xship/plugin.video.xship-2026.09.18.99.zip -d work
+          ROOT="$(find work -maxdepth 2 -name addon.xml -printf '%h\n' | head -n1)"
+          test -n "$ROOT"
+          python3 - "$ROOT" <<'PY'
+          import re, sys, pathlib, difflib, hashlib
+          root = pathlib.Path(sys.argv[1])
+          addon = root / "addon.xml"
+          kinoger_candidates = list(root.rglob("kinoger.py"))
+          if not kinoger_candidates:
+              raise SystemExit("kinoger.py not found")
+          kinoger = kinoger_candidates[0]
+
+          original = kinoger.read_text(encoding="utf-8")
+          text = original
+
+          text, n_domain = re.subn(
+              r"(?m)^SITE_DOMAIN\s*=\s*['\"][^'\"]+['\"]",
+              "SITE_DOMAIN = 'kinoger.fun'",
+              text,
+              count=1,
+          )
+          if n_domain != 1:
+              raise SystemExit("SITE_DOMAIN patch failed")
+
+          # Force .fun only for this local test so an old persisted provider-domain
+          # setting cannot send the test back to .com/.to.
+          text, n_selfdomain = re.subn(
+              r"(?m)^(\s{8})self\.domain\s*=.*$",
+              r"\1self.domain = SITE_DOMAIN  # LOCAL KINOGER.FUN TEST",
+              text,
+              count=1,
+          )
+          if n_selfdomain != 1:
+              raise SystemExit("self.domain patch failed")
+
+          text = text.replace("$$https://kinoger.com/", "$$https://kinoger.fun/")
+          text = text.replace("$$https://kinoger.to/", "$$https://kinoger.fun/")
+
+          new_run = r'''    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+              self.sources = []
+              page = self._find_page(titles, year, season)
+              if not page:
+                  return self.sources
+              try:
+                  req = cRequestHandler(page)
+                  req.cacheTime = 60 * 60 * 12
+                  html = req.request()
+                  qualities = re.findall(r'title=["\\\']Stream\\.([^"\\\']+)["\\\']', html, re.I)
+                  sidx = int(season) - 1 if season else 0
+                  eidx = int(episode) - 1 if episode else 0
+                  seen = set()
+
+                  def add_source(raw_url, quality_index=0):
+                      try:
+                          url = str(raw_url or '').strip().replace('&amp;', '&')
+                          if not url:
+                              return
+                          if url.startswith('//'):
+                              url = 'https:' + url
+                          elif url.startswith('/'):
+                              # Current KinoGer pages also expose internal VOD endpoints.
+                              # They are not ResolveURL hosters, so keep them out of the
+                              # hoster list and use the external data-link entries instead.
+                              if url.startswith('/vod/'):
+                                  return
+                              url = 'https://%s%s' % (self.domain, url)
+
+                          host = _host(url)
+                          if not host:
+                              return
+
+                          quality_label = qualities[quality_index] if quality_index < len(qualities) else ''
+                          quality = self._quality(quality_label)
+                          display = host
+                          if hoster_compat.is_supported_host(host):
+                              display = hoster_compat.display_name(host)
+                          else:
+                              valid, known = source_utils.is_host_valid(url, hostDict)
+                              if valid and known:
+                                  display = known
+
+                          if host == 'kinoger.be' and '$$' not in url:
+                              url += '$$https://kinoger.fun/'
+
+                          url = _rewrite_dood(url)
+                          dedupe = str(url).split('$$', 1)[0]
+                          if dedupe in seen:
+                              return
+                          seen.add(dedupe)
+
+                          self.sources.append({
+                              'source': display or host,
+                              'quality': quality,
+                              'language': 'de',
+                              'url': url,
+                              'direct': False,
+                              'priority': int(self.priority),
+                              'prioHoster': 100
+                          })
+                      except Exception:
+                          return
+
+                  # New/current KinoGer layout: hoster buttons expose data-link URLs.
+                  # For series, limit extraction to the requested episode block when present.
+                  data_html = html
+                  if season and episode:
+                      episode_pattern = (
+                          r'<li[^>]+id=["\\\']serie-%d_%d["\\\'][^>]*>.*?'
+                          r'<ul[^>]*>(.*?)</ul>\\s*</li>'
+                      ) % (int(season), int(episode))
+                      match = re.search(episode_pattern, html, re.S | re.I)
+                      if match:
+                          data_html = match.group(1)
+
+                  data_links = re.findall(
+                      r'data-link\\s*=\\s*["\\\']([^"\\\']+)["\\\']',
+                      data_html,
+                      re.I
+                  )
+                  for idx, data_url in enumerate(data_links):
+                      add_source(data_url, idx)
+
+                  # Legacy KinoGer layout remains as fallback and may coexist with data-link.
+                  links = re.findall(r'\\.show.+?,(\\[\\[.+?\\]\\])', html)
+                  for idx, block in enumerate(links):
+                      try:
+                          table = ast.literal_eval(block)
+                          url = str(table[sidx][eidx]).strip()
+                          add_source(url, idx)
+                      except Exception:
+                          continue
+
+                  if not self.sources:
+                      log_utils.log(
+                          'Kinoger: kein Provider - %s (data-link=%d legacy=%d)' %
+                          (titles[0] if titles else '', len(data_links), len(links)),
+                          log_utils.LOGINFO
+                      )
+              except Exception as exc:
+                  log_utils.log('Kinoger: Fehler - %s' % str(exc), log_utils.LOGINFO)
+              return self.sources
+
+'''
+          pattern = re.compile(r"(?ms)^    def run\(self, titles, year, season=0, episode=0, imdb='', hostDict=None\):.*?(?=^    def [A-Za-z_])")
+          text, n_run = pattern.subn(new_run, text, count=1)
+          if n_run != 1:
+              raise SystemExit("run() patch failed")
+
+          kinoger.write_text(text, encoding="utf-8")
+
+          addon_text = addon.read_text(encoding="utf-8")
+          addon_text, n_ver = re.subn(
+              r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+(")',
+              r'\g<1>2026.09.24.100\2',
+              addon_text,
+              count=1
+          )
+          if n_ver != 1:
+              raise SystemExit("addon version patch failed")
+          addon.write_text(addon_text, encoding="utf-8")
+
+          diff = ''.join(difflib.unified_diff(
+              original.splitlines(True), text.splitlines(True),
+              fromfile='kinoger.py.before', tofile='kinoger.py.after'
+          ))
+          pathlib.Path("out/kinoger-test-diff.txt").write_text(diff, encoding="utf-8")
+          pathlib.Path("out/kinoger-test-summary.txt").write_text(
+              "Base: xShip 2026.09.18.99\n"
+              "Test addon version: 2026.09.24.100\n"
+              "Changed scraper: kinoger.py only\n"
+              "KinoGer domain: kinoger.fun\n"
+              "Extraction: data-link first + legacy .show array fallback\n"
+              "Series: episode block scoped when available\n",
+              encoding="utf-8"
+          )
+          PY
+
+          python3 -m compileall -q "$ROOT"
+          grep -q "SITE_DOMAIN = 'kinoger.fun'" "$(find "$ROOT" -name kinoger.py | head -n1)"
+          grep -q "data-link" "$(find "$ROOT" -name kinoger.py | head -n1)"
+          grep -q 'version="2026.09.24.100"' "$ROOT/addon.xml"
+
+          (
+            cd work
+            zip -qr "../out/plugin.video.xship-2026.09.24.100-KINOGER-FUN-TEST.zip" "$(basename "$ROOT")"
+          )
+
+          unzip -l out/plugin.video.xship-2026.09.24.100-KINOGER-FUN-TEST.zip | grep -q "plugin.video.xship/addon.xml"
+          sha256sum out/plugin.video.xship-2026.09.24.100-KINOGER-FUN-TEST.zip | tee out/SHA256.txt
+
+      - name: Upload local test
+        uses: actions/upload-artifact@v4
+        with:
+          name: xship-kinoger-fun-local-test
+          path: out/*
+          if-no-files-found: error
