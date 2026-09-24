@@ -95,7 +95,7 @@
         <setting id="provider.huhu.health" label="HealthStatus" type="text" default="ok" visible="false"/>
         <setting type="sep"/>
 <setting id="provider.kinoger" type="bool" label="KINOGER   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="true" />
-        <setting id="provider.kinoger.domain" label="Aktuelle Domain (änderbar)" type="text" default="kinoger.com" />
+        <setting id="provider.kinoger.domain" label="Aktuelle Domain (änderbar)" type="text" default="kinoger.fun" />
         <setting id="provider.kinoger.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="50" />
         <setting id="provider.kinoger.health" label="HealthStatus" type="text" default="ok" visible="false"/>
         <setting type="sep"/>
