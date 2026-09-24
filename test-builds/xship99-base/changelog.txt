@@ -1,3 +1,20 @@
+2026.09.24.103
+- KinoGer: Hauptdomain auf kinoger.fun aktualisiert; alte .com/.to/.ch-Einstellungen werden auf .fun migriert.
+- KinoGer: aktuelle data-link-Quellen werden ausgewertet; die bisherige .show()-Array-Logik bleibt als Fallback erhalten.
+- KinoGer: Serienquellen werden nach Moeglichkeit auf den angeforderten Episodenblock begrenzt.
+- KinoGer: YouTube-, Trailer- und Premium-Hinweis-/Pseudoquellen werden ausgeblendet, damit unbrauchbare Eintraege nicht in der Quellenliste erscheinen.
+- KinoGer: FSST/Incvideo sowie kinoger.ru und kinoger.be werden als eigene Hoster erkannt bzw. benannt; bestehende Resolver-/Referer-Kompatibilitaet bleibt erhalten.
+
+2026.09.20.99.5 STABLE
+- Cine.to- und Kinoger-Testreihen verworfen; beide Scraper auf den Stand vor den Tests zurueckgesetzt.
+- Alle zuvor funktionierenden xShip-Aenderungen und MediaInfo-Fixes bleiben unveraendert erhalten.
+- Keine experimentellen Cloudflare-, Domain- oder Cine.to-Resolver-Aenderungen enthalten.
+
+2026.09.18.98.4 TEST4
+- Serien-Scraper robuster: KinoKing, Huhu, Movie4K, HDFilme, BurningSeries, SerienFans und NOX.
+- Mehr Titel-/Staffel-/Episoden-Toleranz und weniger veraltete Endpunkte.
+- KinoKiste- und MeineCloud-Fixes aus TEST3 bleiben enthalten.
+
 2026.08.31.1
 - Wiedergabestabilitaet deutlich verbessert: Source- und Resolver-Worker werden vor dem Playerstart sauber beendet und Kodi-Objekte nach der Nutzung freigegeben.
 - Player-Callbacks entkoppelt: Navigation sowie Bookmark- und Datenbank-Aufraeumarbeiten erfolgen ausserhalb der Kodi-Playback-Callbacks.
@@ -108,4 +125,3 @@ xShip – Changelog
 2026.08.18.1
 - Filmo: BYSE als neue Stream-Quelle ergänzt und erfolgreich lokal getestet.
 - Externe BYSE-Links werden erkannt, ohne bestehende Filmo-Suche oder VOE-Quellen zu beeinträchtigen.
-
