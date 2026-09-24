@@ -118,7 +118,7 @@ def _resolve_kinoger_filelions(host, media_id):
             media_id, referer = media_id.split('$$', 1)
             referer = urllib_parse.urljoin(referer, '/')
         else:
-            referer = 'https://kinoger.to/'
+            referer = 'https://kinoger.fun/'
         web_url = 'https://%s/%s' % (host, media_id.lstrip('/'))
         headers = {'User-Agent': cRequestHandler.RandomUA(), 'Referer': referer}
         html = requests.get(web_url, headers=headers, timeout=12).text or ''
