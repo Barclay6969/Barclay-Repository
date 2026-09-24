@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="Allgemein">
+        <setting id="hosts.mode" type="enum" label="Standard-Aktion" values="Dialog|Verzeichnis|Autoplay" default="0" />
+        <setting id="scrapers.timeout" type="slider" label="Zeitlimit für Indexseiten" default="15" range="10,60" option="int" />
+        <setting id="hosts.language" type="enum" label="Stream-Sprache" values="Alle|Deutsch|Englisch|Mehrsprachig" default="0" />
+        <setting id="fanart" type="bool" label="Fanart verwenden" default="true" />
+        <setting id="navigator.menu.search" type="bool" label="Such-Einträge ganz oben im Menü anzeigen" default="false" />
+        <setting id="bold_labels" type="bool" label="Lesbarkeit erhöhen (Fettschrift)" default="true" />
+        <setting type="lsep" label="TMDB-Filter (Filme)" />
+        <setting label="Genres ausschließen..." type="action" action="RunPlugin(plugin://plugin.video.xship/?action=settings&amp;subaction=filterGenres)" />
+        <setting default="" id="filter.genres" type="text" label="Ausgeschlossene Genres" visible="false" />
+        <setting label="Länder ausschließen..." type="action" action="RunPlugin(plugin://plugin.video.xship/?action=settings&amp;subaction=filterCountries)" />
+        <setting default="" id="filter.countries" type="text" label="Ausgeschlossene Länder" visible="false" />
+        <setting type="lsep" label="Einstellungen RequestHandler" />
+        <setting default="" id="flaresolverr_url" type="text" label="FlareSolverr URL (Cloudflare-Bypass)" />
+        <setting default="true" id="bypassDNSlock" type="bool" label="DNS-Sperre umgehen (DoH)" />
+        <setting default="10" id="requestTimeout" label="Timeout für HTTP-Anfragen in Sekunden" option="int" range="1,1,60" type="slider" />
+        <setting default="360" id="cacheTime" label="Cachezeit für Webseiten (HtmlCache) in Minuten" option="int" range="120,30,1440" type="slider" />
+        <setting default="true" id="volatileHtmlCache" type="bool" label= "HTML Inhalte werden auch im RAM zwischengespeichert" visible="true"/>
+        <setting default="1" id="cacheDeltaDay" label="Html Cache nach Tage löschen" option="int" range="1,1,7" type="slider" />
+        <setting id="delHtmlCache" label="[COLOR red]Html Cache einmalig bei Neustart löschen[/COLOR]" type="bool" default="false" />
+        <setting type="sep"/>
+        <setting type="lsep" label="ResolveURL Auto-Update" />
+        <setting id="githubUpdateResolver" type="bool" label="ResolveURL Update bei jedem Kodi-Start erzwingen" default="true" />
+        <setting id="status.debug" type="bool" label="Debug" default="false" />
+    </category>
+    <category label="Indexseiten (DE)">
+        <setting type="text" label="[COLOR blue]ACHTUNG:  Die folgenden Optionen werden sofort[/COLOR]" />
+        <setting type="text" label="[COLOR blue]und für [B]alle[/B] Indexseiten ausgeführt![/COLOR]" />
+        <setting type="sep"/>
+        <!--<setting label="Einstellung auf Defaults setzen" type="action" action="RunPlugin(plugin://plugin.video.xship/?action=settings&amp;subaction=defaultsGerman)"/> -->
+        <setting label="Alle Quellen aktivieren" type="action" action="RunPlugin(plugin://plugin.video.xship/?action=settings&amp;subaction=toggleGerman&amp;setting=true)" option=""/>
+        <setting label="Alle Quellen deaktivieren" type="action" action="RunPlugin(plugin://plugin.video.xship/?action=settings&amp;subaction=toggleGerman&amp;setting=false)" option=""/>
+        <setting type="text" label="[COLOR blue]Domains können manuell geändert werden (ohne https://)[/COLOR]" />
+        <setting type="sep"/>
+        <setting id="provider.aniworld" type="bool"  label="ANIWORLD   |   [B][COLOR green]Serien[/COLOR][/B]" default="false"/>
+        <setting id="provider.aniworld.domain" label="Aktuelle Domain (änderbar)" type="text" default="aniworld.to" />
+        <setting id="provider.aniworld.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="230" />
+        <setting id="provider.aniworld.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.bsto" type="bool" label="BS.TO" default="false"/>
+        <setting id="provider.bsto.domain" label="Aktuelle Domain (änderbar)" type="text" default="bs.to" />
+        <setting id="provider.bsto.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="240"/>
+        <setting id="provider.bsto.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.burningseries" type="bool"  label="BURNINGSERIES   |   [B][COLOR green]Serien[/COLOR][/B]" default="false"/>
+        <setting id="provider.burningseries.domain" label="Aktuelle Domain (änderbar)" type="text" default="burningseries.ac" />
+        <setting id="provider.burningseries.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="350" />
+        <setting id="provider.burningseries.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.cineto" type="bool" label="CINE.TO" default="true"/>
+        <setting id="provider.cineto.domain" label="Aktuelle Domain (änderbar)" type="text" default="cine.to" />
+        <setting id="provider.cineto.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="190"/>
+        <setting id="provider.cineto.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.einschalten" type="bool" label="EINSCHALTEN   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="true" />
+        <setting id="provider.einschalten.domain" label="Aktuelle Domain (änderbar)" type="text" default="einschalten.in" />
+        <setting id="provider.einschalten.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="200" />
+        <setting id="provider.einschalten.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.fhdfilme" type="bool" label="FHD FILME" default="true"/>
+        <setting id="provider.fhdfilme.domain" label="Aktuelle Domain (änderbar)" type="text" default="hdfilme.win" />
+        <setting id="provider.fhdfilme.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="210"/>
+        <setting id="provider.fhdfilme.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.filmfans" type="bool" label="FILMFANS" default="true"/>
+        <setting id="provider.filmfans.domain" label="Aktuelle Domain (änderbar)" type="text" default="filmfans.org" />
+        <setting id="provider.filmfans.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="220"/>
+        <setting id="provider.filmfans.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.filmo" type="bool" label="FILMO" default="true"/>
+        <setting id="provider.filmo.domain" label="Aktuelle Domain (änderbar)" type="text" default="filmo.to" />
+        <setting id="provider.filmo.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="310"/>
+        <setting id="provider.filmo.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.filmpalast" type="bool" label="FILMPALAST   |  [B][COLOR blue] Filme &amp; Serien[/COLOR][/B]" default="true" />
+        <setting id="provider.filmpalast.domain" label="Aktuelle Domain (änderbar)" type="text" default="filmpalast.to" />
+        <setting id="provider.filmpalast.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="20" />
+        <setting id="provider.filmpalast.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.filmpro" type="bool" label="FILMPRO" default="true"/>
+        <setting id="provider.filmpro.domain" label="Aktuelle Domain (änderbar)" type="text" default="www.filmpalast.pro" />
+        <setting id="provider.filmpro.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="60"/>
+        <setting id="provider.filmpro.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.hdfilme" type="bool" label="HDFILME   |  [B][COLOR blue] Filme &amp; Serien[/COLOR][/B]" default="true" />
+        <setting id="provider.hdfilme.domain" label="Aktuelle Domain (änderbar)" type="text" default="hdfilme-tv.lat" />
+        <setting id="provider.hdfilme.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="70" />
+        <setting id="provider.hdfilme.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.huhu" type="bool" label="HUHU  |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="false" />
+        <setting id="provider.huhu.domain" label="Aktuelle Domain (änderbar)" type="text" default="www.huhu.to" />
+        <setting id="provider.huhu.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="250" />
+        <setting id="provider.huhu.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.kinoger" type="bool" label="KINOGER   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="true" />
+        <setting id="provider.kinoger.domain" label="Aktuelle Domain (änderbar)" type="text" default="kinoger.com" />
+        <setting id="provider.kinoger.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="50" />
+        <setting id="provider.kinoger.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.kinoking" type="bool" label="KINOKING   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="true" />
+        <setting id="provider.kinoking.domain" label="Aktuelle Domain (änderbar)" type="text" default="kinoking.cc" />
+        <setting id="provider.kinoking.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="260" />
+        <setting id="provider.kinoking.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.kinokiste" type="bool" label="KINOKISTE   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="true" />
+        <setting id="provider.kinokiste.domain" label="Aktuelle Domain (änderbar)" type="text" default="kinokiste.club" />
+        <setting id="provider.kinokiste.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="80" />
+        <setting id="provider.kinokiste.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.kinox" type="bool" label="KINOX" default="true"/>
+        <setting id="provider.kinox.domain" label="Aktuelle Domain (änderbar)" type="text" default="www12.kinoz.to" />
+        <setting id="provider.kinox.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="270"/>
+        <setting id="provider.kinox.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting id="provider.kinox.checkHoster" type="bool" label="Streams auf Verfügbarkeit prüfen" default="true"/>
+        <setting type="sep"/>
+<setting id="provider.kkiste" type="bool" label="KKISTE   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="true" />
+        <setting id="provider.kkiste.domain" label="Aktuelle Domain (änderbar)" type="text" default="kkiste-io.click" />
+        <setting id="provider.kkiste.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="90" />
+        <setting id="provider.kkiste.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+    </category>
+    <category label="Indexseiten 2 (DE)">
+        <setting type="text" label="[COLOR blue]ACHTUNG:  Die folgenden Optionen werden sofort[/COLOR]" />
+        <setting type="text" label="[COLOR blue]und für [B]alle[/B] Indexseiten ausgeführt![/COLOR]" />
+        <setting type="sep"/>
+        <!--<setting label="Einstellung auf Defaults setzen" type="action" action="RunPlugin(plugin://plugin.video.xship/?action=settings&amp;subaction=defaultsGerman)"/> -->
+        <setting label="Alle Quellen aktivieren" type="action" action="RunPlugin(plugin://plugin.video.xship/?action=settings&amp;subaction=toggleGerman&amp;setting=true)" option=""/>
+        <setting label="Alle Quellen deaktivieren" type="action" action="RunPlugin(plugin://plugin.video.xship/?action=settings&amp;subaction=toggleGerman&amp;setting=false)" option=""/>
+        <setting type="sep"/>
+        <setting id="provider.kool" type="bool" label="KOOL  |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="false"/>
+        <setting id="provider.kool.domain" label="Aktuelle Domain (änderbar)" type="text" default="www.kool.to" />
+        <setting id="provider.kool.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="280" />
+        <setting id="provider.kool.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.megakino" type="bool" label="MEGAKINO   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="true" />
+        <setting id="provider.megakino.domain" label="Aktuelle Domain (änderbar)" type="text" default="megakino16.com" />
+        <setting id="provider.megakino.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="30" />
+        <setting id="provider.megakino.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.meinecloud" type="bool" label="MEINECLOUD   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="true"/>
+        <setting id="provider.meinecloud.domain" label="Aktuelle Domain (änderbar)" type="text" default="meinecloud.click" />
+        <setting id="provider.meinecloud.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="10" />
+        <setting id="provider.meinecloud.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.moflix" type="bool" label="MOFLIX-STREAM   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="true" />
+        <setting id="provider.moflix.domain" label="Aktuelle Domain (änderbar)" type="text" default="moflix-stream.xyz" />
+        <setting id="provider.moflix.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="40" />
+        <setting id="provider.moflix.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.movie2k" type="bool" label="MOVIE2k   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="true"/>
+        <setting id="provider.movie2k.domain" label="Aktuelle Domain (änderbar)" type="text" default="movie2k.ch" />
+        <setting id="provider.movie2k.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="100" />
+        <setting id="provider.movie2k.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.movie2k2" type="bool" label="MOVIE2K2" default="true"/>
+        <setting id="provider.movie2k2.domain" label="Aktuelle Domain (änderbar)" type="text" default="movie2k.cx" />
+        <setting id="provider.movie2k2.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="110"/>
+        <setting id="provider.movie2k2.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.movie4k" type="bool" label="MOVIE4K" default="true"/>
+        <setting id="provider.movie4k.domain" label="Aktuelle Domain (änderbar)" type="text" default="movie4k.sx" />
+        <setting id="provider.movie4k.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="120"/>
+        <setting id="provider.movie4k.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting id="provider.movie4k.checkHoster" type="bool" label="Streams auf Verfügbarkeit prüfen" default="true"/>
+        <setting type="sep"/>
+<setting id="provider.moviedream" type="bool" label="MOVIEDREAM   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="false"/>
+        <setting id="provider.moviedream.domain" label="Aktuelle Domain (änderbar)" type="text" default="moviedream.cx" />
+        <setting id="provider.moviedream.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="130" />
+        <setting id="provider.moviedream.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.netzkino" type="bool" label="NETZKINO   |   [B][COLOR red]Filme[/COLOR][/B]" default="true" />
+        <setting id="provider.netzkino.domain" label="Aktuelle Domain (änderbar)" type="text" default="www.netzkino.de" />
+        <setting id="provider.netzkino.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="140" />
+        <setting id="provider.netzkino.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.nox" type="bool" label="NOX" default="true"/>
+        <setting id="provider.nox.domain" label="Aktuelle Domain (änderbar)" type="text" default="nox.to" />
+        <setting id="provider.nox.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="150"/>
+        <setting id="provider.nox.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.serienfans" type="bool" label="SERIENFANS" default="true"/>
+        <setting id="provider.serienfans.domain" label="Aktuelle Domain (änderbar)" type="text" default="serienfans.org" />
+        <setting id="provider.serienfans.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="290"/>
+        <setting id="provider.serienfans.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.serienstream" type="bool"  label="SERIENSTREAM   |   [B][COLOR green]Serien[/COLOR][/B]" default="true"/>
+        <setting id="provider.serienstream.domain" label="Aktuelle Domain (änderbar)" type="text" default="serienstream.to" />
+        <setting id="provider.serienstream.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="9" />
+        <setting id="provider.serienstream.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+        <setting type="sep"/>
+<setting id="provider.streamcloud" type="bool" label="STREAMCLOUD" default="true"/>
+        <setting id="provider.streamcloud.domain" label="Aktuelle Domain (änderbar)" type="text" default="streamcloud.bid" />
+        <setting id="provider.streamcloud.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="160"/>
+        <setting id="provider.streamcloud.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.streamcloudforum" type="bool" label="STREAMCLOUD FORUM" default="true"/>
+        <setting id="provider.streamcloudforum.domain" label="Aktuelle Domain (änderbar)" type="text" default="streamcloud.forum" />
+        <setting id="provider.streamcloudforum.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="170"/>
+        <setting id="provider.streamcloudforum.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.topstreamfilm" type="bool" label="TOPSTREAMFILM" default="true"/>
+        <setting id="provider.topstreamfilm.domain" label="Aktuelle Domain (änderbar)" type="text" default="www.topstreamfilm.live" />
+        <setting id="provider.topstreamfilm.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="180"/>
+        <setting id="provider.topstreamfilm.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.vavoo" type="bool" label="VAVOO   |   [B][COLOR blue]Filme &amp; Serien[/COLOR][/B]" default="true" />
+        <setting id="provider.vavoo.domain" label="Aktuelle Domain (änderbar)" type="text" default="vavoo.to" />
+        <setting id="provider.vavoo.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="300" />
+        <setting id="provider.vavoo.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+<setting id="provider.vixstream" type="bool" label="VIXSTREAM" default="true"/>
+        <setting id="provider.vixstream.domain" label="Aktuelle Domain (änderbar)" type="text" default="vixsrc.to" />
+        <setting id="provider.vixstream.priority" label="Provider Priorität (je kleiner um so höher die Priorität)" type="text" default="320"/>
+        <setting id="provider.vixstream.health" label="HealthStatus" type="text" default="ok" visible="false"/>
+        <setting type="sep"/>
+    </category>
+    <category label="Wiedergabe">
+        <setting id="progress.dialog" type="enum" label="Fortschrittsdialog" values="Vordergrund|Hintergrund" default="0" />
+        <!--<setting id="prem.identify" type="enum" label="Textfarbe für Premium-Links" values="Blau|Rot|Gelb|Altrosa|Cyan|Grasgrün|Gold|Magenta|Gelbgrün|Ohne Farbe" default="0" /> -->
+        <setting type="lsep" label="Dateinanbieter-Filter" />
+        <setting id="hosts.quality" type="enum" label="Höchste Qualität" values="4K|1440p|1080p|720p|480p" default="0" />
+        <setting id="deduped" type="bool" label="Doppelte Anbieter/Hoster Kombination ausfiltern" default="true" />
+        <setting id="hosts.sort" type="enum" label="zusätzlich Streams sortieren" values="Aus|nach Provider|Priorität Provider|Priorität Resolver" default="2" />
+        <!-- <setting id="hosts.sort.priority" type="bool" label="Indexseiten bei Serien nach Priorität sortieren" default="false" />
+        <setting id="hosts.sort.provider" type="bool" label="Indexseiten nach Anbieter sortieren" default="false" />
+        <setting id="hosts.refresh" type="text" label="Status aktualisieren (refresh)" default="" visible="false"/> -->
+        <setting id="hosts.limit" type="bool" label="Limit Hosteranzahl" default="False" />
+        <setting id="hosts.limit.num" type="slider" label="Liste begrenzen auf:" default="15" range="5,50" option="int" visible="eq(-1,true)"/>
+        <setting id="hosts.filter" type="text" label="Hoster ausschließen (Liste)" default=""/>
+        <setting type="lsep" label="Bei Wiedergabe-Start..." />
+        <setting id="bookmarks" type="bool" label="Fortsetzen" default="true" />
+        <setting id="bookmarks.auto" type="bool" label="Automatisch Fortsetzen" default="false" enable="!eq(-1,false)" />
+    </category>
+    <category label="Konten">
+        <setting type="lsep" label="Konto BS.to"/>
+        <setting id="bsto.user" type="text" label="Benutzername" default=""/>
+        <setting id="bsto.pass" type="text" option="hidden" label="Passwort" default=""/>
+        <setting type="lsep" label="Konto SerienStream.to"/>
+        <setting id="serienstream.user" type="text" label="Email" default="Barclay69"/>
+        <setting id="serienstream.pass" type="text" option="hidden" label="Password" default="melanie1"/>
+        <setting type="lsep" label="Konto Aniworld.io"/>
+        <setting id="aniworld.user" type="text" label="Email" default=""/>
+        <setting id="aniworld.pass" type="text" option="hidden" label="Password" default=""/>
+        <setting type="lsep" label="TMDb" />
+        <!-- <setting id="api.tmdb.private" type="text" option="" label="persönlicher TMDb API-Key" default="" />-->
+        <setting id="api.tmdb" type="text" option="" label="persönlicher API-Key" default=""/>
+        <setting type="lsep" label="TRAKT" />
+        <setting id="api.trakt" type="text" option="hidden" label="API-Key" default="85d3b28a69fd4d8162b3ea78689e1c8b15ff2ad9c1430ef6fc5a950662aee3ec" />
+        <setting type="lsep" label="FANART.TV" />
+        <setting id="api.fanart.tv" type="text" label="API-Key" option="hidden" default="e376e8591e1580089d93ab4135fcc082" />
+    </category>
+    <category label="Untertitel / Recaptcha">
+        <setting type="lsep" label="Untertitel" />
+        <setting id="subtitles" type="bool" label="Untertitel aktivieren" default="false" />
+        <setting type="text" label="[COLOR blue]Konto auf opensubtitles.org einrichten und[CR]die Zugandsdaten unter Einstellungen / Konten eintragen![CR][/COLOR]" visible="!eq(-1,false)"/>
+        <setting type="lsep" label="Konto opensubtitles.org"/>
+        <setting id="subtitles.os_user" type="text" label="UserName" default=""/>
+        <setting id="subtitles.os_pass" type="text" option="hidden" label="Password" default=""/>
+        <setting type="sep" />
+        <setting id="subtitles.lang.1" type="select" label="Hauptsprache" values="Afrikaans|Albanian|Arabic|Armenian|Basque|Bengali|Bosnian|Breton|Bulgarian|Burmese|Catalan|Chinese|Croatian|Czech|Danish|Dutch|English|Esperanto|Estonian|Finnish|French|Galician|Georgian|German|Greek|Hebrew|Hindi|Hungarian|Icelandic|Indonesian|Italian|Japanese|Kazakh|Khmer|Korean|Latvian|Lithuanian|Luxembourgish|Macedonian|Malay|Malayalam|Manipuri|Mongolian|Montenegrin|Norwegian|Occitan|Persian|Polish|Portuguese|Portuguese(Brazil)|Romanian|Russian|Serbian|Sinhalese|Slovak|Slovenian|Spanish|Swahili|Swedish|Syriac|Tagalog|Tamil|Telugu|Thai|Turkish|Ukrainian|Urdu" enable="!eq(-3,false)" default="German" />
+        <!--<setting id="subtitles.lang.2" type="select" label="Zweitsprache" values="Afrikaans|Albanian|Arabic|Armenian|Basque|Bengali|Bosnian|Breton|Bulgarian|Burmese|Catalan|Chinese|Croatian|Czech|Danish|Dutch|English|Esperanto|Estonian|Finnish|French|Galician|Georgian|German|Greek|Hebrew|Hindi|Hungarian|Icelandic|Indonesian|Italian|Japanese|Kazakh|Khmer|Korean|Latvian|Lithuanian|Luxembourgish|Macedonian|Malay|Malayalam|Manipuri|Mongolian|Montenegrin|Norwegian|Occitan|Persian|Polish|Portuguese|Portuguese(Brazil)|Romanian|Russian|Serbian|Sinhalese|Slovak|Slovenian|Spanish|Swahili|Swedish|Syriac|Tagalog|Tamil|Telugu|Thai|Turkish|Ukrainian|Urdu" enable="!eq(-4,false)" default="English" /> -->
+        <setting id="subtitles.utf" type="bool" label="Untertitel nach UTF-8 umwandeln" default="true" />
+        <setting type="lsep" label="Captcha Dienste" />
+        <setting id="captcha.provider" type="labelenum" label="Auswahl Captcha Solver" values="9kw|2captcha" default="9kw" />
+        <setting id="captcha.timeout" type="slider" label="Captcha Timeout (in Sekunden)" option="int" range="120,10,240"  default="120" />
+        <setting type="lsep" label="2Captcha" />
+        <setting id="2captcha.pass" type="text" option="hidden" label="API Schlüssel" default=""/>
+        <setting type="lsep" label="9kw.eu" />
+        <setting id="9kw.selfsolve" type="bool" label="Self Solving aktivieren" default="false" />
+        <setting id="9kw.pass" type="text" option="hidden" label="API Schlüssel" default=""/>
+    </category>
+</settings>

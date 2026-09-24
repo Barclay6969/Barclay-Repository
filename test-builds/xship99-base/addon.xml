@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.xship" version="2026.09.18.99" name="xShip" provider-name="Kusi (Barclay)">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0" />
+    <import addon="script.module.requests" />
+    <import addon="script.module.six" />
+    <import addon="script.module.resolveurl" version="5.1.100" />
+    <import addon="inputstream.adaptive" />
+    <import addon="script.module.pydevd" optional="true" />
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.service" library="service.py" start="startup" />
+  <extension point="xbmc.addon.metadata">
+    <summary lang="de_DE">Modded by Kusi (Barclay)</summary>
+    <summary lang="en_GB">Modded by Kusi (Barclay)</summary>
+    <description lang="de">xShip wurde als Video-Addon entwickelt, um Streams verschiedenster Webseiten zu sammeln und anzuzeigen. Der Inhalt von xShip, als auch das Angebot an Webseiten-Inhalten wird von den xShip Entwicklern wieder weiter entwickelt.</description>
+    <description lang="en_GB">xShip was developed as a video add-on to collect and display streams from various websites. The content of xShip, as well as the range of website content, is being further developed by the xShip developers.</description>
+    <disclaimer lang="de_DE">Mit diesem Video-Addon kannst du auf alle angebotenen Streams verschiedenster deutscher Quellen zugreifen. Dieses Addon ist kein offizieller Teil des Kodi Media Center und wird daher nicht von den offiziellen Support-Kanälen abgedeckt! xShip durchsucht die enthaltenen Webseiten nach Streams und stellt diese in einer Übersicht dar. Der bereitgestellte Inhalt der Webseiten steht in keinem Bezug zu xShip oder den Entwicklern! xShip durchsucht die enthaltenen Webseiten nach Streams und stellt diese in einer Übersicht dar.</disclaimer>
+    <disclaimer lang="en_GB">With this video add-on you can access all streams offered by various German sources. This add-on is not an official part of the Kodi Media Center and is therefore not covered by the official support channels! xShip searches the included websites for streams and displays them in an overview. The content provided by the websites has no connection to xShip or the developers! xShip searches the included websites for streams and displays them in an overview.</disclaimer>
+    <language>de</language>
+    <platform>all</platform>
+    <license>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007</license>
+    <assets>
+      <icon>resources/icon_barclay.png</icon>
+      <fanart>resources/media/fanart.jpg</fanart>
+      <banner>resources/media/banner.png</banner>
+      <clearlogo>resources/media/clearlogo.png</clearlogo>
+      <screenshot>resources/media/screenshot-01.jpg</screenshot>
+      <screenshot>resources/media/screenshot-02.jpg</screenshot>
+      <screenshot>resources/media/screenshot-04.jpg</screenshot>
+    </assets>
+    <news>2026.09.18.99
+- KinoKiste: Serienunterstützung verbessert; Titel, Staffel und Episode werden strikt geprüft, damit keine falschen Massentreffer mehr entstehen.
+- MeineCloud: neue Base64-codierte Film-Mirrors werden wieder korrekt erkannt; Serien- und Linkerkennung robuster.
+- Serien-Scraper: KinoKing, Huhu, Movie4K, HDFilme, BurningSeries, SerienFans und NOX an aktuelle Seiten-/API-Strukturen sowie robustere Titel-, Staffel- und Episodensuche angepasst.
+- MediaInfo: globaler 10-Sekunden-Sicherheits-Timeout verhindert Hänger durch festgefahrene ResolveURL-Prüfungen; die betroffene Quelle bleibt für die Wiedergabe erhalten.
+- AniWorld und bewusst film-only geführte Provider bleiben unverändert.
+
+2026.09.18.98
+- MoFlix: Filmsuche deutlich robuster gemacht. Alternative Titelvarianten und mehr Suchtreffer werden berücksichtigt.
+- MoFlix: IMDb-ID wird bei Filmen stärker gewichtet; Titelabgleich und Jahresprüfung sind toleranter, damit vorhandene Filme nicht unnötig verworfen werden.
+- MoFlix: Serienlogik und Wiedergabe bleiben unverändert auf dem erfolgreich getesteten Stand.
+
+2026.09.17.97
+- Provider-Healthstatus ist nur noch informativ und kann die Quellensuche nicht mehr komplett deaktivieren.
+- Netzwerk-/DNS-/HEAD-Fehler im Hintergrundcheck werden als unknown statt dead gespeichert.
+- Behebt den Fall, dass xShip ohne Scraper-Aufrufe sofort mit 0 Quellen beendet.
+
+2026.09.16.96
+- MediaInfo fuer deferred Hoster konservativ wiederhergestellt: sichere, schnelle Resolver duerfen nur fuer die Hintergrundanalyse temporaer aufgeloest werden.
+- Die eigentliche Wiedergabe-URL bleibt dabei unveraendert; problematische, CAPTCHA- oder token-sensitive Hoster werden nicht vorab aufgeloest.
+- SerienStream zeigt nur noch VOE Deutsch und VOE Englisch; DoodStream/CAPTCHA und andere unbrauchbare SerienStream-Quellen werden ausgeblendet.
+- SerienStream bleibt von der MediaInfo-Vorabpruefung ausgeschlossen, damit kurzlebige Redirect-Tokens nicht verbraucht werden.
+
+2026.09.14.95
+- Scraper-Updates fuer Huhu, KKiste, KinoKiste, KinoGer und Netzkino uebernommen und an xShip angepasst.
+- Huhu: Serien werden ueber IMDb/TMDb direkt auf Staffel und Episode aufgeloest.
+- Movie2k: Seriensuche robuster, inklusive alternativer Titelvarianten und besserer Staffel-/Folgenerkennung.
+- Movie2k2 und Filmpalast: aktuelle Mirror-/Hosterbehandlung und robustere Serienquellen.
+- MoFlix: Treffer- und Episodenlogik verbessert; zusaetzliche Mirror-Erkennung und HLS-Pruefung.
+- Zentrale Hoster-Kompatibilitaet fuer neuere Spezialdomains erweitert.
+- AniWorld wurde bewusst nicht uebernommen; Filmo bleibt auf dem bewaehrten xShip-Stand.
+
+2026.08.31.2
+- LOCAL TEST: VixCloud/VixSrc-Playlist wird nach erfolgreicher eigener Aufloesung nicht erneut durch ResolveURL verworfen.
+
+2026.08.31.1
+- Wiedergabestabilitaet deutlich verbessert: Source- und Resolver-Worker werden vor dem Playerstart sauber beendet und Kodi-Objekte nach der Nutzung freigegeben.
+- Player-Callbacks entkoppelt: Navigation sowie Bookmark- und Datenbank-Aufraeumarbeiten erfolgen ausserhalb der Kodi-Playback-Callbacks.
+- Adaptive Workerzahl je Plattform reduziert unnoetige Parallelitaet sowie Speicher- und CPU-Last.
+- Streamstart wird nach maximal 60 Sekunden abgebrochen; festgefahrene Wiedergabe wird nach 90 Sekunden ohne Fortschritt erkannt. Eine normale Pause ist davon ausgenommen.
+- ResolveURL-Fallback verbessert: nicht unterstuetzte oder fehlerhafte Resolver-Quellen werden verworfen, damit xShip mit der naechsten verfuegbaren Quelle fortfahren kann.
+- Startmeldung angepasst: „Der Stream wird nun gestartet, ich wünsche Dir viel Vergnügen mit Deiner Auswahl“
+- Bestehende Provider- und Scraper-Logik bleibt unveraendert erhalten.
+
+2026.08.28.1
+- Automatische Provider-Domainverwaltung fuer weitere wechselnde Indexseiten erweitert.
+- FHD Filme: bekannte Domainmigration hdfilme.my / hdfilme.blog -> hdfilme.win.
+- StreamCloud: bekannte Domainmigration streamcloud.my -> streamcloud.bid.
+- MegaKino: bekannte Domainmigration megakino15.com -> megakino16.com.
+- HD Filme, KinoKing, KinoKiste, KKiste, Movie2k, Movie2k 2, Movie4k, SerienStream, StreamCloud Forum und TopStreamFilm nutzen nun ebenfalls den zentralen Domain-Manager.
+- Erkannte Domains werden automatisch in den xShip-Einstellungen gespeichert; erfolgreiche Pruefungen werden 6 Stunden, fehlgeschlagene 1 Stunde gecacht.
+- Die Redirect-Erkennung aus 2026.08.25.12 bleibt erhalten; Vavoo und die zentrale RequestHandler-Erkennung bleiben unveraendert enthalten.
+
+2026.08.25.12
+- Provider-Domains: echte HTTP-Redirects werden zentral erkannt und automatisch als neue Hauptdomain gespeichert.
+- Die Erkennung nutzt bereits laufende xShip-Requests sowie den vorhandenen parallelen Domain-Check; dadurch entstehen bei der Quellensuche keine zusaetzlichen Domain-Anfragen.
+- ISP-/CUII-Sperrseiten und Hoster-/Embed-Redirects koennen die Provider-Domain nicht ueberschreiben.
+- Vavoo verwendet nun ebenfalls die konfigurierbare Provider-Domain; die separate vavoo.tv-Authentifizierung bleibt unveraendert.
+- Kinox behaelt seine bewaehrte eigene Multi-Domain-Erkennung.
+
+2026.08.25.11
+- KinoKing: Filmsuche an das neue V2-Seitenlayout mit data-id/data-title angepasst; Filmquellen werden wieder erkannt.
+- KinoKing: MeineCloud-Zwischenseiten werden über den bereits bewährten gemeinsamen MeineCloud-Auflösungsweg verarbeitet; Hosterquellen werden wieder ausgegeben.
+
+2026.08.25.8
+- MediaInfo: Ungültige bzw. interne Nicht-HTTP-URLs wie False und vixsrc:// werden nicht mehr abgefragt; betroffene Quellen bleiben für die eigentliche Wiedergabe erhalten.
+- Wiedergabe: Stoppen eines Streams reagiert deutlich schneller und beendet den Player-Loop praktisch sofort.
+- MegaKino: Domain von megakino15.com auf megakino16.com aktualisiert.
+- Einschalten: DoodStream/vide0.net-Fallback für Kodi 21 ergänzt; Cloudflare-bedingte ResolveURL-Ausfälle werden lokal umgangen und Streams wieder gefunden.
+
+2026.08.21.10
+- SerienStream: Titelsuche toleranter bei Bindestrich-/Doppelpunkt-Varianten, z. B. „ES - Welcome to Derry“ / „ES: Welcome to Derry“.
+- VOE: Direktauflösung bei SerienStream korrigiert.
+- Die 5-Sekunden-Startmeldung „Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)“ bleibt enthalten.
+
+2026.08.21.8-KUSI5S
+- Beim Start eines ausgewaehlten Streams wird fuer 5 Sekunden eine lautlose Startmeldung angezeigt.
+- Meldung: „Kusi sagt: Der Stream wird gestartet, nur Geduld ;-)“
+- Die Startmeldung ersetzt das fehlende sichtbare Feedback, wenn Kodis Ladekreis beim Wiedergabestart nicht erscheint.
+
+2026.08.21.3
+- Quellensuche und Scraper-Ablauf deutlich beschleunigt.
+- MeineCloud/FHDfilme/Streamcloud/TopStreamFilm teilen identische Filmabrufe; MeineCloud liefert weiterhin mehrere Hoster.
+- Filmo-Suche mit besserer Titelnormalisierung und gezielter Kandidatenauswahl beschleunigt.
+- Moflix: der langsame und fehlschlagende moflix-stream.link/Byse-Pfad wird waehrend der Suche uebersprungen; alle uebrigen Moflix-Hoster bleiben unveraendert.
+- VixStream/VixSrc funktional unveraendert; Film- und Serien-Wiedergabe bleibt auf dem stabil getesteten Stand.
+
+2026.08.20.1
+- Vixstream/VixSrc: Film-Wiedergabe an das aktuelle VixSrc-Verhalten angepasst.
+- Movie-Playlists werden zuerst wie im aktuellen Browser ohne b=1 und ohne Origin geladen.
+- Der bisherige b=1-Abruf bleibt als Kompatibilitäts-Fallback erhalten.
+- Serien-Wiedergabe bleibt mit dem Fix vom 19.08. unverändert funktionsfähig.
+
+2026.08.19
+- Vixstream/VixSrc: Serien-Wiedergabe repariert.
+- TV-Playlists werden nach aktuellem VixSrc-Verhalten ohne b=1 und ohne Origin geladen.
+- Embed- und Playlist-URLs laufen über vixsrc.to.
+
+2026.08.17.2
+- Changelog hinzugefügt und Kodi-Anzeige „Letzte Änderungen“ ergänzt.
+
+2026.08.17.1
+- Domain-Synchronisierung läuft nun zusätzlich bei jedem normalen xShip-Start.
+
+2026.08.17
+- Bidirektionale Provider-Domain-Synchronisierung eingeführt.
+- Scraper-Änderungen werden in die Einstellungen übernommen.
+- Manuelle Einstellungen werden zurück in den Scraper geschrieben.
+- MegaKino 14.com → 15.com Migration ergänzt.
+
+2026.08.16
+- MegaKino auf megakino15.com aktualisiert.
+
+2026.07.25
+- Vixstream- und Wiedergabe-/Busy-Fixes.
+
+2026.07.22
+- hosts.sort-Migration korrigiert.
+
+2026.07.21
+- Defaults bereinigt und inputstream.adaptive ergänzt.
+
+2026.07.14 bis 2026.07.04
+- SerienStream-Resolver, Session-Flow, Domain-Fallbacks und Hoster-Auflösung schrittweise verbessert.</news>
+  </extension>
+</addon>
