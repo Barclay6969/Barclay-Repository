@@ -1,0 +1,98 @@
+name: TEMP publish xShip 2026.09.24.103
+
+on:
+  push:
+    branches:
+      - xship-release-103-manifest
+    paths:
+      - .github/workflows/xship-release-103-publish.yml
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Build verified xShip 2026.09.24.103 release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin xship-release-103-manifest:refs/remotes/origin/xship-release-103-manifest
+
+          rm -rf /tmp/xship103
+          mkdir -p /tmp/xship103
+          unzip -q zips/plugin.video.xship/plugin.video.xship-2026.09.18.99.zip -d /tmp/xship103
+          ROOT=/tmp/xship103/plugin.video.xship
+
+          git show origin/xship-release-103-manifest:test-builds/xship99-base/addon.xml > "$ROOT/addon.xml"
+          git show origin/xship-release-103-manifest:test-builds/xship99-base/changelog.txt > "$ROOT/changelog.txt"
+          git show origin/xship-release-103-manifest:test-builds/xship99-base/resources/settings.xml > "$ROOT/resources/settings.xml"
+          git show origin/xship-release-103-manifest:test-builds/xship99-base/resources/lib/domain_manager.py > "$ROOT/resources/lib/domain_manager.py"
+          git show origin/xship-release-103-manifest:test-builds/xship99-base/resources/lib/hoster_compat.py > "$ROOT/resources/lib/hoster_compat.py"
+          git show origin/xship-release-103-manifest:test-builds/xship99-base/scrapers/scrapers_source/de/kinoger.py > "$ROOT/scrapers/scrapers_source/de/kinoger.py"
+
+          grep -q 'version="2026.09.24.103"' "$ROOT/addon.xml"
+          head -1 "$ROOT/changelog.txt" | grep -q '^2026.09.24.103$'
+          grep -q "SITE_DOMAIN = 'kinoger.fun'" "$ROOT/scrapers/scrapers_source/de/kinoger.py"
+          grep -q "Premium" "$ROOT/scrapers/scrapers_source/de/kinoger.py"
+          grep -q "youtube" "$ROOT/scrapers/scrapers_source/de/kinoger.py"
+
+          python3 -m compileall -q "$ROOT"
+          find "$ROOT" -type d -name __pycache__ -prune -exec rm -rf {} +
+          find "$ROOT" -type f -name '*.pyc' -delete
+
+          OUT=zips/plugin.video.xship/plugin.video.xship-2026.09.24.103.zip
+          rm -f "$OUT"
+          (
+            cd /tmp/xship103
+            zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship
+          )
+          unzip -t "$OUT" >/dev/null
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          addons = Path('zips/addons.xml')
+          addon = Path('/tmp/xship103/plugin.video.xship/addon.xml').read_text(encoding='utf-8')
+          addon = re.sub(r'^<\?xml[^>]+>\s*', '', addon, count=1).strip()
+          xml = addons.read_text(encoding='utf-8')
+          pat = re.compile(r'(?ms)^  <addon id="plugin\.video\.xship".*?^  </addon>')
+          if not pat.search(xml):
+              raise SystemExit('xShip entry not found in addons.xml')
+          indented = '\n'.join('  ' + line if line else line for line in addon.splitlines())
+          xml, n = pat.subn(indented, xml, count=1)
+          if n != 1:
+              raise SystemExit('xShip entry replacement failed')
+          addons.write_text(xml, encoding='utf-8')
+          PY
+
+          md5sum zips/addons.xml | awk '{print $1}' > zips/addons.xml.md5
+
+          python3 - <<'PY'
+          import hashlib, zipfile, pathlib, re
+          out = pathlib.Path('zips/plugin.video.xship/plugin.video.xship-2026.09.24.103.zip')
+          with zipfile.ZipFile(out) as z:
+              names=set(z.namelist())
+              assert 'plugin.video.xship/addon.xml' in names
+              assert 'plugin.video.xship/changelog.txt' in names
+              addon=z.read('plugin.video.xship/addon.xml').decode('utf-8')
+              changelog=z.read('plugin.video.xship/changelog.txt').decode('utf-8')
+              assert 'version="2026.09.24.103"' in addon
+              assert changelog.startswith('2026.09.24.103\n')
+          print('ZIP_SHA256=' + hashlib.sha256(out.read_bytes()).hexdigest())
+          print('ADDONS_MD5=' + hashlib.md5(pathlib.Path('zips/addons.xml').read_bytes()).hexdigest())
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$OUT" zips/addons.xml zips/addons.xml.md5
+          test "$(git diff --cached --name-only | wc -l)" -eq 3
+          git diff --cached --name-only
+          git commit -m "Publish xShip 2026.09.24.103 KinoGer.fun fix"
+          git push origin HEAD:main
