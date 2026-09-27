@@ -1,0 +1,326 @@
+name: Build xShip Kinokiste speedtest2
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.build-xship-kinokiste-speedtest2-2026.09.27'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/build_kinokiste_speedtest2.py <<'PY'
+          from pathlib import Path
+          import hashlib, shutil, tempfile, zipfile
+          
+          repo = Path.cwd()
+          base_zip = repo / 'test-builds/plugin.video.xship-2026.09.24.103-SPEEDTEST-MOFLIX-MOVIE4K.zip'
+          out_zip = repo / 'test-builds/plugin.video.xship-2026.09.24.103-SPEEDTEST2-KINOKISTE.zip'
+          
+          if not base_zip.exists():
+              raise SystemExit('Base speedtest ZIP missing: %s' % base_zip)
+          
+          with tempfile.TemporaryDirectory() as td_raw:
+              td = Path(td_raw)
+              with zipfile.ZipFile(base_zip, 'r') as zf:
+                  zf.extractall(td)
+          
+              root = td / 'plugin.video.xship'
+              p = root / 'scrapers/scrapers_source/de/kinokiste.py'
+              text = p.read_text(encoding='utf-8')
+          
+              old = """import json
+          import re
+          from difflib import SequenceMatcher
+          """
+              new = """import json
+          import re
+          import time
+          import requests
+          from difflib import SequenceMatcher
+          """
+              if text.count(old) != 1:
+                  raise SystemExit('Kinokiste import block mismatch')
+              text = text.replace(old, new, 1)
+          
+              old = """from resources.lib.requestHandler import cRequestHandler
+          from resources.lib.domain_manager import resolve_domain
+          from scrapers.modules import cleantitle
+          """
+              new = """from resources.lib.requestHandler import cRequestHandler
+          from resources.lib.domain_manager import resolve_domain
+          from resources.lib import log_utils
+          from scrapers.modules import cleantitle
+          """
+              if text.count(old) != 1:
+                  raise SystemExit('Kinokiste lib import block mismatch')
+              text = text.replace(old, new, 1)
+          
+              old = """        self.watch_links = [self.base_link + '/data/watch/?_id=%s', self.base_link + '/data/watch?_id=%s']
+                  self.sources = []
+          """
+              new = """        self.watch_links = [self.base_link + '/data/watch/?_id=%s', self.base_link + '/data/watch?_id=%s']
+                  self.sources = []
+                  self._deadline = 0.0
+                  self._json_cache = {}
+                  self._session = requests.Session()
+                  self._session.headers.update({
+                      'User-Agent': UA,
+                      'Accept': 'application/json, text/plain, */*',
+                      'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
+                      'Referer': self.base_link + '/',
+                      'Origin': self.base_link,
+                      'X-Requested-With': 'XMLHttpRequest',
+                  })
+          """
+              if text.count(old) != 1:
+                  raise SystemExit('Kinokiste init block mismatch')
+              text = text.replace(old, new, 1)
+          
+              old = """    def _json(self, url):
+                  try:
+                      req = cRequestHandler(url, caching=True)
+                      req.addHeaderEntry('User-Agent', UA)
+                      req.addHeaderEntry('Referer', self.base_link + '/')
+                      req.addHeaderEntry('Origin', self.base_link)
+                      req.addHeaderEntry('X-Requested-With', 'XMLHttpRequest')
+                      data = req.request()
+                      return json.loads(data) if data else None
+                  except Exception:
+                      return None
+          """
+              new = """    def _json(self, url):
+                  if url in self._json_cache:
+                      return self._json_cache[url]
+          
+                  # Kinokiste's JSON endpoints are currently intermittent. The generic
+                  # request handler can wait a long time on a single bad route, so this
+                  # provider uses a short, provider-local timeout.
+                  try:
+                      remaining = self._deadline - time.monotonic() if self._deadline else 4.0
+                      if remaining <= 0.35:
+                          return None
+                      timeout = max(0.8, min(4.0, remaining))
+                      started = time.monotonic()
+                      response = self._session.get(url, timeout=timeout, allow_redirects=True)
+                      elapsed = time.monotonic() - started
+          
+                      try:
+                          log_utils.log(
+                              '[KINOKISTE-FAST] %.2fs status=%s %s' %
+                              (elapsed, response.status_code, url),
+                              log_utils.LOGINFO
+                          )
+                      except Exception:
+                          pass
+          
+                      if response.status_code != 200:
+                          return None
+                      data = response.json()
+                      if isinstance(data, dict):
+                          self._json_cache[url] = data
+                          return data
+                  except Exception as exc:
+                      try:
+                          log_utils.log(
+                              '[KINOKISTE-FAST] request failed: %s (%s)' % (url, exc),
+                              log_utils.LOGINFO
+                          )
+                      except Exception:
+                          pass
+                  return None
+          """
+              if text.count(old) != 1:
+                  raise SystemExit('Kinokiste _json block mismatch')
+              text = text.replace(old, new, 1)
+          
+              start = text.index('    def run(self, titles, year, season=0, episode=0, imdb=\'\', hostDict=None):')
+              end = text.index('\n    def resolve(self, url):', start)
+              new_run = """    def run(self, titles, year, season=0, episode=0, imdb='', hostDict=None):
+                  self.sources = []
+                  self._json_cache = {}
+                  # Hard provider budget. Kinokiste must never hold the complete source
+                  # search for 30-60 seconds because one API language is unhealthy.
+                  self._deadline = time.monotonic() + 12.0
+          
+                  clean_titles = set(cleantitle.get(x) for x in titles or [] if x)
+                  season_num = int(season or 0)
+                  episode_num = int(episode or 0)
+                  media_type = 'tvseries' if season_num > 0 else 'movies'
+          
+                  search_titles = []
+                  seen_title = set()
+                  for value in titles or []:
+                      value = str(value or '').strip()
+                      key = cleantitle.get(value)
+                      if value and key and key not in seen_title:
+                          seen_title.add(key)
+                          search_titles.append(value)
+                  # Two good title variants are enough; xShip/TMDb can otherwise supply
+                  # several aliases that multiply API timeouts.
+                  search_titles = search_titles[:2]
+          
+                  def matching_items(data):
+                      result = []
+                      movies = data.get('movies') if isinstance(data, dict) else None
+                      if not isinstance(movies, list):
+                          return result
+                      for movie in movies:
+                          if not isinstance(movie, dict):
+                              continue
+                          if self._candidate_matches(movie, clean_titles, year, season_num):
+                              result.append(movie)
+                              if len(result) >= 2:
+                                  break
+                      return result
+          
+                  candidates = []
+          
+                  # Fast path: one language at a time, preferred order DE -> Multi -> EN.
+                  # Stop at the first language that actually contains the requested item.
+                  for lang in ('2', '4', '3'):
+                      if time.monotonic() >= self._deadline:
+                          break
+                      lang_candidates = []
+                      for title in search_titles:
+                          if time.monotonic() >= self._deadline:
+                              break
+                          data = self._json(self.search_link % (
+                              lang, quote_plus(title), '' if season_num else year, media_type
+                          ))
+                          lang_candidates.extend(matching_items(data))
+                          if lang_candidates:
+                              break
+                      if lang_candidates:
+                          candidates = lang_candidates[:2]
+                          break
+          
+                  # IMDb is a fallback only. Previously it was called for every language
+                  # before every title search and doubled the request count.
+                  if not candidates and imdb and time.monotonic() < self._deadline:
+                      for lang in ('2', '4', '3'):
+                          if time.monotonic() >= self._deadline:
+                              break
+                          data = self._json(self.imdb_link % (lang, imdb))
+                          lang_candidates = matching_items(data)
+                          if lang_candidates:
+                              candidates = lang_candidates[:2]
+                              break
+          
+                  per_host = {}
+                  seen_urls = set()
+          
+                  for movie in candidates:
+                      if time.monotonic() >= self._deadline:
+                          break
+                      title = str(movie.get('title') or '')
+                      mid = str(movie.get('_id') or '')
+                      if not mid:
+                          continue
+                      watch = self._watch(mid)
+                      if not watch:
+                          continue
+          
+                      lang_value = str(watch.get('lang') or '')
+                      language = 'en' if lang_value == '3' or 'Season' in title else 'de'
+                      info = 'Mehrsprachig' if lang_value == '4' else ('Englisch' if language == 'en' else 'Deutsch')
+          
+                      for stream in watch.get('streams') or []:
+                          if season_num and str(stream.get('e') or '').lstrip('0') != str(episode_num):
+                              continue
+                          url = str(stream.get('stream') or '').strip()
+                          if not url:
+                              continue
+                          if url.startswith('//'):
+                              url = 'https:' + url
+                          if url in seen_urls:
+                              continue
+          
+                          host = (urlparse(url).hostname or '').lower()
+                          if not host:
+                              continue
+          
+                          bucket = (host, language)
+                          if per_host.get(bucket, 0) >= 2:
+                              continue
+          
+                          seen_urls.add(url)
+                          per_host[bucket] = per_host.get(bucket, 0) + 1
+                          quality = self._quality(stream.get('release') or movie.get('quality'))
+                          self.sources.append({
+                              'source': host,
+                              'quality': quality,
+                              'language': language,
+                              'url': url,
+                              'direct': False,
+                              'priority': int(self.priority),
+                              'prioHoster': 100,
+                              'info': info
+                          })
+          
+                  try:
+                      log_utils.log(
+                          '[KINOKISTE-FAST] finished sources=%s candidates=%s' %
+                          (len(self.sources), len(candidates)),
+                          log_utils.LOGINFO
+                      )
+                  except Exception:
+                      pass
+                  return self.sources
+          """
+              text = text[:start] + new_run + text[end:]
+              p.write_text(text, encoding='utf-8', newline='\n')
+              compile(text, str(p), 'exec')
+          
+              for cache in list(root.rglob('__pycache__')):
+                  shutil.rmtree(cache, ignore_errors=True)
+              for pyc in root.rglob('*.pyc'):
+                  pyc.unlink(missing_ok=True)
+          
+              out_zip.parent.mkdir(parents=True, exist_ok=True)
+              if out_zip.exists():
+                  out_zip.unlink()
+              with zipfile.ZipFile(out_zip, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+                  for f in sorted(root.rglob('*')):
+                      if f.is_file():
+                          zf.write(f, f.relative_to(td).as_posix())
+          
+          with zipfile.ZipFile(out_zip, 'r') as zf:
+              bad = zf.testzip()
+              if bad:
+                  raise SystemExit('Corrupt member: ' + bad)
+              k = zf.read('plugin.video.xship/scrapers/scrapers_source/de/kinokiste.py').decode('utf-8')
+              m = zf.read('plugin.video.xship/scrapers/scrapers_source/de/moflix.py').decode('utf-8')
+              m4 = zf.read('plugin.video.xship/scrapers/scrapers_source/de/movie4k.py').decode('utf-8')
+              if '[KINOKISTE-FAST]' not in k or 'requests.Session()' not in k:
+                  raise SystemExit('Kinokiste patch missing')
+              if 'resolver deferred to playback' not in m:
+                  raise SystemExit('MoFlix speed patch missing')
+              if "if isinstance(browse, dict) and 'movies' in browse:" not in m4:
+                  raise SystemExit('Movie4K speed patch missing')
+          
+          print('Built:', out_zip)
+          print('SHA256:', hashlib.sha256(out_zip.read_bytes()).hexdigest())
+          
+          PY
+          python3 /tmp/build_kinokiste_speedtest2.py
+
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add test-builds/plugin.video.xship-2026.09.24.103-SPEEDTEST2-KINOKISTE.zip
+          git rm -f .build-xship-kinokiste-speedtest2-2026.09.27
+          git rm -f .github/workflows/build-xship-kinokiste-speedtest2-2026.09.27.yml
+          git rm -f test-builds/kinokiste-current-2026.09.27.py.txt test-builds/kinokiste-live-diagnostic-2026.09.27.txt || true
+          git commit -m "Build xShip Kinokiste speed test 2"
+          git push
