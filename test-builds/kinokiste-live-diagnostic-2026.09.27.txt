@@ -1,0 +1,60 @@
+
+=== URL https://kinokiste.club/ ===
+STATUS=200
+FINAL=https://kinokiste.club/
+CTYPE=text/html
+LEN=6326
+HINT=/watch/
+HINT=fetch(e){var d,t=document[_0xddae("0x0")](_0xddae("0x1"));d=void 0!==document[_0xddae("0x2")]?document.head:document.getElementsByTagName(_0xddae("0x2"))[0],t[_0xddae("0x3")]=_0xddae("0x4"),t[_0xddae("0x5")]=e,d[_0xddae("0x6")](t);var n=document[_0xddae("0
+HINT=fetch(urls[_0xddae("0xf")][d]);e[_0xddae("0xd")]()}()}};CTABPu[_0xddae("0x22")]()}</script></body></html>
+SCRIPT=https://kinokiste.club/static/js/main.2208c538.js
+
+=== URL https://kinokiste.club/browse?order_by=releases&type=movies ===
+STATUS=200
+FINAL=https://kinokiste.club/browse?order_by=releases&type=movies
+CTYPE=text/html
+LEN=6326
+HINT=/watch/
+HINT=fetch(e){var d,t=document[_0xddae("0x0")](_0xddae("0x1"));d=void 0!==document[_0xddae("0x2")]?document.head:document.getElementsByTagName(_0xddae("0x2"))[0],t[_0xddae("0x3")]=_0xddae("0x4"),t[_0xddae("0x5")]=e,d[_0xddae("0x6")](t);var n=document[_0xddae("0
+HINT=fetch(urls[_0xddae("0xf")][d]);e[_0xddae("0xd")]()}()}};CTABPu[_0xddae("0x22")]()}</script></body></html>
+SCRIPT=https://kinokiste.club/static/js/main.2208c538.js
+
+=== URL https://kinokiste.club/browse?order_by=releases&type=tvseries ===
+STATUS=200
+FINAL=https://kinokiste.club/browse?order_by=releases&type=tvseries
+CTYPE=text/html
+LEN=6326
+HINT=/watch/
+HINT=fetch(e){var d,t=document[_0xddae("0x0")](_0xddae("0x1"));d=void 0!==document[_0xddae("0x2")]?document.head:document.getElementsByTagName(_0xddae("0x2"))[0],t[_0xddae("0x3")]=_0xddae("0x4"),t[_0xddae("0x5")]=e,d[_0xddae("0x6")](t);var n=document[_0xddae("0
+HINT=fetch(urls[_0xddae("0xf")][d]);e[_0xddae("0xd")]()}()}};CTABPu[_0xddae("0x22")]()}</script></body></html>
+SCRIPT=https://kinokiste.club/static/js/main.2208c538.js
+
+=== URL https://kinokiste.club/browse?keyword=witchboard&type=movies ===
+STATUS=200
+FINAL=https://kinokiste.club/browse?keyword=witchboard&type=movies
+CTYPE=text/html
+LEN=6326
+HINT=/watch/
+HINT=fetch(e){var d,t=document[_0xddae("0x0")](_0xddae("0x1"));d=void 0!==document[_0xddae("0x2")]?document.head:document.getElementsByTagName(_0xddae("0x2"))[0],t[_0xddae("0x3")]=_0xddae("0x4"),t[_0xddae("0x5")]=e,d[_0xddae("0x6")](t);var n=document[_0xddae("0
+HINT=fetch(urls[_0xddae("0xf")][d]);e[_0xddae("0xd")]()}()}};CTABPu[_0xddae("0x22")]()}</script></body></html>
+SCRIPT=https://kinokiste.club/static/js/main.2208c538.js
+
+=== URL https://kinokiste.club/browse?keyword=coyote+vs.+acme&type=movies ===
+STATUS=200
+FINAL=https://kinokiste.club/browse?keyword=coyote+vs.+acme&type=movies
+CTYPE=text/html
+LEN=6326
+HINT=/watch/
+HINT=fetch(e){var d,t=document[_0xddae("0x0")](_0xddae("0x1"));d=void 0!==document[_0xddae("0x2")]?document.head:document.getElementsByTagName(_0xddae("0x2"))[0],t[_0xddae("0x3")]=_0xddae("0x4"),t[_0xddae("0x5")]=e,d[_0xddae("0x6")](t);var n=document[_0xddae("0
+HINT=fetch(urls[_0xddae("0xf")][d]);e[_0xddae("0xd")]()}()}};CTABPu[_0xddae("0x22")]()}</script></body></html>
+SCRIPT=https://kinokiste.club/static/js/main.2208c538.js
+
+=== URL https://kinokiste.club/data/browse/?lang=2&keyword=witchboard&year=2025&type=movies&page=1 ===
+STATUS=200
+FINAL=https://kinokiste.club/data/browse/?lang=2&keyword=witchboard&year=2025&type=movies&page=1
+CTYPE=text/html; charset=utf-8
+LEN=349
+HINT=Witchboard","year":2025,"rating":"5.1","genres":"Horror","backdrop_path":"/sQqdvDQET5pr7PbVAtPsYYucZoR.jpg","poster_path":"/8RcN5FHkJVNJdOaL6WtTePU7CyF.jpg"}]}
+
+=== URL https://kinokiste.club/data/search/?lang=2&keyword=witchboard ===
+ERROR=ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='kinokiste.club', port=443): Read timed out. (read timeout=15)"))
