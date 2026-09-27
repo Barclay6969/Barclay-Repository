@@ -1,0 +1,162 @@
+name: Publish xShip 2026.09.27.104
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.publish-xship-2026.09.27.104'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build and publish xShip 2026.09.27.104
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import re
+          import shutil
+          import tempfile
+          import zipfile
+
+          repo = Path.cwd()
+          base_zip = repo / 'test-builds/plugin.video.xship-2026.09.24.103-SPEEDTEST-MOFLIX-MOVIE4K.zip'
+          out_zip = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.09.27.104.zip'
+          addons_xml_path = repo / 'zips/addons.xml'
+          md5_path = repo / 'zips/addons.xml.md5'
+
+          if not base_zip.exists():
+              raise SystemExit(f'Base test ZIP missing: {base_zip}')
+
+          version = '2026.09.27.104'
+          changelog_entry = (
+              '2026.09.27.104\n'
+              '- MoFlix: bekannte funktionierende Hoster werden bei der Quellensuche nicht mehr vollstaendig vorab aufgeloest. '
+              'Die eigentliche Resolver-Aufloesung erfolgt erst bei der Wiedergabe; dadurch werden vorhandene Quellen beibehalten und die Suche deutlich beschleunigt.\n'
+              '- MoFlix: der bereits bekannte langsame moflix-stream.link-Pfad wird weiterhin waehrend der Suche uebersprungen.\n'
+              '- Movie4K: die aktuelle /data/browse/-Schnittstelle wird vor der veralteten /data/search/-Schnittstelle verwendet. '
+              'Damit entfallen bei funktionierenden Browse-Antworten unnoetige langsame Legacy-Abfragen.\n'
+              '- Sonstige Provider bleiben auf dem bisherigen Stand.\n\n'
+          )
+
+          with tempfile.TemporaryDirectory() as td_raw:
+              td = Path(td_raw)
+              with zipfile.ZipFile(base_zip, 'r') as zf:
+                  zf.extractall(td)
+
+              root = td / 'plugin.video.xship'
+              addon_xml = root / 'addon.xml'
+              changelog = root / 'changelog.txt'
+
+              addon_text = addon_xml.read_text(encoding='utf-8')
+              addon_text, n = re.subn(
+                  r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+(")',
+                  rf'\g<1>{version}\2',
+                  addon_text,
+                  count=1
+              )
+              if n != 1:
+                  raise SystemExit('Could not update addon.xml version')
+
+              news_marker = '<news>'
+              if news_marker not in addon_text:
+                  raise SystemExit('addon.xml has no <news> block')
+              addon_text = addon_text.replace(news_marker, news_marker + changelog_entry.rstrip() + '\n\n', 1)
+              addon_xml.write_text(addon_text, encoding='utf-8', newline='\n')
+
+              old_changelog = changelog.read_text(encoding='utf-8') if changelog.exists() else ''
+              if old_changelog.startswith('xShip'):
+                  pos = old_changelog.find('\n\n')
+                  if pos >= 0:
+                      new_changelog = old_changelog[:pos+2] + changelog_entry + old_changelog[pos+2:]
+                  else:
+                      new_changelog = old_changelog + '\n\n' + changelog_entry
+              else:
+                  new_changelog = changelog_entry + old_changelog
+              changelog.write_text(new_changelog, encoding='utf-8', newline='\n')
+
+              # Ensure only the two approved speed patches are present.
+              kinokiste = (root / 'scrapers/scrapers_source/de/kinokiste.py').read_text(encoding='utf-8')
+              moflix = (root / 'scrapers/scrapers_source/de/moflix.py').read_text(encoding='utf-8')
+              movie4k = (root / 'scrapers/scrapers_source/de/movie4k.py').read_text(encoding='utf-8')
+
+              if '[KINOKISTE-FAST]' in kinokiste or 'requests.Session()' in kinokiste:
+                  raise SystemExit('Kinokiste speed-test changes leaked into release')
+              if 'resolver deferred to playback' not in moflix:
+                  raise SystemExit('MoFlix speed patch missing')
+              if "if isinstance(browse, dict) and 'movies' in browse:" not in movie4k:
+                  raise SystemExit('Movie4K browse-first patch missing')
+
+              compile(kinokiste, 'kinokiste.py', 'exec')
+              compile(moflix, 'moflix.py', 'exec')
+              compile(movie4k, 'movie4k.py', 'exec')
+
+              for cache in list(root.rglob('__pycache__')):
+                  shutil.rmtree(cache, ignore_errors=True)
+              for pyc in root.rglob('*.pyc'):
+                  pyc.unlink(missing_ok=True)
+
+              out_zip.parent.mkdir(parents=True, exist_ok=True)
+              if out_zip.exists():
+                  out_zip.unlink()
+              with zipfile.ZipFile(out_zip, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+                  for f in sorted(root.rglob('*')):
+                      if f.is_file():
+                          zf.write(f, f.relative_to(td).as_posix())
+
+          with zipfile.ZipFile(out_zip, 'r') as zf:
+              bad = zf.testzip()
+              if bad:
+                  raise SystemExit('Corrupt ZIP member: ' + bad)
+              internal_addon = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+              internal_changelog = zf.read('plugin.video.xship/changelog.txt').decode('utf-8')
+              if f'version="{version}"' not in internal_addon:
+                  raise SystemExit('Version verification failed')
+              if version not in internal_changelog:
+                  raise SystemExit('Changelog verification failed')
+              if '[KINOKISTE-FAST]' in zf.read('plugin.video.xship/scrapers/scrapers_source/de/kinokiste.py').decode('utf-8'):
+                  raise SystemExit('Kinokiste test code present in official ZIP')
+
+          # Replace only the xShip entry in repository addons.xml with the freshly built addon.xml.
+          internal_addon = re.sub(r'^\s*<\?xml[^>]*\?>\s*', '', internal_addon).strip()
+          indented_plugin = '\n'.join('  ' + line for line in internal_addon.splitlines())
+          repo_xml = addons_xml_path.read_text(encoding='utf-8')
+          pattern = r'(?s)  <addon id="plugin\.video\.xship".*?</addon>\s*</addons>'
+          replacement = indented_plugin + '\n</addons>'
+          repo_xml_new, n = re.subn(pattern, replacement, repo_xml, count=1)
+          if n != 1:
+              raise SystemExit('Could not replace xShip block in repository addons.xml')
+          addons_xml_path.write_text(repo_xml_new, encoding='utf-8', newline='\n')
+          md5_path.write_text(hashlib.md5(addons_xml_path.read_bytes()).hexdigest() + '\n', encoding='ascii')
+
+          print('Release:', out_zip)
+          print('ZIP SHA256:', hashlib.sha256(out_zip.read_bytes()).hexdigest())
+          print('addons.xml MD5:', md5_path.read_text().strip())
+          PY
+
+          unzip -t zips/plugin.video.xship/plugin.video.xship-2026.09.27.104.zip >/dev/null
+          unzip -p zips/plugin.video.xship/plugin.video.xship-2026.09.27.104.zip plugin.video.xship/addon.xml | grep -q 'version="2026.09.27.104"'
+          unzip -p zips/plugin.video.xship/plugin.video.xship-2026.09.27.104.zip plugin.video.xship/changelog.txt | grep -q '2026.09.27.104'
+          grep -q 'plugin.video.xship" version="2026.09.27.104"' zips/addons.xml
+
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add zips/plugin.video.xship/plugin.video.xship-2026.09.27.104.zip zips/addons.xml zips/addons.xml.md5
+          git rm -f test-builds/plugin.video.xship-2026.09.24.103-SPEEDTEST-MOFLIX-MOVIE4K.zip || true
+          git rm -f test-builds/plugin.video.xship-2026.09.24.103-SPEEDTEST2-KINOKISTE.zip || true
+          git rm -f .publish-xship-2026.09.27.104
+          git rm -f .github/workflows/publish-xship-2026.09.27.104.yml
+
+          git commit -m "Publish xShip 2026.09.27.104 MoFlix Movie4K speed improvements"
+          git push
