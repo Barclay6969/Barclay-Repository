@@ -254,4 +254,3 @@ def get_series_links(imdb, season, episode, base_link='https://meinecloud.click'
           git commit -m "Build MeineCloud token API TEST1"
           git push
 
-constantly: false
