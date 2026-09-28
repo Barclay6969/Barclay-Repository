@@ -103,33 +103,33 @@ def _mc_find_stream(html):
     flat = ((html or '') + '\n' + _mc_unpack_all(html or '')).replace('\\/', '/')
     flat = unescape(flat)
 
-    match = re.search(r'''https?://[^"'\s\\]+\.m3u8[^"'\s\\]*''', flat, flags=re.I)
+    match = re.search(r"""https?://[^"'\s\\]+\.m3u8[^"'\s\\]*""", flat, flags=re.I)
     if match:
         return match.group(0)
 
     for token in re.findall(
-        r'''atob\s*\(\s*["']([A-Za-z0-9+/=]{20,})["']\s*\)''',
+        r"""atob\s*\(\s*["']([A-Za-z0-9+/=]{20,})["']\s*\)""",
         html or '',
         flags=re.I
     ):
         try:
             padded = token + ('=' * (-len(token) % 4))
             decoded = base64.b64decode(padded).decode('utf-8', 'ignore').replace('\\/', '/')
-            match = re.search(r'''https?://[^"'\s\\]+\.m3u8[^"'\s\\]*''', decoded, flags=re.I)
+            match = re.search(r"""https?://[^"'\s\\]+\.m3u8[^"'\s\\]*""", decoded, flags=re.I)
             if match:
                 return match.group(0)
         except Exception:
             pass
 
     match = re.search(
-        r'''(?:file|source|src)\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']''',
+        r"""(?:file|source|src)\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']""",
         flat,
         flags=re.I
     )
     if match:
         return match.group(1).replace('\\/', '/')
 
-    match = re.search(r'''https?://[^"'\s\\]+\.mp4[^"'\s\\]*''', flat, flags=re.I)
+    match = re.search(r"""https?://[^"'\s\\]+\.mp4[^"'\s\\]*""", flat, flags=re.I)
     if match:
         return match.group(0)
     return ''
