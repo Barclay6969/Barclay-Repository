@@ -22,122 +22,20 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import re, tempfile, zipfile, shutil
-          from urllib.parse import urlparse
+          import re, shutil, tempfile, zipfile
 
           base_zip = Path('test-builds/plugin.video.xship-2026.09.28.105-MEINECLOUD-TOKENAPI-TEST1.zip')
           out_zip = Path('test-builds/plugin.video.xship-2026.09.28.106-MEINECLOUD-SERIES-DEFERRED-TEST2.zip')
-          if not base_zip.exists():
-              raise SystemExit('Missing TEST1 base ZIP')
+          provider_src = "# -*- coding: UTF-8 -*-\n\n# MeineCloud provider\n# Movie4k family database source\n\nfrom resources.lib.utils import isBlockedHosterFast as isBlockedHoster\nfrom scrapers.modules.meinecloud_shared import get_movie_links, get_series_links\nfrom resources.lib.control import getSetting\nfrom resources.lib.domain_manager import resolve_domain\n\nSITE_IDENTIFIER = 'meinecloud'\nSITE_DOMAIN = 'meinecloud.click'\nSITE_NAME = SITE_IDENTIFIER.upper()\n\n\nclass source:\n    def __init__(self):\n        self.priority = getSetting('provider.' + SITE_IDENTIFIER + '.priority', 100)\n        self.language = ['de']\n        self.domain = resolve_domain(SITE_IDENTIFIER, SITE_DOMAIN)\n        self.base_link = 'https://' + self.domain\n        self.sources = []\n\n    def _add_links(self, links, numbered=False, defer_resolve=False):\n        seen = set()\n        index = 0\n        for sUrl in links or []:\n            if not sUrl or sUrl in seen:\n                continue\n            seen.add(sUrl)\n\n            try:\n                if defer_resolve:\n                    isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl, isResolve=False)\n                else:\n                    isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)\n            except TypeError:\n                isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)\n\n            if defer_resolve and (isBlocked or not url):\n                try:\n                    from urllib.parse import urlparse\n                    hoster = (urlparse(sUrl).hostname or 'MeineCloud').lower()\n                except Exception:\n                    hoster = 'MeineCloud'\n                url = sUrl\n                prioHoster = 100\n                isBlocked = False\n                try:\n                    import xbmc\n                    xbmc.log('[xShip MEINECLOUD-API] series deferred raw source: %s' % sUrl, xbmc.LOGINFO)\n                except Exception:\n                    pass\n\n            if isBlocked or not url:\n                continue\n\n            index += 1\n            source_name = hoster or 'MeineCloud'\n            if numbered and index > 1:\n                source_name = '%s(%s)' % (source_name, index)\n\n            self.sources.append({\n                'source': source_name,\n                'quality': '1080p',\n                'language': 'de',\n                'url': url,\n                'direct': False if defer_resolve else True,\n                'priority': int(self.priority),\n                'prioHoster': prioHoster\n            })\n\n    def run(self, titles, year, season=0, episode=0, imdb=''):\n        self.sources = []\n        try:\n            if int(season or 0) == 0:\n                self._add_links(get_movie_links(imdb, self.base_link))\n            else:\n                self._add_links(\n                    get_series_links(imdb, int(season), int(episode), self.base_link),\n                    numbered=True,\n                    defer_resolve=True\n                )\n            return self.sources\n        except Exception:\n            return self.sources\n\n    def resolve(self, url):\n        return url\n"
 
           with tempfile.TemporaryDirectory() as td_raw:
               td = Path(td_raw)
               with zipfile.ZipFile(base_zip, 'r') as zf:
                   zf.extractall(td)
-
               root = td / 'plugin.video.xship'
               provider = root / 'scrapers/scrapers_source/de/meinecloud.py'
-              src = provider.read_text(encoding='utf-8')
-
-              old = '''    def _add_links(self, links, numbered=False):
-        seen = set()
-        index = 0
-        for sUrl in links or []:
-            if not sUrl or sUrl in seen:
-                continue
-            seen.add(sUrl)
-
-            isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)
-            if isBlocked or not url:
-                continue
-
-            index += 1
-            source_name = hoster
-            if numbered and index > 1:
-                source_name = '%s(%s)' % (hoster, index)
-
-            self.sources.append({
-                'source': source_name,
-                'quality': '1080p',
-                'language': 'de',
-                'url': url,
-                'direct': True,
-                'priority': int(self.priority),
-                'prioHoster': prioHoster
-            })
-'''
-
-              new = '''    def _add_links(self, links, numbered=False, defer_resolve=False):
-        seen = set()
-        index = 0
-        for sUrl in links or []:
-            if not sUrl or sUrl in seen:
-                continue
-            seen.add(sUrl)
-
-            try:
-                if defer_resolve:
-                    isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl, isResolve=False)
-                else:
-                    isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)
-            except TypeError:
-                isBlocked, hoster, url, prioHoster = isBlockedHoster(sUrl)
-
-            # MeineCloud's new series API currently returns DropLoad/dr0pstream
-            # embeds that ResolveURL may reject during scraping. Keep the raw
-            # API URL as a deferred source for playback instead of dropping it.
-            if defer_resolve and (isBlocked or not url):
-                try:
-                    from urllib.parse import urlparse
-                    hoster = (urlparse(sUrl).hostname or 'MeineCloud').lower()
-                except Exception:
-                    hoster = 'MeineCloud'
-                url = sUrl
-                prioHoster = 100
-                isBlocked = False
-                try:
-                    import xbmc
-                    xbmc.log('[xShip MEINECLOUD-API] series deferred raw source: %s' % sUrl, xbmc.LOGINFO)
-                except Exception:
-                    pass
-
-            if isBlocked or not url:
-                continue
-
-            index += 1
-            source_name = hoster or 'MeineCloud'
-            if numbered and index > 1:
-                source_name = '%s(%s)' % (source_name, index)
-
-            self.sources.append({
-                'source': source_name,
-                'quality': '1080p',
-                'language': 'de',
-                'url': url,
-                'direct': False if defer_resolve else True,
-                'priority': int(self.priority),
-                'prioHoster': prioHoster
-            })
-'''
-
-              if old not in src:
-                  raise SystemExit('Expected _add_links block not found')
-              src = src.replace(old, new, 1)
-
-              old_run = '''                self._add_links(
-                    get_series_links(imdb, int(season), int(episode), self.base_link),
-                    numbered=True
-                )'''
-              new_run = '''                self._add_links(
-                    get_series_links(imdb, int(season), int(episode), self.base_link),
-                    numbered=True,
-                    defer_resolve=True
-                )'''
-              if old_run not in src:
-                  raise SystemExit('Expected series run block not found')
-              src = src.replace(old_run, new_run, 1)
-              provider.write_text(src, encoding='utf-8', newline='\n')
-              compile(src, str(provider), 'exec')
+              provider.write_text(provider_src, encoding='utf-8', newline='\n')
+              compile(provider.read_text(encoding='utf-8'), str(provider), 'exec')
 
               addon = root / 'addon.xml'
               addon_text = addon.read_text(encoding='utf-8')
@@ -158,22 +56,19 @@ jobs:
               if out_zip.exists():
                   out_zip.unlink()
               with zipfile.ZipFile(out_zip, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
-                  for p in sorted(root.rglob('*')):
-                      if p.is_file():
-                          zf.write(p, p.relative_to(td).as_posix())
+                  for fp in sorted(root.rglob('*')):
+                      if fp.is_file():
+                          zf.write(fp, fp.relative_to(td).as_posix())
 
           with zipfile.ZipFile(out_zip, 'r') as zf:
-              bad = zf.testzip()
-              if bad:
-                  raise SystemExit('Corrupt ZIP member: ' + bad)
+              assert zf.testzip() is None
               addon_text = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
               provider_text = zf.read('plugin.video.xship/scrapers/scrapers_source/de/meinecloud.py').decode('utf-8')
-              assert 'version="2026.09.28.106"' in addon_text
+              assert '2026.09.28.106' in addon_text
               assert 'defer_resolve=True' in provider_text
               assert 'series deferred raw source' in provider_text
-          print('Built', out_zip)
+          print(out_zip)
           PY
-
           git config user.name "Barclay Repo Bot"
           git config user.email "actions@users.noreply.github.com"
           git add test-builds/plugin.video.xship-2026.09.28.106-MEINECLOUD-SERIES-DEFERRED-TEST2.zip
