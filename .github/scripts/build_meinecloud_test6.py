@@ -71,12 +71,11 @@ with tempfile.TemporaryDirectory() as td_raw:
 
     addon = root / "addon.xml"
     addon_text = addon.read_text(encoding="utf-8")
-    addon_text, n = re.subn(
-        r'(<addon\\b[^>]*\\bid="plugin\\.video\\.xship"[^>]*\\bversion=")[^"]+(")',
-        r'\\g<1>2026.09.28.110\\2',
-        addon_text, count=1, flags=re.I)
-    if n != 1:
-        raise SystemExit("Could not update addon version")
+    old_version = 'version="2026.09.28.109"'
+    new_version = 'version="2026.09.28.110"'
+    if old_version not in addon_text:
+        raise SystemExit("Expected TEST5 addon version not found")
+    addon_text = addon_text.replace(old_version, new_version, 1)
     addon.write_text(addon_text, encoding="utf-8", newline="\n")
 
     for cache in list(root.rglob("__pycache__")):
