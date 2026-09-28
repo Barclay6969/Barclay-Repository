@@ -28,201 +28,30 @@ jobs:
           repo = Path.cwd()
           base_zip = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.09.27.104.zip'
           out_zip = repo / 'test-builds/plugin.video.xship-2026.09.28.105-MEINECLOUD-TOKENAPI-TEST1.zip'
-
-          if not base_zip.exists():
-              raise SystemExit(f'Missing base ZIP: {base_zip}')
+          patch = "\n# ---------------------------------------------------------------------------\n# xShip 2026-09-28 MeineCloud DeVideoSRC token-API compatibility\n# ---------------------------------------------------------------------------\ndef _xship_mc_base(base_link):\n    base = str(base_link or 'https://meinecloud.click').strip().rstrip('/')\n    if not base.startswith('http'):\n        base = 'https://' + base.lstrip('/')\n    return base\n\ndef _xship_mc_headers(referer=''):\n    return {\n        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',\n        'Accept': 'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8',\n        'Referer': referer or 'https://meinecloud.click/',\n    }\n\ndef _xship_mc_sources(data):\n    out = []\n    if not isinstance(data, dict):\n        return out\n    for src in data.get('sources') or []:\n        if not isinstance(src, dict):\n            continue\n        url = str(src.get('url') or '').strip()\n        if url.startswith('//'):\n            url = 'https:' + url\n        if url.startswith('http') and 'meinecloud' not in url.lower() and url not in out:\n            out.append(url)\n    return out\n\ndef _xship_mc_log(msg):\n    try:\n        import xbmc\n        xbmc.log('[xShip MEINECLOUD-API] ' + str(msg), xbmc.LOGINFO)\n    except Exception:\n        pass\n\ndef get_movie_links(imdb, base_link='https://meinecloud.click'):\n    if not imdb:\n        return []\n    try:\n        import re as _re\n        import requests as _requests\n        base = _xship_mc_base(base_link)\n        page_url = base + '/movie/' + str(imdb)\n        session = _requests.Session()\n        response = session.get(page_url, headers=_xship_mc_headers(base + '/'), timeout=10)\n        html = response.text or ''\n        _xship_mc_log('movie page status=%s bytes=%s imdb=%s' % (response.status_code, len(html), imdb))\n        token = _re.search(r\"\"\"token:\\s*[\"']([^\"']+)\"\"\", html)\n        if not token:\n            _xship_mc_log('movie token missing imdb=%s' % imdb)\n            return []\n        api_headers = _xship_mc_headers(page_url)\n        api_headers.update({'Origin': base, 'Content-Type': 'application/json', 'Accept': 'application/json'})\n        api = session.post(base + '/api/embed-links', headers=api_headers,\n                           json={'type': 'movie', 'id': str(imdb), 'token': token.group(1)}, timeout=10)\n        try:\n            data = api.json()\n        except Exception:\n            data = {}\n        links = _xship_mc_sources(data)\n        _xship_mc_log('movie api status=%s sources=%s imdb=%s' % (api.status_code, len(links), imdb))\n        return links\n    except Exception as exc:\n        _xship_mc_log('movie ERROR imdb=%s err=%r' % (imdb, exc))\n        return []\n\ndef get_series_links(imdb, season, episode, base_link='https://meinecloud.click'):\n    if not imdb:\n        return []\n    try:\n        import re as _re\n        import requests as _requests\n        base = _xship_mc_base(base_link)\n        page_url = '%s/serial/%s/%s/%s' % (base, imdb, int(season), int(episode))\n        session = _requests.Session()\n        response = session.get(page_url, headers=_xship_mc_headers(base + '/'), timeout=10)\n        html = response.text or ''\n        _xship_mc_log('episode page status=%s bytes=%s imdb=%s S%sE%s' % (response.status_code, len(html), imdb, season, episode))\n        def attr(name, default=''):\n            m = _re.search(_re.escape(name) + r'=\"([^\"]*)\"', html)\n            return m.group(1) if m else default\n        token = attr('data-resolve-token')\n        if not token:\n            _xship_mc_log('episode token missing imdb=%s S%sE%s' % (imdb, season, episode))\n            return []\n        endpoint = attr('data-resolve-endpoint', '/api/resolve')\n        if not endpoint.startswith('http'):\n            endpoint = base + '/' + endpoint.lstrip('/')\n        body = {\n            'type': attr('data-type', 'tv'),\n            'id': attr('data-id', str(imdb)),\n            'season': attr('data-season', str(season)),\n            'episode': attr('data-episode', str(episode)),\n            'mode': attr('data-mode', 'custom'),\n            'token': token,\n        }\n        api_headers = _xship_mc_headers(page_url)\n        api_headers.update({'Origin': base, 'Content-Type': 'application/json', 'Accept': 'application/json'})\n        api = session.post(endpoint, headers=api_headers, json=body, timeout=10)\n        try:\n            data = api.json()\n        except Exception:\n            data = {}\n        links = _xship_mc_sources(data)\n        _xship_mc_log('episode api status=%s sources=%s imdb=%s S%sE%s' % (api.status_code, len(links), imdb, season, episode))\n        return links\n    except Exception as exc:\n        _xship_mc_log('episode ERROR imdb=%s S%sE%s err=%r' % (imdb, season, episode, exc))\n        return []\n"
 
           with tempfile.TemporaryDirectory() as td_raw:
               td = Path(td_raw)
               with zipfile.ZipFile(base_zip, 'r') as zf:
                   zf.extractall(td)
-
               root = td / 'plugin.video.xship'
               pyfiles = list(root.rglob('*.py'))
               movie_defs = [p for p in pyfiles if 'def get_movie_links(' in p.read_text(encoding='utf-8', errors='ignore')]
               series_defs = [p for p in pyfiles if 'def get_series_links(' in p.read_text(encoding='utf-8', errors='ignore')]
-
-              print('movie helper files:', [str(p.relative_to(root)) for p in movie_defs])
-              print('series helper files:', [str(p.relative_to(root)) for p in series_defs])
-
               targets = sorted(set(movie_defs + series_defs))
+              print('MeineCloud helper targets:', [str(p.relative_to(root)) for p in targets])
               if len(targets) != 1:
-                  raise SystemExit(f'Expected one shared MeineCloud helper file, got {targets}')
+                  raise SystemExit('Expected exactly one shared helper file, got %r' % targets)
               helper = targets[0]
-
-              patch = r'''
-
-# ---------------------------------------------------------------------------
-# xShip 2026-09-28 MeineCloud DeVideoSRC token-API compatibility
-# meinecloud.click rebuilt 2026-09-27: old data-link/Base64 mirror lists were
-# replaced by signed JSON API calls.
-# ---------------------------------------------------------------------------
-def _xship_mc_base(base_link):
-    base = str(base_link or 'https://meinecloud.click').strip().rstrip('/')
-    if not base.startswith('http'):
-        base = 'https://' + base.lstrip('/')
-    return base
-
-
-def _xship_mc_headers(referer=''):
-    return {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                      '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8',
-        'Referer': referer or 'https://meinecloud.click/',
-    }
-
-
-def _xship_mc_sources(data):
-    out = []
-    if not isinstance(data, dict):
-        return out
-    for src in data.get('sources') or []:
-        if not isinstance(src, dict):
-            continue
-        url = str(src.get('url') or '').strip()
-        if url.startswith('//'):
-            url = 'https:' + url
-        if url.startswith('http') and 'meinecloud' not in url.lower() and url not in out:
-            out.append(url)
-    return out
-
-
-def _xship_mc_log(msg):
-    try:
-        import xbmc
-        xbmc.log('[xShip MEINECLOUD-API] ' + str(msg), xbmc.LOGINFO)
-    except Exception:
-        pass
-
-
-def get_movie_links(imdb, base_link='https://meinecloud.click'):
-    if not imdb:
-        return []
-    try:
-        import re as _re
-        import requests as _requests
-
-        base = _xship_mc_base(base_link)
-        page_url = base + '/movie/' + str(imdb)
-        session = _requests.Session()
-        headers = _xship_mc_headers(base + '/')
-        response = session.get(page_url, headers=headers, timeout=10)
-        html = response.text or ''
-        _xship_mc_log('movie page status=%s bytes=%s imdb=%s' % (
-            response.status_code, len(html), imdb
-        ))
-        if not html:
-            return []
-
-        token = _re.search(r"""token:\s*["']([^"']+)""", html)
-        if not token:
-            _xship_mc_log('movie token missing imdb=%s' % imdb)
-            return []
-
-        api_url = base + '/api/embed-links'
-        api_headers = _xship_mc_headers(page_url)
-        api_headers.update({
-            'Origin': base,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        })
-        api = session.post(
-            api_url,
-            headers=api_headers,
-            json={'type': 'movie', 'id': str(imdb), 'token': token.group(1)},
-            timeout=10
-        )
-        try:
-            data = api.json()
-        except Exception:
-            data = {}
-        links = _xship_mc_sources(data)
-        _xship_mc_log('movie api status=%s sources=%s imdb=%s' % (
-            api.status_code, len(links), imdb
-        ))
-        return links
-    except Exception as exc:
-        _xship_mc_log('movie ERROR imdb=%s err=%r' % (imdb, exc))
-        return []
-
-
-def get_series_links(imdb, season, episode, base_link='https://meinecloud.click'):
-    if not imdb:
-        return []
-    try:
-        import re as _re
-        import requests as _requests
-
-        base = _xship_mc_base(base_link)
-        page_url = '%s/serial/%s/%s/%s' % (base, imdb, int(season), int(episode))
-        session = _requests.Session()
-        headers = _xship_mc_headers(base + '/')
-        response = session.get(page_url, headers=headers, timeout=10)
-        html = response.text or ''
-        _xship_mc_log('episode page status=%s bytes=%s imdb=%s S%sE%s' % (
-            response.status_code, len(html), imdb, season, episode
-        ))
-        if not html:
-            return []
-
-        def attr(name, default=''):
-            m = _re.search(r'%s=["\\\']([^"\\\']*)' % _re.escape(name), html)
-            return m.group(1) if m else default
-
-        token = attr('data-resolve-token')
-        if not token:
-            _xship_mc_log('episode token missing imdb=%s S%sE%s' % (imdb, season, episode))
-            return []
-
-        endpoint = attr('data-resolve-endpoint', '/api/resolve')
-        if not endpoint.startswith('http'):
-            endpoint = base + '/' + endpoint.lstrip('/')
-
-        body = {
-            'type': attr('data-type', 'tv'),
-            'id': attr('data-id', str(imdb)),
-            'season': attr('data-season', str(season)),
-            'episode': attr('data-episode', str(episode)),
-            'mode': attr('data-mode', 'custom'),
-            'token': token,
-        }
-        api_headers = _xship_mc_headers(page_url)
-        api_headers.update({
-            'Origin': base,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        })
-        api = session.post(endpoint, headers=api_headers, json=body, timeout=10)
-        try:
-            data = api.json()
-        except Exception:
-            data = {}
-        links = _xship_mc_sources(data)
-        _xship_mc_log('episode api status=%s sources=%s imdb=%s S%sE%s' % (
-            api.status_code, len(links), imdb, season, episode
-        ))
-        return links
-    except Exception as exc:
-        _xship_mc_log('episode ERROR imdb=%s S%sE%s err=%r' % (
-            imdb, season, episode, exc
-        ))
-        return []
-'''
-
               src = helper.read_text(encoding='utf-8')
-              if 'xShip 2026-09-28 MeineCloud DeVideoSRC token-API compatibility' in src:
-                  raise SystemExit('Token API patch already present')
-              helper.write_text(src + patch, encoding='utf-8', newline='\n')
+              helper.write_text(src + '\n' + patch, encoding='utf-8', newline='\n')
               compile(helper.read_text(encoding='utf-8'), str(helper), 'exec')
 
               addon = root / 'addon.xml'
               addon_text = addon.read_text(encoding='utf-8')
               addon_text, n = re.subn(
                   r'(<addon\b[^>]*\bid="plugin\.video\.xship"[^>]*\bversion=")[^"]+(")',
-                  r'\g<1>2026.09.28.105\2',
-                  addon_text, count=1, flags=re.I
-              )
+                  r'\g<1>2026.09.28.105\2', addon_text, count=1, flags=re.I)
               if n != 1:
                   raise SystemExit('Could not update addon version')
               addon.write_text(addon_text, encoding='utf-8', newline='\n')
@@ -233,6 +62,8 @@ def get_series_links(imdb, season, episode, base_link='https://meinecloud.click'
                   pyc.unlink(missing_ok=True)
 
               out_zip.parent.mkdir(parents=True, exist_ok=True)
+              if out_zip.exists():
+                  out_zip.unlink()
               with zipfile.ZipFile(out_zip, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
                   for p in sorted(root.rglob('*')):
                       if p.is_file():
@@ -242,10 +73,9 @@ def get_series_links(imdb, season, episode, base_link='https://meinecloud.click'
               bad = zf.testzip()
               if bad:
                   raise SystemExit('Corrupt ZIP member: ' + bad)
-              addon_text = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
-              if 'version="2026.09.28.105"' not in addon_text:
+              if 'version="2026.09.28.105"' not in zf.read('plugin.video.xship/addon.xml').decode('utf-8'):
                   raise SystemExit('Test version missing')
-          print('built', out_zip)
+          print('Built:', out_zip)
           PY
 
           git config user.name "Barclay Repo Bot"
@@ -253,4 +83,3 @@ def get_series_links(imdb, season, episode, base_link='https://meinecloud.click'
           git add test-builds/plugin.video.xship-2026.09.28.105-MEINECLOUD-TOKENAPI-TEST1.zip
           git commit -m "Build MeineCloud token API TEST1"
           git push
-
