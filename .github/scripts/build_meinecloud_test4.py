@@ -224,7 +224,7 @@ with tempfile.TemporaryDirectory() as td_raw:
     pattern = re.compile(r"def _mc_resolve_dropload\(url\):\n.*?\n\nclass source", flags=re.S)
     if not pattern.search(src):
         raise SystemExit("Could not locate TEST3 resolver")
-    src = pattern.sub(new_func + "\n\nclass source", src, count=1)
+    src = pattern.sub(lambda _m: new_func + "\n\nclass source", src, count=1)
 
     provider.write_text(src, encoding="utf-8", newline="\n")
     compile(src, str(provider), "exec")
