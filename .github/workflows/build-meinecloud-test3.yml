@@ -1,0 +1,28 @@
+name: Build xShip MeineCloud DropLoad Native TEST3
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.test-build/meinecloud-test3.trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build TEST3
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/build_meinecloud_test3.py
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add test-builds/plugin.video.xship-2026.09.28.107-MEINECLOUD-DROPLOAD-NATIVE-TEST3.zip
+          git commit -m "Build MeineCloud DropLoad native TEST3"
+          git push
