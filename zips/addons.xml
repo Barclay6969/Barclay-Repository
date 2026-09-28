@@ -22,7 +22,7 @@
       </assets>
     </extension>
   </addon>
-  <addon id="plugin.video.xship" version="2026.09.27.104" name="xShip" provider-name="Kusi (Barclay)">
+  <addon id="plugin.video.xship" version="2026.09.28.105" name="xShip" provider-name="Kusi (Barclay)">
     <requires>
       <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" />
@@ -54,7 +54,11 @@
         <screenshot>resources/media/screenshot-02.jpg</screenshot>
         <screenshot>resources/media/screenshot-04.jpg</screenshot>
       </assets>
-      <news>2026.09.27.104
+      <news>2026.09.28.105
+  - MeineCloud: Filmquellen an die neue DeVideoSRC-/Token-API angepasst; Filme liefern wieder funktionierende Quellen.
+  - Der Fix betrifft bewusst den Film-Pfad. Die spaeter getesteten DropLoad-/Serien-Experimente sind nicht Bestandteil dieses Releases.
+  
+2026.09.27.104
   - MoFlix: bekannte funktionierende Hoster werden bei der Quellensuche nicht mehr vollstaendig vorab aufgeloest. Die eigentliche Resolver-Aufloesung erfolgt erst bei der Wiedergabe; dadurch werden vorhandene Quellen beibehalten und die Suche deutlich beschleunigt.
   - MoFlix: der bereits bekannte langsame moflix-stream.link-Pfad wird weiterhin waehrend der Suche uebersprungen.
   - Movie4K: die aktuelle /data/browse/-Schnittstelle wird vor der veralteten /data/search/-Schnittstelle verwendet. Damit entfallen bei funktionierenden Browse-Antworten unnoetige langsame Legacy-Abfragen.
