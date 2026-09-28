@@ -1,0 +1,191 @@
+name: Build MeineCloud Diagnostic
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.diag/meinecloud-2026.09.28.trigger'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build diagnostic ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, shutil, tempfile, zipfile
+
+          repo = Path.cwd()
+          base_zip = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.09.27.104.zip'
+          out_zip = repo / 'xship-MEINECLOUD-DIAG1.zip'
+
+          if not base_zip.exists():
+              raise SystemExit(f'Missing base ZIP: {base_zip}')
+
+          with tempfile.TemporaryDirectory() as td_raw:
+              td = Path(td_raw)
+              with zipfile.ZipFile(base_zip, 'r') as zf:
+                  zf.extractall(td)
+
+              root = td / 'plugin.video.xship'
+              candidates = list(root.rglob('meinecloud.py'))
+              if len(candidates) != 1:
+                  raise SystemExit(f'Expected exactly one meinecloud.py, found: {candidates}')
+              provider = candidates[0]
+              text = provider.read_text(encoding='utf-8')
+
+              sig = "    def run(self, titles, year, season=0, episode=0, imdb=''):\n        self.sources = []\n"
+              if sig not in text:
+                  raise SystemExit('MeineCloud run() anchor not found')
+
+              diag = r"""    def run(self, titles, year, season=0, episode=0, imdb=''):
+        self.sources = []
+
+        def _mc_diag(_msg):
+            try:
+                import xbmc as _xbmc
+                _xbmc.log('[xShip MEINECLOUD-DIAG] ' + str(_msg), _xbmc.LOGINFO)
+            except Exception:
+                pass
+
+        _mc_diag('run start | imdb=%s | season=%s | episode=%s | base=%s' % (
+            imdb, season, episode, getattr(self, 'base_link', '')
+        ))
+
+        # Diagnostic only: inspect current MeineCloud movie page without
+        # changing the provider's normal source logic.
+        if int(season or 0) == 0 and imdb:
+            try:
+                import re as _re
+                import base64 as _b64
+
+                _page_url = self.base_link.rstrip('/') + '/movie/' + str(imdb)
+                _req = cRequestHandler(_page_url)
+                _html = _req.request() or ''
+                _mc_diag('movie page | url=%s | bytes=%d' % (_page_url, len(_html)))
+
+                _snippet = _re.sub(r'\s+', ' ', _html[:1800]).strip()
+                _mc_diag('html head | %s' % _snippet)
+
+                _attrs = _re.findall(
+                    r'''(?:href|src|data-[A-Za-z0-9_-]+)\s*=\s*["']([^"']+)["']''',
+                    _html,
+                    _re.I
+                )
+                _seen = []
+                for _value in _attrs:
+                    if _value not in _seen:
+                        _seen.append(_value)
+                _mc_diag('attr values | count=%d | sample=%s' % (
+                    len(_seen), repr(_seen[:40])
+                ))
+
+                _decoded = []
+                _tokens = _re.findall(
+                    r'(?<![A-Za-z0-9_+/=-])([A-Za-z0-9_+/=-]{24,600})(?![A-Za-z0-9_+/=-])',
+                    _html
+                )
+                for _token in _tokens[:250]:
+                    for _decoder in ('std', 'url'):
+                        try:
+                            _raw = _token.encode('ascii')
+                            _raw += b'=' * ((4 - len(_raw) % 4) % 4)
+                            if _decoder == 'std':
+                                _out = _b64.b64decode(_raw, validate=False)
+                            else:
+                                _out = _b64.urlsafe_b64decode(_raw)
+                            _txt = _out.decode('utf-8', 'ignore').strip()
+                            if ('http://' in _txt or 'https://' in _txt or '/e/' in _txt or '/embed' in _txt):
+                                if _txt not in _decoded:
+                                    _decoded.append(_txt)
+                            break
+                        except Exception:
+                            continue
+                _mc_diag('base64 decoded | count=%d | sample=%s' % (
+                    len(_decoded), repr(_decoded[:30])
+                ))
+
+                _scripts = _re.findall(r'<script[^>]+src=["\']([^"\']+)["\']', _html, _re.I)
+                _mc_diag('script src | count=%d | sample=%s' % (
+                    len(_scripts), repr(_scripts[:30])
+                ))
+            except Exception as _diag_exc:
+                _mc_diag('page diagnostic ERROR | %r' % (_diag_exc,))
+
+"""
+              text = text.replace(sig, diag, 1)
+
+              old_movie = "                self._add_links(get_movie_links(imdb, self.base_link))"
+              new_movie = """                _mc_links = get_movie_links(imdb, self.base_link)
+                _mc_diag('get_movie_links | count=%d | links=%s' % (
+                    len(_mc_links or []), repr((_mc_links or [])[:30])
+                ))
+                self._add_links(_mc_links)"""
+              if old_movie not in text:
+                  raise SystemExit('Movie helper anchor not found')
+              text = text.replace(old_movie, new_movie, 1)
+
+              old_series = """                self._add_links(
+                    get_series_links(imdb, int(season), int(episode), self.base_link),
+                    numbered=True
+                )"""
+              new_series = """                _mc_series_links = get_series_links(
+                    imdb, int(season), int(episode), self.base_link
+                )
+                _mc_diag('get_series_links | count=%d | links=%s' % (
+                    len(_mc_series_links or []), repr((_mc_series_links or [])[:30])
+                ))
+                self._add_links(_mc_series_links, numbered=True)"""
+              if old_series not in text:
+                  raise SystemExit('Series helper anchor not found')
+              text = text.replace(old_series, new_series, 1)
+
+              provider.write_text(text, encoding='utf-8', newline='\n')
+              compile(text, str(provider), 'exec')
+
+              addon = root / 'addon.xml'
+              addon_text = addon.read_text(encoding='utf-8')
+              addon_text, n = re.subn(
+                  r'(<addon\b[^>]*\bid="plugin\.video\.xship"[^>]*\bversion=")[^"]+(")',
+                  r'\g<1>2026.09.27.104.1\2',
+                  addon_text, count=1, flags=re.I
+              )
+              if n != 1:
+                  raise SystemExit('Could not update addon version')
+              addon.write_text(addon_text, encoding='utf-8', newline='\n')
+
+              for cache in list(root.rglob('__pycache__')):
+                  shutil.rmtree(cache, ignore_errors=True)
+              for pyc in root.rglob('*.pyc'):
+                  pyc.unlink(missing_ok=True)
+
+              with zipfile.ZipFile(out_zip, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+                  for p in sorted(root.rglob('*')):
+                      if p.is_file():
+                          zf.write(p, p.relative_to(td).as_posix())
+
+          with zipfile.ZipFile(out_zip, 'r') as zf:
+              bad = zf.testzip()
+              if bad:
+                  raise SystemExit('Corrupt ZIP member: ' + bad)
+              p = [n for n in zf.namelist() if n.endswith('/meinecloud.py')][0]
+              src = zf.read(p).decode('utf-8')
+              if '[xShip MEINECLOUD-DIAG]' not in src:
+                  raise SystemExit('Diagnostic marker missing')
+          print(out_zip)
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xship-MEINECLOUD-DIAG1
+          path: xship-MEINECLOUD-DIAG1.zip
+          if-no-files-found: error
+          retention-days: 3
