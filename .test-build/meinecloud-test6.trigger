@@ -1,1 +1,0 @@
-build TEST6 retry 2\n
