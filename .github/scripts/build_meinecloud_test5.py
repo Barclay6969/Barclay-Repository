@@ -121,7 +121,7 @@ def get_series_links(imdb, season, episode, base_link):
     try:
         ro = session.get(overview_url, headers=common, timeout=10, allow_redirects=True)
         overview_html = ro.text or ''
-        token_m = re.search(r'''token:\s*["']([^"']+)''', overview_html)
+        token_m = re.search("token:\\s*[\\\"']([^\\\"']+)", overview_html)
         _log('overview page status=%s bytes=%s token=%s' %
              (ro.status_code, len(overview_html), 'yes' if token_m else 'no'))
         if token_m:
