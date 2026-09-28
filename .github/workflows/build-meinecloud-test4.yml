@@ -1,0 +1,25 @@
+name: Build xShip MeineCloud DropLoad DS2 TEST4
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.test-build/meinecloud-test4.trigger'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build TEST4
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/build_meinecloud_test4.py
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add test-builds/plugin.video.xship-2026.09.28.108-MEINECLOUD-DROPLOAD-DS2-TEST4.zip
+          git commit -m "Build MeineCloud DropLoad DS2 TEST4"
+          git push
