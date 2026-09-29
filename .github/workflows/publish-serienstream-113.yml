@@ -33,7 +33,6 @@ jobs:
 
           python3 - <<'PY'
           from pathlib import Path
-          from PIL import Image
           import hashlib, os, re, shutil, zipfile
 
           root = Path(os.environ['ROOT'])
@@ -41,12 +40,27 @@ jobs:
           src_icon = Path('assets/serienstream_icon_256_real.png')
           addon = root / 'addon.xml'
 
-          # Validate the exact source asset before packaging.
-          with Image.open(src_icon) as im:
-              im.verify()
-          with Image.open(src_icon) as im:
-              assert im.size == (256, 256), im.size
-              assert im.format == 'PNG', im.format
+          # Validate the exact source asset before packaging using only stdlib.
+          import struct, zlib
+          data = src_icon.read_bytes()
+          assert data[:8] == b'\x89PNG\r\n\x1a\n'
+          w, h = struct.unpack('>II', data[16:24])
+          assert (w, h) == (256, 256), (w, h)
+          pos = 8
+          seen_iend = False
+          while pos + 12 <= len(data):
+              ln = struct.unpack('>I', data[pos:pos+4])[0]
+              ctype = data[pos+4:pos+8]
+              end = pos + 12 + ln
+              assert end <= len(data)
+              payload = data[pos+8:pos+8+ln]
+              crc = struct.unpack('>I', data[pos+8+ln:end])[0]
+              assert (zlib.crc32(ctype + payload) & 0xffffffff) == crc
+              pos = end
+              if ctype == b'IEND':
+                  seen_iend = True
+                  break
+          assert seen_iend and pos == len(data)
 
           text = addon.read_text(encoding='utf-8-sig')
           text, n = re.subn(
@@ -116,3 +130,5 @@ jobs:
           git add             zips/plugin.video.serienstream/plugin.video.serienstream-1.0.13.zip             zips/plugin.video.serienstream/resources/icon.png             zips/plugin.video.serienstream/icon.png             zips/addons.xml             zips/addons.xml.md5             zips/repository.barclay
           git commit -m "Release SerienStream 1.0.13 with verified logo" || exit 0
           git push
+
+# stdlib png validation
