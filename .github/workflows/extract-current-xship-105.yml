@@ -1,0 +1,46 @@
+name: Extract current xShip 105 sources
+
+on:
+  push:
+    paths:
+      - '.github/workflows/extract-current-xship-105.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract selected sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.09.28.105.zip'
+          WORK="$RUNNER_TEMP/xship105"
+          OUT='tools/current-xship-105'
+          rm -rf "$WORK" "$OUT"
+          mkdir -p "$WORK" "$OUT"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$(find "$WORK" -maxdepth 2 -type f -name addon.xml -printf '%h\n' | head -n1)"
+          echo "ROOT=$ROOT"
+          find "$ROOT" -type f | sort > "$OUT/file-list.txt"
+          for rel in             'scrapers/scrapers_source/de/serienstream.py'             'resources/lib/sources.py'             'default.py'             'addon.xml'
+          do
+            if [ -f "$ROOT/$rel" ]; then
+              mkdir -p "$OUT/$(dirname "$rel")"
+              cp "$ROOT/$rel" "$OUT/$rel"
+            fi
+          done
+          grep -RniE 'serienstream|tmdb_id|imdbnumber|tmdb' "$ROOT" --include='*.py' | head -n 1500 > "$OUT/search-hits.txt" || true
+      - name: Commit extracted sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add tools/current-xship-105
+          git commit -m "Extract current xShip 105 sources for Monster fix" || exit 0
+          git push
