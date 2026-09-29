@@ -11,6 +11,7 @@ ZIPS_DIR = os.path.join(ROOT, "zips")
 
 # Only these video add-ons are published by Barclay Repository.
 ALLOWED_VIDEO_IDS = {
+    "plugin.video.serienstream",
     "plugin.video.xship",
     "plugin.video.youtube",
 }
@@ -92,7 +93,7 @@ def gather_entries():
     with open(repo_xml, "r", encoding="utf-8") as f:
         entries.append(f.read().lstrip("\ufeff"))
 
-    # Video section is intentionally restricted to xShip + YouTube.
+    # Video section is intentionally restricted to SerienStream + xShip + YouTube.
     entries.extend(latest_video_entries())
     return entries
 
@@ -126,7 +127,7 @@ def zip_repo():
 def main():
     write_addons_xml(gather_entries())
     zip_repo()
-    print("Repository built: only xShip and YouTube are published as video add-ons.")
+    print("Repository built: SerienStream, xShip and YouTube are published as video add-ons.")
 
 
 if __name__ == "__main__":
