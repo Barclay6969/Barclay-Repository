@@ -1,0 +1,85 @@
+name: Publish staged SerienStream release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.serienstream-staging/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild and verify tested ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p zips/plugin.video.serienstream
+          cat .serienstream-staging/part*.b64 | tr -d '\n\r' | base64 -d > zips/plugin.video.serienstream/plugin.video.serienstream-1.0.7.zip
+          echo "1a256aa5d6882467972f2a5356fa2303ca95e04b4166a9123651a93e1ca314de  zips/plugin.video.serienstream/plugin.video.serienstream-1.0.7.zip" | sha256sum -c -
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re, zipfile, xml.etree.ElementTree as ET
+
+          root = Path('.')
+          zp = root / 'zips/plugin.video.serienstream/plugin.video.serienstream-1.0.7.zip'
+          with zipfile.ZipFile(zp) as zf:
+              addon_xml = zf.read('plugin.video.serienstream/addon.xml').decode('utf-8-sig')
+          addon = ET.fromstring(addon_xml)
+          assert addon.get('id') == 'plugin.video.serienstream'
+          assert addon.get('version') == '1.0.7'
+
+          # Keep future repo rebuilds from dropping SerienStream again.
+          make_repo = root / 'tools/make_repo.py'
+          s = make_repo.read_text(encoding='utf-8')
+          if '"plugin.video.serienstream",' not in s:
+              s = s.replace(
+                  'ALLOWED_VIDEO_IDS = {\n    "plugin.video.xship",',
+                  'ALLOWED_VIDEO_IDS = {\n    "plugin.video.serienstream",\n    "plugin.video.xship",'
+              )
+          s = s.replace(
+              '# Video section is intentionally restricted to xShip + YouTube.',
+              '# Video section is intentionally restricted to SerienStream + xShip + YouTube.'
+          )
+          s = s.replace(
+              'Repository built: only xShip and YouTube are published as video add-ons.',
+              'Repository built: SerienStream, xShip and YouTube are published as video add-ons.'
+          )
+          make_repo.write_text(s, encoding='utf-8')
+
+          # Add/replace SerienStream entry in the existing Kodi repository feed.
+          feed_path = root / 'zips/addons.xml'
+          feed = feed_path.read_text(encoding='utf-8')
+          pattern = re.compile(
+              r'\s*<\?xml version="1\.0" encoding="UTF-8" standalone="yes"\?>\s*'
+              r'<addon id="plugin\.video\.serienstream".*?</addon>\s*',
+              re.S
+          )
+          feed = pattern.sub('\n', feed)
+          entry = addon_xml.strip()
+          feed = feed.replace('\n</addons>\n', '\n' + entry + '\n\n</addons>\n')
+          feed_path.write_text(feed, encoding='utf-8')
+          (root / 'zips/addons.xml.md5').write_text(
+              hashlib.md5(feed.encode('utf-8')).hexdigest(),
+              encoding='ascii'
+          )
+          PY
+
+      - name: Commit published release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -r .serienstream-staging
+          git add tools/make_repo.py zips/addons.xml zips/addons.xml.md5 zips/plugin.video.serienstream/plugin.video.serienstream-1.0.7.zip
+          git commit -m "Publish SerienStream 1.0.7 anthology and title matching fixes"
+          git push
