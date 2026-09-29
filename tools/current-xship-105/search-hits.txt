@@ -1,0 +1,395 @@
+/home/runner/work/_temp/xship105/plugin.video.xship/default.py:169:            tmdb_id   = params.get('tmdb_id', ''),
+/home/runner/work/_temp/xship105/plugin.video.xship/default.py:259:        sysmeta = movies.movies().super_meta(sysmeta['tmdb_id'])
+/home/runner/work/_temp/xship105/plugin.video.xship/default.py:263:        sysmeta = tvshows.tvshows().super_meta(sysmeta['tmdb_id'])
+/home/runner/work/_temp/xship105/plugin.video.xship/default.py:275:elif action == 'similarByTmdb':
+/home/runner/work/_temp/xship105/plugin.video.xship/default.py:277:    similar.similar().byTmdbRecommendations(params)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:24:        self.tak = getSetting('api.tmdb') or _K
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:54:    def _get_tmdb_id(self, imdb_id):
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:64:            logger.error('[%s] TMDB Fehler: %s' % (SITE_NAME, str(exc)))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:89:    def _media_urls(self, tmdb_id, season=0, episode=0):
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:92:            page_url = 'https://%s/movie/%s' % (self.domain, tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:93:            api_url = 'https://%s/api/movie/%s' % (self.domain, tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:96:            page_url = 'https://%s/tv/%s' % (self.domain, tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:97:            api_url = 'https://%s/api/tv/%s/%s/%s' % (self.domain, tmdb_id, str(season), str(episode))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:101:    def _stable_url(self, tmdb_id, season=0, episode=0, language='de'):
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:103:            return 'vixsrc://movie/%s?lang=%s' % (tmdb_id, language)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:104:        return 'vixsrc://tv/%s/%s/%s?lang=%s' % (tmdb_id, int(season), int(episode), language)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:120:    def _fresh_embed_url(self, tmdb_id, season=0, episode=0, language='de'):
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:121:        media_type, page_url, api_url = self._media_urls(tmdb_id, season, episode)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:139:        logger.info('[%s] Frischer Embed: type=%s tmdb=%s lang=%s' % (SITE_NAME, media_type, tmdb_id, language))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:280:    def _verified_stream_language(self, tmdb_id, season, episode, stream_language):
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:281:        embed_url, referer = self._fresh_embed_url(tmdb_id, season, episode, stream_language)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:287:            logger.warning('[%s] Sprache nicht verifiziert: lang=%s tmdb=%s' % (SITE_NAME, stream_language, tmdb_id))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:292:            logger.warning('[%s] Sprache verworfen: angefordert=%s, Audio=%s, tmdb=%s' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:293:                SITE_NAME, stream_language, ','.join(sorted(audio_languages)), tmdb_id
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:298:            logger.info('[%s] Sprache verifiziert: lang=%s, Audio=%s, tmdb=%s' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:299:                SITE_NAME, stream_language, ','.join(sorted(audio_languages)), tmdb_id
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:348:            tmdb_id = self._get_tmdb_id(imdb)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:349:            if not tmdb_id:
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:350:                logger.warning('[%s] Keine TMDB-ID gefunden fuer IMDB: %s' % (SITE_NAME, imdb))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:353:            # VixSrc wird direkt ueber die TMDb-ID angesprochen.
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:357:            embed_url, referer = self._fresh_embed_url(tmdb_id, season, episode, language)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:359:                logger.warning('[%s] Kein Embed fuer tmdb=%s gefunden' % (SITE_NAME, tmdb_id))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:362:            stable_url = self._stable_url(tmdb_id, season, episode, language)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:371:            logger.info('[%s] Quelle gefunden: tmdb=%s (ohne Sprachfilter)' % (SITE_NAME, tmdb_id))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:393:            tmdb_id, season, episode = parts[:3]
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vixstream.py:394:            embed_url, referer = self._fresh_embed_url(tmdb_id, season, episode, stream_language)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/huhu.py:17:_TMDB_FALLBACK = base64.b64decode('ZWRkZTZiNWU0MTI0NmFiNzlhMjY5N2NkMTI1ZTE3ODE=').decode()
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/huhu.py:37:    def _tmdb_id(self, imdb, is_series):
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/huhu.py:41:            key = getSetting('api.tmdb') or _TMDB_FALLBACK
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/huhu.py:91:        tmdb = self._tmdb_id(imdb, int(season or 0) > 0)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/huhu.py:92:        if not tmdb:
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/huhu.py:96:                   'ids':{'tmdb_id':int(tmdb)},'name':''}
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:7:from resources.lib.requestHandler_serienstream import cRequestHandler
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:15:SITE_IDENTIFIER = 'serienstream'
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:16:SITE_DOMAIN = 'serienstream.to'
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:17:SITE_NAME = 'SerienStream'
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:108:        logger.info('SerienStream - Match check: search=%s | scraped=%s' % (search_variants, scraped_variants))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:137:            logger.info('SerienStream - Init: %s' % self.base_link)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:151:                logger.info('SerienStream - Search: S%02dE%02d | all title variants: %s' % (season, episode, t))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:157:                    logger.info('SerienStream - No credentials, skipping scraper')
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:164:                            'SerienStream',
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:165:                            'Keine Login-Daten in den Einstellungen eingetragen.\n\nBitte Email und Passwort fuer SerienStream eintragen.\nBis dahin wird SerienStream uebersprungen.'
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:169:                            logger.info('SerienStream - Dialog error: %s' % str(e))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:174:                logger.info('SerienStream - Credentials found, attempting login')
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:179:                    logger.info('SerienStream - Login failed, but continuing anyway')
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:193:                        logger.info('SerienStream - IMDB search URL: %s' % imdb_search_url)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:203:                            logger.info('SerienStream - IMDB search found %d results' % len(links))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:207:                            logger.info('SerienStream - IMDB match: %s | title: %s' % (href, series_title))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:211:                        logger.info('SerienStream - IMDB search error: %s' % str(e))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:215:                    logger.info('SerienStream - No IMDB result, falling back to title search')
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:217:                # SerienStream search is punctuation-sensitive. TMDB and SerienStream
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:246:                    logger.info('SerienStream - Raw search title variants: %s' % search_titles)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:269:                            logger.info('SerienStream - Search URL: %s' % search_url)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:279:                                logger.info('SerienStream - Found %d results' % len(links))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:297:                                        logger.info('SerienStream - Match: %s | title: %s' % (href, series_title))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:305:                            logger.info('SerienStream - Search error: %s' % str(e))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:317:                logger.info('SerienStream - Error: %s' % str(e))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:325:                logger.info('SerienStream - Performing login...')
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:360:                    logger.info('SerienStream - Login successful')
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:365:                    logger.info('SerienStream - Login successful')
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:374:                logger.info('SerienStream - Login error: %s' % str(e))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:420:                            logger.info('SerienStream - Result: href="%s" title="%s"' % (href, title))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:426:                        logger.info('SerienStream - Parse entry error: %s' % str(e))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:431:                logger.info('SerienStream - Parse error: %s' % str(e))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:445:                logger.info('SerienStream - Episode: %s' % full_url)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:461:                        logger.info('SerienStream - Episode title/date fallback: %s' % full_url)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:479:                logger.info('SerienStream - Found %d links' % len(matches))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:520:                        logger.info('SerienStream - Added: %s | %s' % (provider_name, language_info))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:524:                        logger.info('SerienStream - Error: %s' % str(e))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:528:                logger.info('SerienStream - Total: %d sources' % len(self.sources))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:534:                logger.info('SerienStream - Fatal: %s' % str(e))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:544:                logger.info('SerienStream - Request error: %s' % str(e))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:571:                    logger.info('SerienStream - Direct episode title mismatch: request=%s | page=%s' % (episode_title, page_title))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:578:                logger.info('SerienStream - Direct episode date mismatch: request=%s | page=%s' % (episode_premiered, page_date))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:590:            logger.info('SerienStream - Episode fallback check: seasons=%s | S%02dE%02d | title=%s | premiered=%s' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:634:                logger.info('SerienStream - Unique episode date fallback: %s' % date_matches[0][0])
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:637:            logger.info('SerienStream - Episode date fallback ignored because %d candidates share %s' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:739:            logger.info('SerienStream - Episode title match: request=%s | candidate=%s' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:861:    def _is_serienstream_url(self, url):
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:873:            return self._is_serienstream_url(url) and parsed.path.rstrip('/') == '/r'
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:889:            if target and not self._is_serienstream_url(target):
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:910:                        logger.info('SerienStream - Resolved redirect location: %s' % target[:80])
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:919:                logger.info('SerienStream - Resolving: %s' % url[:80])
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:938:                        logger.info('SerienStream - Resolved via cRequestHandler: %s' % final_url[:80])
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:961:                        logger.info('SerienStream - Resolved to: %s' % final_url[:80])
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:973:                    logger.info('SerienStream - Frame bridge detected, no playable redirect available')
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:977:                    logger.info('SerienStream - Internal redirect unresolved, skipping source')
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:981:                logger.info('SerienStream - Could not resolve, returning original URL')
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:986:                logger.info('SerienStream - Resolve error: %s' % str(e))
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:998:            setSetting('serienstream.user', login)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/serienstream.py:999:            setSetting('serienstream.pass', password)
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/streamcloudforum.py:174:        if host in ['meinecloud.click', 'dl.tmdb.club'] and not re.search(r'\.(?:mp4|m3u8)(?:\?|$)', url, re.I):
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/scrapers_source/de/vavoo.py:43:            id = result['ids']['tmdb']
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/modules/getcontent.py:56:def Serienstream(url):
+/home/runner/work/_temp/xship105/plugin.video.xship/scrapers/modules/getcontent.py:57:    file = os.path.join(py2_decode(translatePath(addonInfo('profile'))), 'serienstream.txt')
+/home/runner/work/_temp/xship105/plugin.video.xship/service.py:500:            'serienstream.user': 'Barclay69',
+/home/runner/work/_temp/xship105/plugin.video.xship/service.py:501:            'serienstream.pass': 'melanie1',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/utils.py:325:    # e:\__DEV-19\devkodi\addons\metadata.themoviedb.org.python\python\lib\tmdbscraper\
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/control.py:353:        login = getSetting('serienstream.user')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/control.py:354:        password = getSetting('serienstream.pass')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/control.py:357:        tmdb = getSetting('api.tmdb')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/control.py:365:        setSetting(id='serienstream.user', value=login)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/control.py:366:        setSetting(id='serienstream.pass', value=password)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/control.py:369:        setSetting(id='api.tmdb', value=tmdb)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/requestHandler_serienstream.py:129:    # useful for e.g. tmdb request where multiple requests are made within a loop
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/requestHandler_serienstream.py:133:    SERIENSTREAM_FALLBACK_IPS = {
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/requestHandler_serienstream.py:134:        'serienstream.to': '186.2.163.190',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/requestHandler_serienstream.py:135:        'www.serienstream.to': '186.2.163.190',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/requestHandler_serienstream.py:289:                fallback_ip = self.__getSerienstreamFallbackIp(ip_override)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/requestHandler_serienstream.py:291:                    logger.info(' -> [requestHandler]: DoH request failed for %s, retry with SerienStream fallback IP %s: %s' % (self._sUrl, fallback_ip, str(e)))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/requestHandler_serienstream.py:441:        fallback_ip = self.SERIENSTREAM_FALLBACK_IPS.get(hostname)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/requestHandler_serienstream.py:443:            logger.info(' -> [requestHandler]: Cloudflare DoH ohne verwertbare Antwort fuer %s, nutze SerienStream-Fallback-IP %s' % (hostname, fallback_ip))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/requestHandler_serienstream.py:469:    def __getSerienstreamFallbackIp(self, current_ip):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/requestHandler_serienstream.py:473:        fallback_ip = self.SERIENSTREAM_FALLBACK_IPS.get(hostname)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:10:## TMDB
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:11:tm_api_key = getSetting('api.tmdb').strip()
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:13:tm_img_link = 'https://image.tmdb.org/t/p/%s%s'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:37:def _get_tmdb_poster(art, sizes):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:39:        posterlist_tmdb = art['posters']
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:40:        posterlist_tmdb = [x for x in posterlist_tmdb if x.get('iso_639_1') == lang] \
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:41:                                  + [x for x in posterlist_tmdb if x.get('iso_639_1') == 'en'] \
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:42:                                  + [x for x in posterlist_tmdb if x.get('iso_639_1') not in [lang, 'en']]
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:44:        return tm_img_link % (sizes, posterlist_tmdb[0]['file_path'])
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:49:def _get_tmdb_art(mediaid,ID):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:54:        if 'posters' in art and len(art['posters']) >= 1: return _get_tmdb_poster(art, poster_sizes)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:97:# 297802    tmdb    +fan    +themoviedb
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:99:def getMovie_art(tmdb, imdb):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:101:    poster = _get_tmdb_art('movie', imdb)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:113:# '48866'     tmdb   +themoviedb   -fan
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:116:def getTvShows_art(tmdb, tvdb): #tvdb
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:117:    #tmdb = '48866'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/art.py:118:    poster = _get_tmdb_art('tv',tmdb)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:29:              "tmdb_id TEXT, " "playcount INT, " "lastplayed TEXT, " \
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:71:        if 'tmdb_id' not in columns:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:72:            cursor.execute("ALTER TABLE movie ADD COLUMN tmdb_id TEXT")
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:82:        if 'tmdb_id' not in ep_columns:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:83:            cursor.execute("ALTER TABLE episode ADD COLUMN tmdb_id TEXT")
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:133:def createEntry(mediatype, title, name, imdb, number_of_seasons, season, number_of_episodes, episode, tmdb_id=None):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:135:        _createEntry(mediatype, title, name, imdb, number_of_seasons, season, number_of_episodes, episode, column_names='imdb_id', tmdb_id=tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:137:        _createEntry(mediatype, title, name, imdb, number_of_seasons, season, number_of_episodes, episode, tmdb_id=tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:150:def _createEntry(mediatype, title, name, imdb, number_of_seasons, season, number_of_episodes, episode, column_names='title', tmdb_id=None):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:163:        sql_insert, sql_value  = _sql_insert(mediatype, title, name, imdb, number_of_seasons, season, number_of_episodes, episode, tmdb_id=tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:168:        if tmdb_id:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:169:            cursor.execute('UPDATE movie SET lastplayed = ?, tmdb_id = ? WHERE imdb_id = ?', (now, str(tmdb_id), imdb))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:177:        if tmdb_id:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:178:            updates.append('tmdb_id = ?')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:179:            values.append(str(tmdb_id))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:189:def _sql_insert(mediatype, title, name, imdb, number_of_seasons, season, number_of_episodes, episode, tmdb_id=None):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:192:        sql_insert = 'INSERT INTO movie (title, name, imdb_id, tmdb_id, playcount, lastplayed) Values (?, ?, ?, ?, ?, ?)'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:193:        sql_value = (title, name, imdb, str(tmdb_id) if tmdb_id else None, 0, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:196:        sql_insert = 'INSERT INTO episode (title, name, season, episode, playcount, imdb_id, tmdb_id, lastplayed) Values (?, ?, ?, ?, ?, ?, ?, ?)'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:197:        sql_value = (title, name, season, episode, 0, imdb, str(tmdb_id) if tmdb_id else None, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:307:    cursor.execute('SELECT tmdb_id, title, MAX(lastplayed) AS lastplayed, MAX(playcount) AS playcount, MAX(resume_position) AS resume_position, MAX(total_time) AS total_time FROM movie WHERE lastplayed IS NOT NULL AND tmdb_id IS NOT NULL GROUP BY tmdb_id ORDER BY lastplayed DESC LIMIT ?', (limit,))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:318:    cursor.execute('SELECT tmdb_id, title, lastplayed, playcount, resume_position, total_time, season, episode, imdb_id FROM episode WHERE lastplayed IS NOT NULL AND tmdb_id IS NOT NULL ORDER BY lastplayed DESC LIMIT ?', (limit,))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:352:    """Erhoeht playcount um 1 und setzt resume_position auf 0 (fertig geschaut). ep_id = imdb_id oder tmdb_id."""
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:355:        conn.execute('UPDATE episode SET playcount = playcount + 1, resume_position = 0.0 WHERE (tmdb_id = ? OR imdb_id = ?) AND season = ? AND episode = ?',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:383:        cursor.execute('SELECT 1 FROM episode WHERE (tmdb_id = ? OR imdb_id = ?) AND season = ? AND episode = ? AND lastplayed IS NOT NULL',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:421:def clearLastplayedByTmdb(tmdb_id):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:422:    """Entfernt einen Film aus dem Verlauf (per tmdb_id)."""
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:425:        conn.execute('UPDATE movie SET lastplayed = NULL, resume_position = NULL WHERE tmdb_id = ?', (str(tmdb_id),))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:429:        xbmc.log('[xShip] clearLastplayedByTmdb FEHLER: %s' % e, xbmc.LOGERROR)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:434:def deleteByTmdb(tmdb_id):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:438:        conn.execute('DELETE FROM movie WHERE tmdb_id = ?', (str(tmdb_id),))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:442:        xbmc.log('[xShip] deleteByTmdb FEHLER: %s' % e, xbmc.LOGERROR)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:474:    """Speichert Resume-Position (0.0-1.0) und Gesamtlaenge fuer eine Episode. ep_id = imdb_id oder tmdb_id."""
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:477:        conn.execute('UPDATE episode SET resume_position = ?, total_time = ? WHERE (tmdb_id = ? OR imdb_id = ?) AND season = ? AND episode = ?',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:488:    """Gibt resume_position (0.0-1.0) fuer eine Episode zurueck, oder None. ep_id = imdb_id oder tmdb_id."""
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:492:        cursor.execute('SELECT resume_position FROM episode WHERE (tmdb_id = ? OR imdb_id = ?) AND season = ? AND episode = ?',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:505:    """Loescht lastplayed und resume_position einer Episode. ep_id = imdb_id oder tmdb_id."""
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:508:        conn.execute('UPDATE episode SET lastplayed = NULL, resume_position = NULL WHERE (tmdb_id = ? OR imdb_id = ?) AND season = ? AND episode = ?',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:518:def deleteEpisodeByTmdb(tmdb_id, season, episode):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:519:    """Loescht eine Episode aus dem Verlauf (per tmdb_id + season + episode)."""
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:522:        conn.execute('DELETE FROM episode WHERE tmdb_id = ? AND season = ? AND episode = ?',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:523:                     (str(tmdb_id), season, episode))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/playcountDB.py:527:        xbmc.log('[xShip] deleteEpisodeByTmdb FEHLER: %s' % e, xbmc.LOGERROR)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:6:# xStream needs Phase 0 (TMDB ID resolution); xShip has TMDB ID from listings.
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:13:#     TMDB videos (lang filter)    — gated: has_yt_player
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:65:# 'xstream' -> Phase 0 (TMDB resolution) + multi-source language list
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:549:# ── TMDB video helper ─────────────────────────────────────────────────────────
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:551:def _tmdbVideos(data, lang=None):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:552:    """Extract YouTube Trailer/Teaser from a TMDB /videos response, newest first.
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:558:        _log('  tmdb-video: type=%s site=%s lang=%s name=%r date=%s' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:617:def _searchKinoCheckAPI(tmdb_id, mediatype='movie', language='de', season=None):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:618:    """Exact TMDB ID lookup via KinoCheck API. Free, no key required, no YT quota.
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:626:        url = 'https://api.kinocheck.de/%s?tmdb_id=%s&language=%s' % (endpoint, tmdb_id, language)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:636:            _log('KinoCheck-API: no trailer for tmdb_id=%s' % tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:891:    Message: source - type [lang]  e.g. 'TMDB - Trailer [DE]'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1033:def _runTrailerSearch(tmdb_id, mediatype, title, en_title, year, poster,
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1035:                      tmdb_videos, season=None, vtype_prefix=''):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1039:    tmdb_videos: single pre-fetched TMDB /videos response (all languages)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1042:    Per block: KC API -> KC YT (if DE) -> TMDB -> IMDB (if EN).
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1056:    blocks.append(None)           # None = ANY block (TMDB videos in unlisted languages)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1077:                kc_hits, kc_ok = _searchKinoCheckAPI(tmdb_id, mediatype, language=kc_lang, season=season)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1107:            # TMDB videos: filter pre-fetched results by language (0 API calls)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1109:            _log('--- [%s] TMDB videos ---' % lang_label)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1111:                videos = _tmdbVideos(tmdb_videos)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1114:                videos = _tmdbVideos(tmdb_videos, lang=lang)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1116:            _log('[%s] TMDB: filtered=%d' % (lang_label, len(videos)))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1119:                _play(videos[0]['key'], step, 'TMDB', videos[0].get('type', 'Trailer'),
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1121:                return {'found_lang': vlang, 'source': 'TMDB'}
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1182:                        sources = 'KinoCheck und TMDB' if has_kc else 'TMDB'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1188:                        sources = 'KinoCheck and TMDB' if has_kc else 'TMDB'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1252:def playTrailer(tmdb_id, mediatype='movie', title='', year='', poster='', pref_lang='de', season=None):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1253:    """Trailer wrapper — detects capabilities, pre-fetches TMDB data,
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1257:        tmdb_id:   TMDB numeric ID (string), or empty for Phase 0 resolution (xStream)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1263:                   xStream: context menu passes prefLanguage, TMDB dialog passes tmdb_lang.
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1270:    from resources.lib.tmdb import cTMDB
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1283:            _tmdb_lang = cConfig().getSetting('tmdb_lang') or 'de'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1289:            for lang in [pref_lang, _tmdb_lang, _xstream_pref, _kodi_lang]:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1292:            _log('Languages: pref=%s tmdb=%s xstream=%s kodi=%s -> %s' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1293:                pref_lang, _tmdb_lang, _xstream_pref, _kodi_lang, languages))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1300:    # ── Phase 0 (xStream only): resolve TMDB ID from title search ─────
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1301:    if _ADDON_NAME == 'xstream' and not tmdb_id:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1302:        _log('Phase 0: resolving TMDB ID for title=%r year=%s mediatype=%s' % (title, year, mediatype))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1306:                tmdb_search = cTMDB()
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1308:                    result = tmdb_search.search_movie_name(search_title, year)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1310:                    result = tmdb_search.search_tvshow_name(search_title, year)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1312:                    tmdb_id = str(result['id'])
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1313:                    _log('Phase 0: resolved tmdb_id=%s' % tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1316:        if not tmdb_id:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1317:            _log('Phase 0: could not resolve TMDB ID, aborting')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1319:                'Trailer', 'TMDB-ID nicht gefunden',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1324:    _log('START tmdb_id=%s title=%r year=%s mediatype=%s languages=%s' % (tmdb_id, title, year, mediatype, languages))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1361:    # ── Single TMDB call: EN details + all videos + IMDB ID (1 API call) ──
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1362:    tmdb_en = cTMDB(lang='en')  # EN for English title + IMDB ID
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1374:        en_data = tmdb_en.getUrl('%s/%s' % (url_type, tmdb_id), term=term)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1381:    tmdb_videos = (en_data or {}).get('videos', {})  # all videos regardless of language
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1382:    _log('EN title: %r imdb_id: %s tmdb_videos: %d results' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1383:        en_title, imdb_id, len((tmdb_videos or {}).get('results', []))))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1385:    # ── Season-specific TMDB override (if season is set) ──────────────
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1388:            season_data = tmdb_en.getUrl('tv/%s/season/%s' % (tmdb_id, season),
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1390:            tmdb_videos = (season_data or {}).get('videos', {})
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1392:            _log('Season %s: tmdb_videos=%d results, imdb_id cleared' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1393:                season, len((tmdb_videos or {}).get('results', []))))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1395:            _log('Season %s TMDB fetch failed: %s' % (season, e))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1399:        tmdb_id=tmdb_id, mediatype=mediatype,
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1403:        tmdb_videos=tmdb_videos,
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1412:            fb_data = tmdb_en.getUrl('tv/%s' % tmdb_id,
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1417:            _log('Fallback: tmdb_videos=%d imdb=%s en_title=%r' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1420:                tmdb_id=tmdb_id, mediatype=mediatype,
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1424:                tmdb_videos=fb_videos,
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1448:# ── Quick trailer existence check (for TMDB info dialog button) ──────────
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1450:def hasTrailer(tmdb_id, imdb_id='', mediatype='movie'):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1451:    """Quick async check if a trailer exists via KinoCheck, TMDB, or IMDB.
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1453:    Respects player gating: KinoCheck/TMDB need a YT player, IMDB always works.
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1454:    Used by tmdbinfo.py to decide whether to show the trailer button."""
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1461:    _log('hasTrailer: tmdb_id=%s imdb_id=%s mediatype=%s' % (tmdb_id, imdb_id, mediatype))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1470:            hits, _ = _searchKinoCheckAPI(tmdb_id, mediatype)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1475:    def _tmdb():
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1477:            from resources.lib.tmdb import cTMDB
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1478:            data = cTMDB().getUrl('%s/%s/videos' % (url_type, tmdb_id))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/trailer.py:1494:        tasks.append(('TMDB', _tmdb))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:12:# Zentrale TMDB API Key Verwaltung
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:13:TMDB_API_KEYS = [
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:21:def get_tmdb_api_key():
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:23:    user_key = getSetting('api.tmdb').strip()
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:24:    if user_key and user_key not in TMDB_API_KEYS:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:26:    return TMDB_API_KEYS[0]
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:28:class cTMDB:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:29:    TMDB_GENRES = {12: 'Abenteuer', 14: 'Fantasy', 16: 'Animation', 18: 'Drama', 27: 'Horror', 28: 'Action', 35: 'Komödie', 36: 'Historie', 37: 'Western', 53: 'Thriller', 80: 'Krimi', 99: 'Dokumentarfilm', 878: 'Science Fiction', 9648: 'Mystery', 10402: 'Musik', 10749: 'Liebesfilm', 10751: 'Familie', 10752: 'Kriegsfilm', 10759: 'Action & Adventure', 10762: 'Kids', 10763: 'News', 10764: 'Reality', 10765: 'Sci-Fi & Fantasy', 10766: 'Soap', 10767: 'Talk', 10768: 'War & Politics', 10770: 'TV-Film'}
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:35:        self.api_key = get_tmdb_api_key()
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:37:        self.poster = 'https://image.tmdb.org/t/p/%s' % 'w342' #cConfig().getSetting('poster_tmdb')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:38:        self.fanart = 'https://image.tmdb.org/t/p/%s' % 'w780'#cConfig().getSetting('backdrop_tmdb')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:76:                    tmdb_id = movie['id']
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:77:                    meta = self.search_movie_id(tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:86:        result['tmdb_id'] = movie_id
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:91:    #     result['tmdb_id'] = movie_id
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:134:                    tmdb_id = movie['id']
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:135:                    meta = self.search_tvshow_id(tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:144:        result['tmdb_id'] = show_id
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:147:    def get_meta(self, media_type, name, imdb_id='', tmdb_id='', year='', season='', episode='', advanced='false'):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:151:            if tmdb_id:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:152:                meta = self.search_movie_id(tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:156:            if tmdb_id:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:157:                meta = self.search_tvshow_id(tmdb_id)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:164:            if media_type == 'movie' and meta.get('tmdb_id'):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:167:                    save_country(meta['tmdb_id'], meta.get('origin_country', ''))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:185:        keys_to_try = [self.api_key] + [k for k in TMDB_API_KEYS if k != self.api_key]
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:196:                log_utils.log('TMDB API Key %s... fehlgeschlagen (kein JSON)' % self.api_key[:8], log_utils.LOGWARNING)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:201:                log_utils.log('TMDB API Key gewechselt auf: %s...' % key[:8], log_utils.LOGINFO)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:205:                log_utils.log('TMDB API Key %s... abgelehnt (status %s)' % (self.api_key[:8], data['status_code']), log_utils.LOGWARNING)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:209:        log_utils.log('TMDB: Alle API Keys fehlgeschlagen!', log_utils.LOGERROR)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:210:        infoDialog('TMDB: Alle API Keys fehlgeschlagen!', time=5000)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:216:            genre = self.TMDB_GENRES.get(gid)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:228:    def get_meta_episode(self, media_type, name, tmdb_id='', season='', episode='', advanced='false'):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:230:        if media_type == 'episode' and tmdb_id and season and episode:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:231:            url = '%stv/%s/season/%s/episode/%s?api_key=%s&language=de&include_adult=false' % (self.URL, tmdb_id, season, episode, self.api_key)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:245:    def get_meta_seasons(self, tmdb_id='', season='', advanced='false'):
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:247:        if tmdb_id and season:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:248:            url = '%stv/%s/season/%s?api_key=%s&language=de&include_adult=false' % (self.URL, tmdb_id, season, self.api_key)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:327:    #         _meta['tmdb_id'] = meta['id']
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:481:        """Formatiert ein TMDB-Suchergebnis ohne Extra-API-Call."""
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:483:        m['tmdb_id'] = str(item.get('id', ''))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:506:        m['imdbnumber'] = ''
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:550:                _meta['tmdb_id'] = str(meta['id'])
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:552:                if meta['external_ids']['imdb_id']: _meta['imdbnumber'] = meta['external_ids']['imdb_id']
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:554:            if not 'imdbnumber' in _meta and 'imdb_id' in meta: _meta['imdbnumber'] = meta['imdb_id']
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:556:            if 'imdbnumber' in _meta: _meta['imdb_id'] = _meta['imdbnumber']
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:579:            # if _meta['tmdb_id'] == '48866':
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/tmdb.py:593:                overviews = self._call(urlType + '/' + str(_meta['tmdb_id']) + '/translations')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/requestHandler.py:96:    # useful for e.g. tmdb request where multiple requests are made within a loop
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/listitem.py:134:        'imdbnumber': {'attr': 'setIMDBNumber', 'convert': str, 'classinfo': str},
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/episodes.py:10:from resources.lib.tmdb import cTMDB
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/episodes.py:34:			#tmdb_id = data['tmdb_id']
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/episodes.py:38:			season_meta = cTMDB().get_meta_seasons(data['tmdb_id'], season, advanced='true')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/episodes.py:51:			#	 self.list.append({'tmdb_id': tmdb_id, 'tvdb_id': tvdb_id, 'season': season, 'episode': i})
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/episodes.py:75:			#meta = cTMDB().get_meta_episode('episode', '', self.list[i]['tmdb_id'] , self.list[i]['season'], self.list[i]['episode'], advanced='true')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/episodes.py:76:			meta = cTMDB()._format_episodes(i, self.title)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/episodes.py:175:				meta.pop('tmdb_id', None)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:9:from resources.lib.tmdb import cTMDB
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:30:			tmdb_id = data['tmdb_id']
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:31:			# #106: TMDB search doesn't return number_of_seasons — fetch via detail call
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:33:				detail = cTMDB().get_meta('tvshow', '', '', tmdb_id, advanced='true')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:36:				log_utils.log(level=log_utils.LOGERROR, msg='[seasons.get] TMDB detail fetch failed: %s' % e)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:41:			imdbnumber = detail['imdbnumber'] if 'imdbnumber' in detail else None
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:49:			if imdbnumber:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:50:				self.sysmeta = re.sub(r'"imdbnumber": ""', '"imdbnumber": "%s"' % imdbnumber, self.sysmeta)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:55:				self.list.append({'tmdb_id': tmdb_id, 'tvdb_id': tvdb_id, 'season': i})
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:81:			meta = cTMDB().get_meta_seasons(i['tmdb_id'] , i['season'], advanced='true')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:170:					cm.append(('Staffel-Trailer ansehen', 'RunPlugin(%s?action=playTrailer&tmdb_id=%s&mediatype=tv&title=%s&year=%s&poster=%s&season=%s)' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:171:						sysaddon, sysmeta['tmdb_id'],
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/seasons.py:193:				meta.pop('tmdb_id', None)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/person.py:8:from resources.lib.tmdb import cTMDB
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/person.py:32:            self.list, self.total_pages = cTMDB().search_term('person', params.get('query'), params.get('page'))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/person.py:142:                self.list = cTMDB().search_credits('combined_credits', meta['id'])
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/person.py:171:                meta = cTMDB()._formatSuper(items[i], '', lightweight=True)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/person.py:213:                tmdb_id = meta.get('tmdb_id', '')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/person.py:214:                if hasTrailerPlayer and tmdb_id:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/person.py:215:                    cm.append((trailerLabel, 'RunPlugin(%s?action=playTrailer&tmdb_id=%s&mediatype=%s&title=%s&year=%s&poster=%s)' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/person.py:216:                        sysaddon, tmdb_id, ('tv' if is_tv else 'movie'),
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/person.py:231:                meta.pop('tmdb_id', None)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/navigator.py:131:        media_files = ['banner.png', 'box-office.png', 'clearlogo.png', 'downloads.png', 'fanart.jpg', 'genres.png', 'highly-rated.png', 'icon.png', 'in-theaters.png', 'most-popular.png', 'most-voted.png', 'movies.png', 'next.png', 'no-picture.png', 'plugin-info.png', 'poster.png', 'resolveurl.png', 'screenshot-01.jpg', 'screenshot-02.jpg', 'screenshot-03.jpg', 'screenshot-04.jpg', 'tmdb_search.png', 'tools.png', 'tvshows.png', 'url.png', 'vavoo.png', 'years.png', '_movies-search.png', '_people-search.png', '_search.png', '_series-search.png']
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:29:        self.api_key = control.getSetting('api.tmdb', 'f090bb54758cabf231fb605d3e3e0468')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:51:            # Special URL keywords with specific TMDB discover parameters
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:80:                # Top bewertet: Top 100 (5 TMDB pages), daily shuffle, paged display
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:98:            # Genre: fetch 2 TMDB pages per user page (compensates for
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:102:                tmdb_page = (next_pages - 1) * 2 + 1
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:103:                list1, total_pages = self._call(url, append_to_response='page=%s' % tmdb_page)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:104:                list2, _ = self._call(url, append_to_response='page=%s' % (tmdb_page + 1))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:187:        # Streaming-Anbieter (DE) ueber TMDB watch/providers holen, nach DE-Anzeigeprioritaet sortiert.
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:244:                log_utils.log('[listings] _call() TMDB-Abfrage fehlgeschlagen fuer Url "%s" Statuscode: %s'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:248:            log_utils.log('[listings] _call() TMDB-Abfrage "%s"  Fehler: %s'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:255:            log_utils.log('TMDB Discover Key %s... fehlgeschlagen (kein JSON)' % self.api_key[:8], log_utils.LOGWARNING)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/listings.py:259:            log_utils.log('TMDB Discover Key %s... abgelehnt (status %s)' % (self.api_key[:8], data['status_code']), log_utils.LOGWARNING)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:10:from resources.lib.tmdb import cTMDB
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:26:		self.activeSearchDB = 'TMDB'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:37:			self.list, self.total_pages = cTMDB().search_term_full('movie', params.get('query'), params.get('page'))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:66:		navigator.navigator().addDirectoryItem("Filme - neue Suche %s" % self.activeSearchDB , 'searchNew&table=movies', 'tmdb_search.png', 'DefaultAddonsSearch.png',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:90:					self.list = [i['tmdb_id'] for i in self.list]
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:92:			id_order = list(self.list)  # preserve original TMDB order before concurrent fetch
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:96:				# Preserve TMDB order (e.g. sorted by release_date, popularity, rating)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:97:				meta_by_id = {str(m.get('tmdb_id', '')): m for m in self.meta}
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:144:			meta = cTMDB().get_meta('movie', '', '', id, advanced='true')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:157:				poster = art.getMovie_art(meta['tmdb_id'], meta['imdbnumber'])
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:234:					cm.append((trailerLabel, 'RunPlugin(%s?action=playTrailer&tmdb_id=%s&mediatype=movie&title=%s&year=%s&poster=%s)' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:235:						sysaddon, meta['tmdb_id'],
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/movies.py:274:				meta.pop('tmdb_id', None)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:9:from resources.lib.tmdb import cTMDB
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:27:		self.activeSearchDB = 'TMDB'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:36:			results, self.total_pages = cTMDB().search_term_full('tvshow', params.get('query'), params.get('page'))
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:65:		navigator.navigator().addDirectoryItem("Serien - neue Suche %s" % self.activeSearchDB, 'searchNew&table=tvshows', 'tmdb_search.png', 'DefaultAddonsSearch.png',
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:92:	#		 control.setSetting('active.SearchDB.tvshow', 'tmdb')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:93:	#		 self.activeSearchDB = 'tmdb'
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:98:	#	 for i in ['tmdb', 'trakt']:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:140:				tmdb_id = i['tmdb_id']
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:186:					cm.append((trailerLabel, 'RunPlugin(%s?action=playTrailer&tmdb_id=%s&mediatype=tv&title=%s&year=%s&poster=%s)' % (
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:187:						sysaddon, sysmeta['tmdb_id'],
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:217:				meta.pop('tmdb_id', None)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:302:				meta = cTMDB()._formatSuper(item, '', lightweight=True)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:323:			meta = cTMDB().get_meta('tvshow', '', '', id, advanced='true')
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/indexers/tvshows.py:328:					poster = art.getTvShows_art(meta.get('tmdb_id', ''), meta['tvdb_id'])
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:137:        imdb = data.get('imdb_id') if 'imdb_id' in data else data.get('imdbnumber') if 'imdbnumber' in data else None
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:139:        tmdb = data.get('tmdb_id') if 'tmdb_id' in data else None
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:140:        #if tmdb and not imdb: print 'hallo' #TODO
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:277:                meta.pop('tmdb_id', None)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:649:        # SerienStream bewusst sehr konservativ filtern: nur VOE behalten,
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:653:        serienstream_languages = set()
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:656:            if provider_name != 'serienstream':
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:666:            if language in serienstream_languages:
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:669:            serienstream_languages.add(language)
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:794:        if provider == 'serienstream':
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:868:        # SerienStream uses short-lived /r?t= redirect tokens. Do NOT prefetch
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:871:        if str(provider).lower() == 'serienstream':
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/sources.py:1126:                # URL to ResolveURL. This is important for SerienStream because
+/home/runner/work/_temp/xship105/plugin.video.xship/resources/lib/player.py:96:            if 'imdbnumber' in meta: Info.setdefault('IMDBNumber', meta['imdbnumber'])
