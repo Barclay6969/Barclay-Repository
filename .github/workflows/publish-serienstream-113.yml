@@ -1,0 +1,118 @@
+name: Publish SerienStream 1.0.13
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-serienstream-113.yml'
+      - 'assets/serienstream_icon_256_real.png'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build SerienStream 1.0.13
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.12.zip'
+          OUT='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.13.zip'
+          WORK="$RUNNER_TEMP/serienstream113"
+
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          export ROOT OUT
+
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import hashlib, os, re, shutil, zipfile
+
+          root = Path(os.environ['ROOT'])
+          out = Path(os.environ['OUT'])
+          src_icon = Path('assets/serienstream_icon_256_real.png')
+          addon = root / 'addon.xml'
+
+          # Validate the exact source asset before packaging.
+          with Image.open(src_icon) as im:
+              im.verify()
+          with Image.open(src_icon) as im:
+              assert im.size == (256, 256), im.size
+              assert im.format == 'PNG', im.format
+
+          text = addon.read_text(encoding='utf-8-sig')
+          text, n = re.subn(
+              r'(<addon\s+id="plugin\.video\.serienstream"\s+name="SerienStream"\s+version=")[^"]+(")',
+              r'\g<1>1.0.13\2', text, count=1)
+          assert n == 1
+          text, n = re.subn(r'provider-name="[^"]*"', 'provider-name="Barclay (Kusi)"', text, count=1)
+          assert n == 1
+          text, n = re.subn(r'<icon>[^<]+</icon>', '<icon>resources/icon.png</icon>', text, count=1)
+          assert n == 1
+          addon.write_text(text, encoding='utf-8', newline='\n')
+
+          # Put the same verified logo at both common locations inside the add-on.
+          (root / 'resources').mkdir(parents=True, exist_ok=True)
+          shutil.copy2(src_icon, root / 'resources' / 'icon.png')
+          shutil.copy2(src_icon, root / 'icon.png')
+
+          # Repository-side artwork: keep both paths so Kodi/skins can resolve either form.
+          repo_dir = Path('zips/plugin.video.serienstream')
+          (repo_dir / 'resources').mkdir(parents=True, exist_ok=True)
+          shutil.copy2(src_icon, repo_dir / 'resources' / 'icon.png')
+          shutil.copy2(src_icon, repo_dir / 'icon.png')
+
+          out.parent.mkdir(parents=True, exist_ok=True)
+          if out.exists():
+              out.unlink()
+          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
+              for f in sorted(root.rglob('*')):
+                  if f.is_file():
+                      zf.write(f, Path('plugin.video.serienstream') / f.relative_to(root))
+
+          expected = hashlib.sha256(src_icon.read_bytes()).hexdigest()
+          with zipfile.ZipFile(out, 'r') as zf:
+              addon_text = zf.read('plugin.video.serienstream/addon.xml').decode('utf-8')
+              icon_res = zf.read('plugin.video.serienstream/resources/icon.png')
+              icon_root = zf.read('plugin.video.serienstream/icon.png')
+
+          assert 'version="1.0.13"' in addon_text
+          assert 'provider-name="Barclay (Kusi)"' in addon_text
+          assert '<icon>resources/icon.png</icon>' in addon_text
+          assert hashlib.sha256(icon_res).hexdigest() == expected
+          assert hashlib.sha256(icon_root).hexdigest() == expected
+          print('Verified icon sha256:', expected)
+          print('Built', out)
+          PY
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Verify repository feed and artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '<addon id="plugin.video.serienstream" name="SerienStream" version="1.0.13" provider-name="Barclay (Kusi)"' zips/addons.xml
+          grep -q '<icon>resources/icon.png</icon>' zips/addons.xml
+          test -s zips/addons.xml.md5
+          test -s zips/plugin.video.serienstream/plugin.video.serienstream-1.0.13.zip
+          test -s zips/plugin.video.serienstream/resources/icon.png
+          test -s zips/plugin.video.serienstream/icon.png
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add             zips/plugin.video.serienstream/plugin.video.serienstream-1.0.13.zip             zips/plugin.video.serienstream/resources/icon.png             zips/plugin.video.serienstream/icon.png             zips/addons.xml             zips/addons.xml.md5             zips/repository.barclay
+          git commit -m "Release SerienStream 1.0.13 with verified logo" || exit 0
+          git push
