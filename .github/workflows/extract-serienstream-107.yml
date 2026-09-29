@@ -1,0 +1,38 @@
+name: Extract SerienStream 1.0.7
+
+on:
+  push:
+    paths:
+      - '.github/workflows/extract-serienstream-107.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.7.zip'
+          WORK="$RUNNER_TEMP/ss107"
+          OUT='tools/serienstream-107'
+          rm -rf "$WORK" "$OUT"
+          mkdir -p "$WORK" "$OUT"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          cp "$ROOT/addon.xml" "$OUT/addon.xml"
+          find "$ROOT" -type f | sed "s#^$ROOT/##" | sort > "$OUT/file-list.txt"
+          find "$ROOT" -type f \( -iname 'icon.png' -o -iname 'icon.jpg' -o -iname 'fanart.jpg' \) -printf '%P %s bytes\n' > "$OUT/art-files.txt" || true
+      - name: Commit extracted metadata
+        shell: bash
+        run: |
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add tools/serienstream-107
+          git commit -m "Extract SerienStream 1.0.7 metadata" || exit 0
+          git push
