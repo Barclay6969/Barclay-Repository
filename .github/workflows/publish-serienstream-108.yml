@@ -1,0 +1,106 @@
+name: Publish SerienStream 1.0.8
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-serienstream-108.yml'
+      - 'tools/serienstream_icon_64.b64'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build SerienStream 1.0.8
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.7.zip'
+          OUT='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.8.zip'
+          WORK="$RUNNER_TEMP/serienstream108"
+
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          export ROOT OUT
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, os, re, zipfile
+
+          root = Path(os.environ['ROOT'])
+          out = Path(os.environ['OUT'])
+
+          addon = root / 'addon.xml'
+          text = addon.read_text(encoding='utf-8-sig')
+
+          text, n = re.subn(
+              r'(<addon\s+id="plugin\.video\.serienstream"\s+name="SerienStream"\s+version=")[^"]+(")',
+              r'\g<1>1.0.8\2',
+              text,
+              count=1
+          )
+          if n != 1:
+              raise SystemExit('Could not update SerienStream version')
+
+          text, n = re.subn(
+              r'provider-name="[^"]*"',
+              'provider-name="Barclay (Kusi)"',
+              text,
+              count=1
+          )
+          if n != 1:
+              raise SystemExit('Could not update provider-name')
+
+          addon.write_text(text, encoding='utf-8', newline='\n')
+
+          icon_b64 = Path('tools/serienstream_icon_64.b64').read_text(encoding='ascii').strip()
+          icon_bytes = base64.b64decode(icon_b64)
+          icon = root / 'resources' / 'icon.png'
+          icon.parent.mkdir(parents=True, exist_ok=True)
+          icon.write_bytes(icon_bytes)
+
+          out.parent.mkdir(parents=True, exist_ok=True)
+          if out.exists():
+              out.unlink()
+          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
+              for f in sorted(root.rglob('*')):
+                  if f.is_file():
+                      zf.write(f, Path('plugin.video.serienstream') / f.relative_to(root))
+
+          with zipfile.ZipFile(out, 'r') as zf:
+              addon_text = zf.read('plugin.video.serienstream/addon.xml').decode('utf-8')
+              icon_data = zf.read('plugin.video.serienstream/resources/icon.png')
+          assert 'version="1.0.8"' in addon_text
+          assert 'provider-name="Barclay (Kusi)"' in addon_text
+          assert icon_data.startswith(b'\x89PNG\r\n\x1a\n')
+          print('Built', out, 'icon bytes=', len(icon_data))
+          PY
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Verify repository feed
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '<addon id="plugin.video.serienstream" name="SerienStream" version="1.0.8" provider-name="Barclay (Kusi)"' zips/addons.xml
+          test -s zips/addons.xml.md5
+          test -s zips/plugin.video.serienstream/plugin.video.serienstream-1.0.8.zip
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add             zips/plugin.video.serienstream/plugin.video.serienstream-1.0.8.zip             zips/addons.xml             zips/addons.xml.md5             zips/repository.barclay
+          git commit -m "Release SerienStream 1.0.8" || exit 0
+          git push
