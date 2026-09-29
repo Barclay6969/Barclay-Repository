@@ -62,6 +62,7 @@ jobs:
           addon.write_text(text, encoding='utf-8', newline='\n')
 
           icon_b64 = Path('tools/serienstream_icon_64.b64').read_text(encoding='ascii').strip()
+          icon_b64 += '=' * (-len(icon_b64) % 4)
           icon_bytes = base64.b64decode(icon_b64)
           icon = root / 'resources' / 'icon.png'
           icon.parent.mkdir(parents=True, exist_ok=True)
@@ -104,3 +105,5 @@ jobs:
           git add             zips/plugin.video.serienstream/plugin.video.serienstream-1.0.8.zip             zips/addons.xml             zips/addons.xml.md5             zips/repository.barclay
           git commit -m "Release SerienStream 1.0.8" || exit 0
           git push
+
+# retry padding fix
