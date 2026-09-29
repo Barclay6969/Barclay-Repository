@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/build-youtube-patched.yml"
       - "tools/build_youtube_7.4.4_barclay.py"
+      - "tools/make_repo.py"
   workflow_dispatch:
 
 permissions:
@@ -39,5 +40,5 @@ jobs:
             echo "No generated changes to commit."
             exit 0
           fi
-          git commit -m "Publish YouTube 7.4.4+barclay.1 playback fix"
+          git commit -m "Publish YouTube 7.4.4+barclay.1 playback fix and refresh repo index"
           git push
