@@ -110,3 +110,5 @@ jobs:
           git add             zips/plugin.video.serienstream/plugin.video.serienstream-1.0.9.zip             zips/addons.xml             zips/addons.xml.md5             zips/repository.barclay
           git commit -m "Release SerienStream 1.0.9 with refreshed icon" || exit 0
           git push
+
+# trigger
