@@ -102,3 +102,5 @@ jobs:
           git add             zips/plugin.video.xship/plugin.video.xship-2026.09.29.115.zip             zips/addons.xml             zips/addons.xml.md5             zips/repository.barclay
           git commit -m "Release xShip 2026.09.29.115" || exit 0
           git push
+
+# retry release
