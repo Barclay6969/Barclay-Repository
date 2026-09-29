@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.serienstream-staging/READY'
+      - '.serienstream-build/READY'
 
 permissions:
   contents: write
@@ -17,14 +17,55 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Rebuild and verify tested ZIP
+      - name: Build exact tested SerienStream 1.0.7
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p zips/plugin.video.serienstream
-          cat .serienstream-staging/part*.b64 | tr -d '\n\r' | base64 -d > zips/plugin.video.serienstream/plugin.video.serienstream-1.0.7.zip
-          echo "1a256aa5d6882467972f2a5356fa2303ca95e04b4166a9123651a93e1ca314de  zips/plugin.video.serienstream/plugin.video.serienstream-1.0.7.zip" | sha256sum -c -
+          rm -rf .ss-build
+          mkdir -p .ss-build/base
+          curl -fL --retry 3 -o .ss-build/base.zip "https://raw.githubusercontent.com/kodi-wulf/repository/main/plugins/video/plugin.video.serienstream/plugin.video.serienstream-1.6.zip"
+          unzip -q .ss-build/base.zip -d .ss-build/base
+          BASE="$GITHUB_WORKSPACE/.ss-build/base/plugin.video.serienstream"
+          find "$BASE" -type d -name __pycache__ -prune -exec rm -rf {} +
+          find "$BASE" -type f -name '*.pyc' -delete
 
+          cd "$BASE"
+          sha256sum -c "$GITHUB_WORKSPACE/.serienstream-build/base-manifest.sha256"
+          cd "$GITHUB_WORKSPACE"
+
+          cat .serienstream-build/src00.b64 .serienstream-build/src01.b64 .serienstream-build/src02.b64 .serienstream-build/src03.b64 > .ss-build/serienstream.py.gz.b64
+          echo "c15fa13c6cd1bb163d7fcda098ff33622fa04064c7118436926a8be9b9897fbd  .ss-build/serienstream.py.gz.b64" | sha256sum -c -
+          base64 -d .ss-build/serienstream.py.gz.b64 | gzip -d > "$BASE/sites/serienstream.py"
+          base64 -d .serienstream-build/addon.xml.gz.b64 | gzip -d > "$BASE/addon.xml"
+
+          cd "$BASE"
+          sha256sum -c "$GITHUB_WORKSPACE/.serienstream-build/final-manifest.sha256"
+          find . -type f -printf '%P\n' | sort > /tmp/actual-files
+          cut -d' ' -f3- "$GITHUB_WORKSPACE/.serienstream-build/final-manifest.sha256" | sort > /tmp/expected-files
+          diff -u /tmp/expected-files /tmp/actual-files
+          cd "$GITHUB_WORKSPACE"
+
+          python3 -m py_compile "$BASE/sites/serienstream.py"
+          rm -rf "$BASE/sites/__pycache__"
+
+          mkdir -p zips/plugin.video.serienstream
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile
+          root = Path('.ss-build/base')
+          src = root / 'plugin.video.serienstream'
+          out = Path('zips/plugin.video.serienstream/plugin.video.serienstream-1.0.7.zip')
+          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
+              for p in sorted(src.rglob('*')):
+                  if p.is_file() and '__pycache__' not in p.parts and p.suffix != '.pyc':
+                      z.write(p, p.relative_to(root).as_posix())
+          print(out, out.stat().st_size)
+          PY
+
+      - name: Update repository index
+        shell: bash
+        run: |
+          set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, re, zipfile, xml.etree.ElementTree as ET
@@ -32,12 +73,11 @@ jobs:
           root = Path('.')
           zp = root / 'zips/plugin.video.serienstream/plugin.video.serienstream-1.0.7.zip'
           with zipfile.ZipFile(zp) as zf:
-              addon_xml = zf.read('plugin.video.serienstream/addon.xml').decode('utf-8-sig')
+              addon_xml = zf.read('plugin.video.serienstream/addon.xml').decode('utf-8-sig').strip()
           addon = ET.fromstring(addon_xml)
           assert addon.get('id') == 'plugin.video.serienstream'
           assert addon.get('version') == '1.0.7'
 
-          # Keep future repo rebuilds from dropping SerienStream again.
           make_repo = root / 'tools/make_repo.py'
           s = make_repo.read_text(encoding='utf-8')
           if '"plugin.video.serienstream",' not in s:
@@ -55,31 +95,29 @@ jobs:
           )
           make_repo.write_text(s, encoding='utf-8')
 
-          # Add/replace SerienStream entry in the existing Kodi repository feed.
           feed_path = root / 'zips/addons.xml'
           feed = feed_path.read_text(encoding='utf-8')
-          pattern = re.compile(
-              r'\s*<\?xml version="1\.0" encoding="UTF-8" standalone="yes"\?>\s*'
-              r'<addon id="plugin\.video\.serienstream".*?</addon>\s*',
-              re.S
+          feed = re.sub(
+              r'\s*(?:<\?xml[^>]*\?>\s*)?<addon id="plugin\.video\.serienstream".*?</addon>\s*',
+              '\n', feed, flags=re.S
           )
-          feed = pattern.sub('\n', feed)
-          entry = addon_xml.strip()
-          feed = feed.replace('\n</addons>\n', '\n' + entry + '\n\n</addons>\n')
-          feed_path.write_text(feed, encoding='utf-8')
+          entry = re.sub(r'^<\?xml[^>]*\?>\s*', '', addon_xml)
+          feed = feed.replace('\n</addons>', '\n' + entry + '\n\n</addons>')
+          feed_path.write_text(feed, encoding='utf-8', newline='\n')
           (root / 'zips/addons.xml.md5').write_text(
               hashlib.md5(feed.encode('utf-8')).hexdigest(),
               encoding='ascii'
           )
+          assert feed.count('id="plugin.video.serienstream"') == 1
           PY
 
-      - name: Commit published release
+      - name: Commit release
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm -r .serienstream-staging
+          git rm -r .serienstream-build
           git add tools/make_repo.py zips/addons.xml zips/addons.xml.md5 zips/plugin.video.serienstream/plugin.video.serienstream-1.0.7.zip
-          git commit -m "Publish SerienStream 1.0.7 anthology and title matching fixes"
+          git commit -m "Publish SerienStream 1.0.7 title and anthology matching fixes"
           git push
