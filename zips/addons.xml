@@ -24,7 +24,7 @@
 </addon>
 
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.serienstream" name="SerienStream" version="1.0.8" provider-name="Barclay (Kusi)">
+<addon id="plugin.video.serienstream" name="SerienStream" version="1.0.9" provider-name="Barclay (Kusi)">
 	<requires>
 		<import addon="xbmc.python" version="3.0.0"/>
 		<import addon="script.module.requests"/>
@@ -49,7 +49,7 @@
 		<platform>all</platform>
 		<license>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007</license>
 		<assets>
-			<icon>resources/icon.png</icon>
+			<icon>resources/icon_v109.png</icon>
 		</assets>
 	</extension>
 </addon>
