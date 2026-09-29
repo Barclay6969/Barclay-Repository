@@ -1,0 +1,21 @@
+name: Check SerienStream candidate base
+on:
+  push:
+    branches: [serienstream-candidate-check]
+    paths:
+      - '.serienstream-check/**'
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare unchanged files with tested 1.0.7
+        shell: bash
+        run: |
+          set -uo pipefail
+          rm -rf /tmp/sscheck && mkdir -p /tmp/sscheck
+          unzip -q .serienstream-check/candidate.zip -d /tmp/sscheck
+          cd /tmp/sscheck
+          sha256sum -c "$GITHUB_WORKSPACE/.serienstream-check/manifest.sha256"
