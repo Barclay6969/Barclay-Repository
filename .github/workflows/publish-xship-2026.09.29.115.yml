@@ -57,7 +57,7 @@ jobs:
               )
 
               if '<news>' in text:
-                  if '2026.09.29.115' not in text:
+                  if 'Monster-Anthologie korrekt auf die Staffeln 1–4 gemappt' not in text:
                       text = text.replace('<news>', '<news>' + changelog, 1)
               else:
                   raise SystemExit('No <news> element found in addon.xml')
