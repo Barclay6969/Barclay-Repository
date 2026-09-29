@@ -1,0 +1,43 @@
+name: Build patched YouTube addon
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-youtube-patched.yml"
+      - "tools/build_youtube_7.4.4_barclay.py"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build patched YouTube package
+        run: python tools/build_youtube_7.4.4_barclay.py
+
+      - name: Rebuild Kodi repository index
+        run: python tools/make_repo.py
+
+      - name: Commit generated package and index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add zips/plugin.video.youtube zips/addons.xml zips/addons.xml.md5
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit."
+            exit 0
+          fi
+          git commit -m "Publish YouTube 7.4.4+barclay.1 playback fix"
+          git push
