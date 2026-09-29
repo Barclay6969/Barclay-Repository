@@ -24,7 +24,7 @@
 </addon>
 
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.serienstream" name="SerienStream" version="1.0.7" provider-name="Base xStream/ Creator Frankenstein">
+<addon id="plugin.video.serienstream" name="SerienStream" version="1.0.8" provider-name="Barclay (Kusi)">
 	<requires>
 		<import addon="xbmc.python" version="3.0.0"/>
 		<import addon="script.module.requests"/>
