@@ -190,3 +190,5 @@ def _monster_target_season(titles, tmdb_id=None):
           git add test-builds/plugin.video.xship-2026.09.29.115-MONSTER-TEST1.zip
           git commit -m "Build xShip 2026.09.29.115 Monster test" || exit 0
           git push
+
+# trigger build
