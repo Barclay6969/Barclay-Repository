@@ -1,0 +1,104 @@
+name: Publish xShip 2026.09.29.115
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-xship-2026.09.29.115.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch changelog in uploaded xShip ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, tempfile, zipfile, shutil, xml.etree.ElementTree as ET
+
+          repo = Path.cwd()
+          zpath = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.09.29.115.zip'
+          if not zpath.exists():
+              raise SystemExit(f'Missing uploaded ZIP: {zpath}')
+
+          work = Path(tempfile.mkdtemp(prefix='publish-xship-115-'))
+          try:
+              with zipfile.ZipFile(zpath, 'r') as zf:
+                  zf.extractall(work)
+
+              roots = [p.parent for p in work.rglob('addon.xml') if p.parent.name == 'plugin.video.xship']
+              if not roots:
+                  raise SystemExit('plugin.video.xship/addon.xml not found in uploaded ZIP')
+              root = roots[0]
+              addon = root / 'addon.xml'
+              text = addon.read_text(encoding='utf-8-sig')
+
+              # Ensure the uploaded package itself identifies as 2026.09.29.115.
+              text, n = re.subn(
+                  r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+(")',
+                  r'\g<1>2026.09.29.115\2',
+                  text,
+                  count=1
+              )
+              if n != 1:
+                  raise SystemExit('Could not set xShip version in addon.xml')
+
+              changelog = (
+                  '2026.09.29.115\n'
+                  '- SerienStream: Monster-Anthologie korrekt auf die Staffeln 1–4 gemappt '
+                  '(Dahmer, Menendez, Ed Gein, Lizzie Borden).\n'
+                  '- SerienStream: fehlerhafte Suche nach imdb=None verhindert.\n\n'
+              )
+
+              if '<news>' in text:
+                  if '2026.09.29.115' not in text:
+                      text = text.replace('<news>', '<news>' + changelog, 1)
+              else:
+                  raise SystemExit('No <news> element found in addon.xml')
+
+              addon.write_text(text, encoding='utf-8', newline='\n')
+
+              tmpzip = zpath.with_suffix('.tmp.zip')
+              if tmpzip.exists():
+                  tmpzip.unlink()
+              with zipfile.ZipFile(tmpzip, 'w', zipfile.ZIP_DEFLATED) as zf:
+                  for f in sorted(root.rglob('*')):
+                      if f.is_file():
+                          zf.write(f, Path('plugin.video.xship') / f.relative_to(root))
+              tmpzip.replace(zpath)
+
+              with zipfile.ZipFile(zpath, 'r') as zf:
+                  addon_text = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+                  assert 'version="2026.09.29.115"' in addon_text
+                  assert '2026.09.29.115' in addon_text
+                  assert 'Monster-Anthologie' in addon_text
+          finally:
+              shutil.rmtree(work, ignore_errors=True)
+          PY
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Verify published feed
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '<addon id="plugin.video.xship" version="2026.09.29.115"' zips/addons.xml
+          grep -q 'Monster-Anthologie korrekt auf die Staffeln 1–4 gemappt' zips/addons.xml
+          test -s zips/addons.xml.md5
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add             zips/plugin.video.xship/plugin.video.xship-2026.09.29.115.zip             zips/addons.xml             zips/addons.xml.md5             zips/repository.barclay
+          git commit -m "Release xShip 2026.09.29.115" || exit 0
+          git push
