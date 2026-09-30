@@ -55,7 +55,7 @@
 </addon>
 
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.xship" version="2026.09.29.115" name="xShip" provider-name="Kusi (Barclay)">
+<addon id="plugin.video.xship" version="2026.09.30.128" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />
@@ -87,7 +87,12 @@
       <screenshot>resources/media/screenshot-02.jpg</screenshot>
       <screenshot>resources/media/screenshot-04.jpg</screenshot>
     </assets>
-    <news>2026.09.29.115
+    <news>2026.09.30.128
+- MoFlix: Cloudflare-403 bei der API-Suche behoben; der Provider verwendet nun eine persistente browsernahe requests-Session mit XSRF-/Session-Cookies.
+- MoFlix: Suche, Staffel-/Episodenabruf und Watch-API funktionieren wieder. Reacher und Unabomber erfolgreich getestet.
+- Sonstige Provider bleiben auf dem bisherigen Stand.
+
+2026.09.29.115
 - SerienStream: Monster-Anthologie korrekt auf die Staffeln 1–4 gemappt (Dahmer, Menendez, Ed Gein, Lizzie Borden).
 - SerienStream: fehlerhafte Suche nach imdb=None verhindert.
 
