@@ -1,0 +1,126 @@
+name: Publish xShip 2026.10.01.130
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-xship-2026.10.01.130.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Finalize uploaded xShip ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, tempfile, zipfile, shutil
+
+          repo = Path.cwd()
+          zpath = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.10.01.130.zip'
+          if not zpath.exists():
+              raise SystemExit(f'Missing uploaded ZIP: {zpath}')
+
+          entry = (
+              '2026.10.01.130\n'
+              '- MoFlix: direkte TMDb-basierte Titelerkennung ergänzt; wenn der xShip-Player nur eine IMDb-ID liefert, wird die passende TMDb-ID automatisch ermittelt.\n'
+              '- MoFlix: Filme und Serien funktionieren wieder über den direkten Titelabruf; Reacher und Unabomber wurden erfolgreich getestet.\n'
+              '- TMDb Helper / xShip Player: Start der Quellensuche deutlich beschleunigt; die vollständige Provider-Domainprüfung blockiert playExtern nicht mehr vor jedem Suchlauf.\n'
+              '- Der normale Domain-Sync und die übrigen Provider bleiben erhalten.\n\n'
+          )
+
+          work = Path(tempfile.mkdtemp(prefix='publish-xship-130-'))
+          try:
+              with zipfile.ZipFile(zpath, 'r') as zf:
+                  zf.extractall(work)
+
+              roots = [p.parent for p in work.rglob('addon.xml') if p.parent.name == 'plugin.video.xship']
+              if not roots:
+                  raise SystemExit('plugin.video.xship/addon.xml not found in uploaded ZIP')
+              root = roots[0]
+
+              addon = root / 'addon.xml'
+              text = addon.read_text(encoding='utf-8-sig')
+              text, n = re.subn(
+                  r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+(")',
+                  r'\g<1>2026.10.01.130\2',
+                  text,
+                  count=1
+              )
+              if n != 1:
+                  raise SystemExit('Could not set xShip version in addon.xml')
+
+              if '<news>' not in text:
+                  raise SystemExit('No <news> element found in addon.xml')
+              if '2026.10.01.130' not in text:
+                  text = text.replace('<news>', '<news>' + entry, 1)
+              addon.write_text(text, encoding='utf-8', newline='\n')
+
+              changelog = root / 'changelog.txt'
+              old = changelog.read_text(encoding='utf-8-sig') if changelog.exists() else ''
+              if '2026.10.01.130' not in old:
+                  changelog.write_text(entry + old, encoding='utf-8', newline='\n')
+
+              # Remove local test-marker files only; production code remains unchanged.
+              for pattern in ('MOFLIX-TEST*.txt', 'SPEED-TEST*.txt'):
+                  for marker in root.glob(pattern):
+                      marker.unlink()
+
+              tmpzip = zpath.with_suffix('.tmp.zip')
+              if tmpzip.exists():
+                  tmpzip.unlink()
+              with zipfile.ZipFile(tmpzip, 'w', zipfile.ZIP_DEFLATED) as zf:
+                  for f in sorted(root.rglob('*')):
+                      if f.is_file():
+                          zf.write(f, Path('plugin.video.xship') / f.relative_to(root))
+              tmpzip.replace(zpath)
+
+              with zipfile.ZipFile(zpath, 'r') as zf:
+                  assert zf.testzip() is None
+                  addon_text = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+                  changelog_text = zf.read('plugin.video.xship/changelog.txt').decode('utf-8')
+                  assert 'version="2026.10.01.130"' in addon_text
+                  assert '2026.10.01.130' in addon_text
+                  assert '2026.10.01.130' in changelog_text
+                  assert not any(
+                      name.startswith('plugin.video.xship/MOFLIX-TEST') or
+                      name.startswith('plugin.video.xship/SPEED-TEST')
+                      for name in zf.namelist()
+                  )
+          finally:
+              shutil.rmtree(work, ignore_errors=True)
+          PY
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Verify published feed
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '<addon id="plugin.video.xship" version="2026.10.01.130"' zips/addons.xml
+          grep -q 'direkte TMDb-basierte Titelerkennung' zips/addons.xml
+          test -s zips/addons.xml.md5
+          unzip -t zips/plugin.video.xship/plugin.video.xship-2026.10.01.130.zip >/dev/null
+          unzip -p zips/plugin.video.xship/plugin.video.xship-2026.10.01.130.zip plugin.video.xship/changelog.txt | grep -q '2026.10.01.130'
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add \
+            zips/plugin.video.xship/plugin.video.xship-2026.10.01.130.zip \
+            zips/addons.xml \
+            zips/addons.xml.md5 \
+            zips/repository.barclay
+          git commit -m "Release xShip 2026.10.01.130" || exit 0
+          git push
