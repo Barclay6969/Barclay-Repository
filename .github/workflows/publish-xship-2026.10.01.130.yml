@@ -109,7 +109,7 @@ jobs:
           grep -q 'direkte TMDb-basierte Titelerkennung' zips/addons.xml
           test -s zips/addons.xml.md5
           unzip -t zips/plugin.video.xship/plugin.video.xship-2026.10.01.130.zip >/dev/null
-          python3 - <<'PY'\n          import zipfile\n          p='zips/plugin.video.xship/plugin.video.xship-2026.10.01.130.zip'\n          with zipfile.ZipFile(p) as zf:\n              assert '2026.10.01.130' in zf.read('plugin.video.xship/changelog.txt').decode('utf-8')\n          PY
+          python3 -c "import zipfile; z=zipfile.ZipFile('zips/plugin.video.xship/plugin.video.xship-2026.10.01.130.zip'); assert '2026.10.01.130' in z.read('plugin.video.xship/changelog.txt').decode('utf-8')"
 
       - name: Commit release
         shell: bash
