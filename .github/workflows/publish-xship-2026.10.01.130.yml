@@ -59,7 +59,7 @@ jobs:
 
               if '<news>' not in text:
                   raise SystemExit('No <news> element found in addon.xml')
-              if '2026.10.01.130' not in text:
+              if 'direkte TMDb-basierte Titelerkennung' not in text:
                   text = text.replace('<news>', '<news>' + entry, 1)
               addon.write_text(text, encoding='utf-8', newline='\n')
 
