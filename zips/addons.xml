@@ -54,11 +54,12 @@
 	</extension>
 </addon>
 
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.xship" version="2026.09.30.128" name="xShip" provider-name="Kusi (Barclay)">
+<?xml version='1.0' encoding='utf-8'?>
+<addon id="plugin.video.xship" version="2026.10.01.130" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />
+    <import addon="script.module.cloudscraper" />
     <import addon="script.module.six" />
     <import addon="script.module.resolveurl" version="5.1.100" />
     <import addon="inputstream.adaptive" />
@@ -87,27 +88,11 @@
       <screenshot>resources/media/screenshot-02.jpg</screenshot>
       <screenshot>resources/media/screenshot-04.jpg</screenshot>
     </assets>
-    <news>2026.09.30.128
-- MoFlix: Cloudflare-403 bei der API-Suche behoben; der Provider verwendet nun eine persistente browsernahe requests-Session mit XSRF-/Session-Cookies.
-- MoFlix: Suche, Staffel-/Episodenabruf und Watch-API funktionieren wieder. Reacher und Unabomber erfolgreich getestet.
-- Sonstige Provider bleiben auf dem bisherigen Stand.
-
-2026.09.29.115
-- SerienStream: Monster-Anthologie korrekt auf die Staffeln 1–4 gemappt (Dahmer, Menendez, Ed Gein, Lizzie Borden).
-- SerienStream: fehlerhafte Suche nach imdb=None verhindert.
-
-2026.09.27.104
-- MoFlix: bekannte funktionierende Hoster werden bei der Quellensuche nicht mehr vollstaendig vorab aufgeloest. Die eigentliche Resolver-Aufloesung erfolgt erst bei der Wiedergabe; dadurch werden vorhandene Quellen beibehalten und die Suche deutlich beschleunigt.
-- MoFlix: der bereits bekannte langsame moflix-stream.link-Pfad wird weiterhin waehrend der Suche uebersprungen.
-- Movie4K: die aktuelle /data/browse/-Schnittstelle wird vor der veralteten /data/search/-Schnittstelle verwendet. Damit entfallen bei funktionierenden Browse-Antworten unnoetige langsame Legacy-Abfragen.
-- Sonstige Provider bleiben auf dem bisherigen Stand.
-
-2026.09.24.103
-- KinoGer: Hauptdomain auf kinoger.fun aktualisiert; alte .com/.to/.ch-Einstellungen werden auf .fun migriert.
-- KinoGer: aktuelle data-link-Quellen werden ausgewertet; die bisherige .show()-Array-Logik bleibt als Fallback erhalten.
-- KinoGer: Serienquellen werden nach Moeglichkeit auf den angeforderten Episodenblock begrenzt.
-- KinoGer: YouTube-, Trailer- und Premium-Hinweis-/Pseudoquellen werden ausgeblendet, damit unbrauchbare Eintraege nicht in der Quellenliste erscheinen.
-- KinoGer: FSST/Incvideo sowie kinoger.ru und kinoger.be werden als eigene Hoster erkannt bzw. benannt; bestehende Resolver-/Referer-Kompatibilitaet bleibt erhalten.
+    <news>2026.10.01.130
+- MoFlix: direkte TMDb-basierte Titelerkennung ergänzt; wenn der xShip-Player nur eine IMDb-ID liefert, wird die passende TMDb-ID automatisch ermittelt.
+- MoFlix: Filme und Serien funktionieren wieder über den direkten Titelabruf; Reacher und Unabomber wurden erfolgreich getestet.
+- TMDb Helper / xShip Player: Start der Quellensuche deutlich beschleunigt; die vollständige Provider-Domainprüfung blockiert playExtern nicht mehr vor jedem Suchlauf.
+- Der normale Domain-Sync und die übrigen Provider bleiben erhalten.
 
 2026.09.18.98
 - MoFlix: Filmsuche deutlich robuster gemacht. Alternative Titelvarianten und mehr Suchtreffer werden berücksichtigt.
@@ -148,9 +133,9 @@
 
 2026.08.28.1
 - Automatische Provider-Domainverwaltung fuer weitere wechselnde Indexseiten erweitert.
-- FHD Filme: bekannte Domainmigration hdfilme.my / hdfilme.blog -> hdfilme.win.
-- StreamCloud: bekannte Domainmigration streamcloud.my -> streamcloud.bid.
-- MegaKino: bekannte Domainmigration megakino15.com -> megakino16.com.
+- FHD Filme: bekannte Domainmigration hdfilme.my / hdfilme.blog -&gt; hdfilme.win.
+- StreamCloud: bekannte Domainmigration streamcloud.my -&gt; streamcloud.bid.
+- MegaKino: bekannte Domainmigration megakino15.com -&gt; megakino16.com.
 - HD Filme, KinoKing, KinoKiste, KKiste, Movie2k, Movie2k 2, Movie4k, SerienStream, StreamCloud Forum und TopStreamFilm nutzen nun ebenfalls den zentralen Domain-Manager.
 - Erkannte Domains werden automatisch in den xShip-Einstellungen gespeichert; erfolgreiche Pruefungen werden 6 Stunden, fehlgeschlagene 1 Stunde gecacht.
 - Die Redirect-Erkennung aus 2026.08.25.12 bleibt erhalten; Vavoo und die zentrale RequestHandler-Erkennung bleiben unveraendert enthalten.
