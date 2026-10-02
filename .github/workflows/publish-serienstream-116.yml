@@ -1,0 +1,91 @@
+name: Publish SerienStream 1.0.16 Trakt metadata fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-serienstream-116.yml'
+      - 'tools/serienstream-116-site.py'
+      - 'tools/serienstream-114-player.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build SerienStream 1.0.16
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.15.zip'
+          OUT='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.16.zip'
+          WORK="$RUNNER_TEMP/serienstream116"
+
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+
+          python3 - "$ROOT/addon.xml" <<'PY'
+          from pathlib import Path
+          import sys
+          p = Path(sys.argv[1])
+          s = p.read_text(encoding='utf-8-sig')
+          old = 'version="1.0.15"'
+          assert old in s, 'SerienStream 1.0.15 version not found'
+          s = s.replace(old, 'version="1.0.16"', 1)
+          p.write_text(s, encoding='utf-8', newline='\n')
+          PY
+
+          cp tools/serienstream-116-site.py "$ROOT/sites/serienstream.py"
+          cp tools/serienstream-114-player.py "$ROOT/resources/lib/player.py"
+
+          python3 -m py_compile "$ROOT/sites/serienstream.py" "$ROOT/resources/lib/player.py"
+
+          ROOT="$ROOT" OUT="$OUT" python3 - <<'PY'
+          from pathlib import Path
+          import os, zipfile
+          root = Path(os.environ['ROOT'])
+          out = Path(os.environ['OUT'])
+          out.parent.mkdir(parents=True, exist_ok=True)
+          if out.exists():
+              out.unlink()
+          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file():
+                      zf.write(p, Path('plugin.video.serienstream') / p.relative_to(root))
+          with zipfile.ZipFile(out, 'r') as zf:
+              addon_text = zf.read('plugin.video.serienstream/addon.xml').decode('utf-8')
+              site_text = zf.read('plugin.video.serienstream/sites/serienstream.py').decode('utf-8')
+              player_text = zf.read('plugin.video.serienstream/resources/lib/player.py').decode('utf-8')
+          assert 'version="1.0.16"' in addon_text
+          assert 'setSeason(int(season_match.group(1)))' in site_text
+          assert 'setEpisode(int(sEpNr))' in site_text
+          assert 'waiting for Trakt rating callback' not in player_text
+          print('Built', out)
+          PY
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Verify release
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '<addon id="plugin.video.serienstream" name="SerienStream" version="1.0.16"' zips/addons.xml
+          test -s zips/addons.xml.md5
+          test -s zips/plugin.video.serienstream/plugin.video.serienstream-1.0.16.zip
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A zips/plugin.video.serienstream zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
+          git commit -m "Release SerienStream 1.0.16 with Trakt episode metadata fix" || exit 0
+          git push
