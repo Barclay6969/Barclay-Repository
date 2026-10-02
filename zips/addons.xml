@@ -55,7 +55,7 @@
 </addon>
 
 <?xml version='1.0' encoding='utf-8'?>
-<addon id="plugin.video.xship" version="2026.10.01.130" name="xShip" provider-name="Kusi (Barclay)">
+<addon id="plugin.video.xship" version="2026.10.02.131" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />
@@ -88,7 +88,12 @@
       <screenshot>resources/media/screenshot-02.jpg</screenshot>
       <screenshot>resources/media/screenshot-04.jpg</screenshot>
     </assets>
-    <news>2026.10.01.130
+    <news>2026.10.02.131
+- xShip-Start über TMDb Helper beschleunigt: Beim ersten playExtern-Aufruf nach einem Kodi-Neustart blockieren keine synchronen Provider-Domainchecks mehr die Quellensuche.
+- Vorhandene Domain-Caches bzw. konfigurierte Standarddomains werden beim Playback sofort verwendet; die eigentlichen Provider-Scraper starten dadurch direkt.
+- SerienStream: In xShip werden nur noch VOE-Quellen zugelassen. DoodStream/CAPTCHA und andere SerienStream-Hoster werden verworfen.
+
+2026.10.01.130
 - MoFlix: direkte TMDb-basierte Titelerkennung ergänzt; wenn der xShip-Player nur eine IMDb-ID liefert, wird die passende TMDb-ID automatisch ermittelt.
 - MoFlix: Filme und Serien funktionieren wieder über den direkten Titelabruf; Reacher und Unabomber wurden erfolgreich getestet.
 - TMDb Helper / xShip Player: Start der Quellensuche deutlich beschleunigt; die vollständige Provider-Domainprüfung blockiert playExtern nicht mehr vor jedem Suchlauf.
