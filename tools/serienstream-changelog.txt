@@ -1,0 +1,14 @@
+SerienStream – Changelog
+
+1.0.17
+- Trakt-Bewertungsdialog nach Serienwiedergabe wiederhergestellt.
+- Staffel- und Episodennummer werden beim TMDb-Helper-Playback vollständig an Kodi/Trakt übergeben.
+- Fehlerhafte Staffel-Erkennung aus SerienStream-URLs korrigiert.
+
+1.0.16
+- Übergabe der Episodennummer an das Kodi-ListItem ergänzt.
+- Grundlage für vollständige Trakt-Episodenidentifikation geschaffen.
+
+1.0.15
+- Testweise Nachlaufzeit nach Playback-Ende ergänzt, um den Trakt-Rating-Callback zu prüfen.
+- Diese Zwischenlösung wurde nach der Ursachenanalyse wieder entfernt.
