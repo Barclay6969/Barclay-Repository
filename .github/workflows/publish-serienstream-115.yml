@@ -1,0 +1,113 @@
+name: Publish SerienStream 1.0.15 Trakt rating fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-serienstream-115.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build SerienStream 1.0.15
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.14.zip'
+          OUT='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.15.zip'
+          WORK="$RUNNER_TEMP/serienstream115"
+
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          export ROOT OUT
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re, zipfile
+
+          root = Path(os.environ['ROOT'])
+          out = Path(os.environ['OUT'])
+          addon = root / 'addon.xml'
+          player = root / 'resources' / 'lib' / 'player.py'
+
+          text = addon.read_text(encoding='utf-8-sig')
+          text, n = re.subn(
+              r'(<addon\s+id="plugin\.video\.serienstream"\s+name="SerienStream"\s+version=")[^"]+(")',
+              r'\g<1>1.0.15\2', text, count=1)
+          assert n == 1
+          addon.write_text(text, encoding='utf-8', newline='\n')
+
+          s = player.read_text(encoding='utf-8-sig')
+          old = """        while (not monitor.abortRequested()) & (not xbmcPlayer.streamFinished):
+            if xbmcPlayer.isPlayingVideo():
+                xbmcPlayer.playedTime = xbmcPlayer.getTime()
+            monitor.waitForAbort(10)
+        return xbmcPlayer.streamSuccess
+"""
+          new = """        while (not monitor.abortRequested()) & (not xbmcPlayer.streamFinished):
+            if xbmcPlayer.isPlayingVideo():
+                xbmcPlayer.playedTime = xbmcPlayer.getTime()
+            monitor.waitForAbort(10)
+
+        # Trakt rating fix:
+        # Keep the custom player/plugin context alive briefly after Kodi reports
+        # PlaybackStopped/PlaybackEnded. script.trakt opens its rating dialog
+        # asynchronously after the stop event; returning immediately here can
+        # tear down the SerienStream playback context before that happens.
+        if xbmcPlayer.streamFinished and not monitor.abortRequested():
+            log(cConfig().getLocalizedString(30166) + ' -> [player]: waiting for Trakt rating callback', LOGNOTICE)
+            monitor.waitForAbort(2.5)
+
+        return xbmcPlayer.streamSuccess
+"""
+          assert old in s, 'Expected startPlayer block not found'
+          s = s.replace(old, new, 1)
+          player.write_text(s, encoding='utf-8', newline='\n')
+
+          out.parent.mkdir(parents=True, exist_ok=True)
+          if out.exists():
+              out.unlink()
+          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
+              for f in sorted(root.rglob('*')):
+                  if f.is_file():
+                      zf.write(f, Path('plugin.video.serienstream') / f.relative_to(root))
+
+          with zipfile.ZipFile(out, 'r') as zf:
+              addon_text = zf.read('plugin.video.serienstream/addon.xml').decode('utf-8')
+              player_text = zf.read('plugin.video.serienstream/resources/lib/player.py').decode('utf-8')
+
+          assert 'version="1.0.15"' in addon_text
+          assert 'waiting for Trakt rating callback' in player_text
+          print('Built', out)
+          PY
+
+          python3 -m py_compile "$ROOT/resources/lib/player.py"
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Verify release
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '<addon id="plugin.video.serienstream" name="SerienStream" version="1.0.15"' zips/addons.xml
+          test -s zips/addons.xml.md5
+          test -s zips/plugin.video.serienstream/plugin.video.serienstream-1.0.15.zip
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A zips/plugin.video.serienstream zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
+          git commit -m "Release SerienStream 1.0.15 with Trakt rating fix" || exit 0
+          git push
