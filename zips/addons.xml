@@ -57,7 +57,7 @@
 - Fehlerhafte Staffel-Erkennung aus SerienStream-URLs korrigiert.</news></extension>
 </addon>
 <?xml version='1.0' encoding='UTF-8'?>
-<addon id="plugin.video.xship" version="2026.10.02.134" name="xShip" provider-name="Kusi (Barclay)">
+<addon id="plugin.video.xship" version="2026.10.02.135" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />
@@ -89,7 +89,12 @@
       <screenshot>resources/media/screenshot-02.jpg</screenshot>
       <screenshot>resources/media/screenshot-04.jpg</screenshot>
     </assets>
-    <news>2026.10.02.134
+    <news>2026.10.02.135
+- Changelog-Popup auf einen zuverlässigen Startup-Wrapper umgestellt.
+- Funktioniert auch direkt nach einem automatischen xShip-Update und ist nicht mehr von Kodis gecachter Add-on-Version abhängig.
+- Der originale xShip-Service startet nach dem Schließen des Popups unverändert weiter.
+
+2026.10.02.134
 - Changelog-Popup direkt in den bestehenden xShip-Startup-Service integriert.
 - Behebt den Fall, dass das Popup über einen zweiten Service nicht gestartet wurde.
 - Das vollständige Changelog erscheint pro xShip-Version weiterhin nur einmal.
