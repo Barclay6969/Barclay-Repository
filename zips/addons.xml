@@ -55,11 +55,10 @@
 </addon>
 
 <?xml version='1.0' encoding='utf-8'?>
-<addon id="plugin.video.xship" version="2026.10.02.131" name="xShip" provider-name="Kusi (Barclay)">
+<addon id="plugin.video.xship" version="2026.10.02.132" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />
-    <import addon="script.module.cloudscraper" />
     <import addon="script.module.six" />
     <import addon="script.module.resolveurl" version="5.1.100" />
     <import addon="inputstream.adaptive" />
@@ -88,10 +87,18 @@
       <screenshot>resources/media/screenshot-02.jpg</screenshot>
       <screenshot>resources/media/screenshot-04.jpg</screenshot>
     </assets>
-    <news>2026.10.02.131
-- xShip-Start über TMDb Helper beschleunigt: Beim ersten playExtern-Aufruf nach einem Kodi-Neustart blockieren keine synchronen Provider-Domainchecks mehr die Quellensuche.
-- Vorhandene Domain-Caches bzw. konfigurierte Standarddomains werden beim Playback sofort verwendet; die eigentlichen Provider-Scraper starten dadurch direkt.
-- SerienStream: In xShip werden nur noch VOE-Quellen zugelassen. DoodStream/CAPTCHA und andere SerienStream-Hoster werden verworfen.
+    <news>2026.10.02.132
+- Installation auf Geräten ohne script.module.cloudscraper korrigiert: Das Modul ist keine Pflicht-Abhängigkeit von xShip mehr.
+- MoFlix bleibt funktionsfähig, auch wenn cloudscraper/cloudscraper2 nicht installiert ist; der vorhandene requests.Session-Transport wird weiter verwendet.
+- Behebt den Installations-/Updatefehler „Abhängigkeit konnte nicht installiert werden“ auf betroffenen Android-TV-Boxen.
+
+2026.10.02.132
+- Installation: script.module.cloudscraper ist keine Pflicht-Abhängigkeit mehr; xShip lässt sich dadurch auch auf Geräten ohne dieses Modul installieren/aktualisieren.
+- MoFlix: fehlendes cloudscraper/cloudscraper2 blockiert den vorhandenen requests.Session-Transport nicht mehr.
+
+2026.10.02.131
+- playExtern: Provider-Domains werden beim ersten Film nach Kodi-Start nicht mehr synchron live geprüft; Cache/konfigurierte Standarddomain wird sofort verwendet.
+- SerienStream: nur noch VOE (DE/EN); DoodStream/CAPTCHA und andere SerienStream-Hoster werden verworfen.
 
 2026.10.01.130
 - MoFlix: direkte TMDb-basierte Titelerkennung ergänzt; wenn der xShip-Player nur eine IMDb-ID liefert, wird die passende TMDb-ID automatisch ermittelt.
