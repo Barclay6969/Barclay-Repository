@@ -1,0 +1,93 @@
+name: Add SerienStream 1.0.17 changelog
+
+on:
+  push:
+    paths:
+      - '.github/workflows/serienstream-117-changelog.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add changelog and news
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.17.zip'
+          WORK="$RUNNER_TEMP/ss117changelog"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$ZIP" -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          export ROOT ZIP
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re, zipfile
+
+          root = Path(os.environ['ROOT'])
+          zip_path = Path(os.environ['ZIP'])
+
+          changelog = """SerienStream – Changelog
+
+1.0.17
+- Trakt-Bewertungsdialog nach Serienwiedergabe wiederhergestellt.
+- Staffel- und Episodennummer werden beim TMDb-Helper-Playback vollständig an Kodi/Trakt übergeben.
+- Fehlerhafte Staffel-Erkennung aus SerienStream-URLs korrigiert.
+
+1.0.16
+- Übergabe der Episodennummer an das Kodi-ListItem ergänzt.
+- Grundlage für vollständige Trakt-Episodenidentifikation geschaffen.
+
+1.0.15
+- Testweise Nachlaufzeit nach Playback-Ende ergänzt, um den Trakt-Rating-Callback zu prüfen.
+- Diese Zwischenlösung wurde nach der Ursachenanalyse wieder entfernt.
+"""
+          (root / 'changelog.txt').write_text(changelog, encoding='utf-8', newline='\n')
+
+          addon = root / 'addon.xml'
+          text = addon.read_text(encoding='utf-8-sig')
+          news = """1.0.17
+- Trakt-Bewertungsdialog nach Serienwiedergabe wiederhergestellt.
+- Staffel- und Episodennummer werden vollständig an Kodi/Trakt übergeben.
+- Staffel-Erkennung korrigiert."""
+          if '<news>' in text:
+              text = re.sub(r'<news>.*?</news>', '<news>' + news + '</news>', text, count=1, flags=re.S)
+          else:
+              marker = '</extension>'
+              pos = text.rfind(marker)
+              assert pos != -1, 'metadata extension not found'
+              text = text[:pos] + '    <news>' + news + '</news>\n\t' + text[pos:]
+          addon.write_text(text, encoding='utf-8', newline='\n')
+
+          if zip_path.exists():
+              zip_path.unlink()
+          with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file():
+                      zf.write(p, Path('plugin.video.serienstream') / p.relative_to(root))
+
+          with zipfile.ZipFile(zip_path, 'r') as zf:
+              assert 'plugin.video.serienstream/changelog.txt' in zf.namelist()
+              addon_text = zf.read('plugin.video.serienstream/addon.xml').decode('utf-8')
+              assert '<news>1.0.17' in addon_text
+          PY
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Commit changelog
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add zips/plugin.video.serienstream/plugin.video.serienstream-1.0.17.zip zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
+          git commit -m "Document SerienStream 1.0.17 Trakt rating fix" || exit 0
+          git push
