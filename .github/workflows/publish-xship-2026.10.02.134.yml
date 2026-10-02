@@ -81,57 +81,56 @@ jobs:
           service = root / 'service.py'
           original = service.read_text(encoding='utf-8-sig')
           marker = '# --- xShip changelog popup bootstrap ---'
-          bootstrap = r'''# --- xShip changelog popup bootstrap ---
-try:
-    import os as _xship_os
-    import xbmc as _xship_xbmc
-    import xbmcaddon as _xship_xbmcaddon
-    import xbmcgui as _xship_xbmcgui
-    import xbmcvfs as _xship_xbmcvfs
-
-    _xship_addon = _xship_xbmcaddon.Addon()
-    _xship_version = _xship_addon.getAddonInfo('version')
-    _xship_profile = _xship_xbmcvfs.translatePath(_xship_addon.getAddonInfo('profile'))
-    _xship_path = _xship_xbmcvfs.translatePath(_xship_addon.getAddonInfo('path'))
-    _xship_seen = _xship_os.path.join(_xship_profile, 'changelog_seen_version.txt')
-    _xship_changelog = _xship_os.path.join(_xship_path, 'changelog.txt')
-
-    def _xship_read(path):
-        try:
-            if not _xship_xbmcvfs.exists(path):
-                return ''
-            fh = _xship_xbmcvfs.File(path)
-            data = fh.read()
-            fh.close()
-            return data or ''
-        except Exception:
-            return ''
-
-    def _xship_write(path, data):
-        try:
-            if not _xship_xbmcvfs.exists(_xship_profile):
-                _xship_xbmcvfs.mkdirs(_xship_profile)
-            fh = _xship_xbmcvfs.File(path, 'w')
-            fh.write(data)
-            fh.close()
-        except Exception:
-            pass
-
-    if _xship_read(_xship_seen).strip() != _xship_version:
-        # Give Kodi/skin a moment to finish startup before opening a modal dialog.
-        _xship_xbmc.sleep(5000)
-        _xship_text = _xship_read(_xship_changelog).strip()
-        if _xship_text:
-            _xship_xbmcgui.Dialog().textviewer('xShip – Neuigkeiten / Changelog', _xship_text)
-        _xship_write(_xship_seen, _xship_version)
-except Exception as _xship_changelog_error:
-    try:
-        _xship_xbmc.log('[xShip Changelog] %s' % _xship_changelog_error, _xship_xbmc.LOGWARNING)
-    except Exception:
-        pass
-# --- end xShip changelog popup bootstrap ---
-
-'''
+          bootstrap = (
+              "# --- xShip changelog popup bootstrap ---\\n"
+              "try:\\n"
+              "    import os as _xship_os\\n"
+              "    import xbmc as _xship_xbmc\\n"
+              "    import xbmcaddon as _xship_xbmcaddon\\n"
+              "    import xbmcgui as _xship_xbmcgui\\n"
+              "    import xbmcvfs as _xship_xbmcvfs\\n"
+              "\\n"
+              "    _xship_addon = _xship_xbmcaddon.Addon()\\n"
+              "    _xship_version = _xship_addon.getAddonInfo('version')\\n"
+              "    _xship_profile = _xship_xbmcvfs.translatePath(_xship_addon.getAddonInfo('profile'))\\n"
+              "    _xship_path = _xship_xbmcvfs.translatePath(_xship_addon.getAddonInfo('path'))\\n"
+              "    _xship_seen = _xship_os.path.join(_xship_profile, 'changelog_seen_version.txt')\\n"
+              "    _xship_changelog = _xship_os.path.join(_xship_path, 'changelog.txt')\\n"
+              "\\n"
+              "    def _xship_read(path):\\n"
+              "        try:\\n"
+              "            if not _xship_xbmcvfs.exists(path):\\n"
+              "                return ''\\n"
+              "            fh = _xship_xbmcvfs.File(path)\\n"
+              "            data = fh.read()\\n"
+              "            fh.close()\\n"
+              "            return data or ''\\n"
+              "        except Exception:\\n"
+              "            return ''\\n"
+              "\\n"
+              "    def _xship_write(path, data):\\n"
+              "        try:\\n"
+              "            if not _xship_xbmcvfs.exists(_xship_profile):\\n"
+              "                _xship_xbmcvfs.mkdirs(_xship_profile)\\n"
+              "            fh = _xship_xbmcvfs.File(path, 'w')\\n"
+              "            fh.write(data)\\n"
+              "            fh.close()\\n"
+              "        except Exception:\\n"
+              "            pass\\n"
+              "\\n"
+              "    if _xship_read(_xship_seen).strip() != _xship_version:\\n"
+              "        _xship_xbmc.sleep(5000)\\n"
+              "        _xship_text = _xship_read(_xship_changelog).strip()\\n"
+              "        if _xship_text:\\n"
+              "            _xship_xbmcgui.Dialog().textviewer('xShip – Neuigkeiten / Changelog', _xship_text)\\n"
+              "        _xship_write(_xship_seen, _xship_version)\\n"
+              "except Exception as _xship_changelog_error:\\n"
+              "    try:\\n"
+              "        _xship_xbmc.log('[xShip Changelog] %s' % _xship_changelog_error, _xship_xbmc.LOGWARNING)\\n"
+              "    except Exception:\\n"
+              "        pass\\n"
+              "# --- end xShip changelog popup bootstrap ---\\n\\n"
+          )
           if marker in original:
               # Remove prior injected bootstrap if a future build is based on a patched version.
               start = original.index(marker)
