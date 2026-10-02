@@ -1,0 +1,128 @@
+name: Publish xShip 2026.10.02.131
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-xship-2026.10.02.131.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Finalize uploaded xShip ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, tempfile, zipfile, shutil
+
+          repo = Path.cwd()
+          zpath = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.10.02.131.zip'
+          if not zpath.exists():
+              raise SystemExit(f'Missing uploaded ZIP: {zpath}')
+
+          entry = (
+              '2026.10.02.131\n'
+              '- xShip-Start über TMDb Helper beschleunigt: Beim ersten playExtern-Aufruf nach einem Kodi-Neustart blockieren keine synchronen Provider-Domainchecks mehr die Quellensuche.\n'
+              '- Vorhandene Domain-Caches bzw. konfigurierte Standarddomains werden beim Playback sofort verwendet; die eigentlichen Provider-Scraper starten dadurch direkt.\n'
+              '- SerienStream: In xShip werden nur noch VOE-Quellen zugelassen. DoodStream/CAPTCHA und andere SerienStream-Hoster werden verworfen.\n\n'
+          )
+
+          work = Path(tempfile.mkdtemp(prefix='publish-xship-131-'))
+          try:
+              with zipfile.ZipFile(zpath, 'r') as zf:
+                  zf.extractall(work)
+
+              roots = [p.parent for p in work.rglob('addon.xml') if p.parent.name == 'plugin.video.xship']
+              if not roots:
+                  raise SystemExit('plugin.video.xship/addon.xml not found in uploaded ZIP')
+              root = roots[0]
+
+              addon = root / 'addon.xml'
+              text = addon.read_text(encoding='utf-8-sig')
+              text, n = re.subn(
+                  r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+(")',
+                  r'\g<1>2026.10.02.131\2',
+                  text,
+                  count=1
+              )
+              if n != 1:
+                  raise SystemExit('Could not set xShip version in addon.xml')
+
+              # Remove local-test wording from this exact release entry.
+              text = text.replace('2026.10.02.131 LOCAL TEST', '2026.10.02.131')
+
+              if '<news>' not in text:
+                  raise SystemExit('No <news> element found in addon.xml')
+              if 'Beim ersten playExtern-Aufruf nach einem Kodi-Neustart' not in text:
+                  text = text.replace('<news>', '<news>' + entry, 1)
+              addon.write_text(text, encoding='utf-8', newline='\n')
+
+              changelog = root / 'changelog.txt'
+              old = changelog.read_text(encoding='utf-8-sig') if changelog.exists() else ''
+              old = old.replace('2026.10.02.131 LOCAL TEST', '2026.10.02.131')
+              if 'Beim ersten playExtern-Aufruf nach einem Kodi-Neustart' not in old:
+                  old = entry + old
+              changelog.write_text(old, encoding='utf-8', newline='\n')
+
+              # Remove local test-marker files only; production code remains unchanged.
+              for pattern in ('MOFLIX-TEST*.txt', 'SPEED-TEST*.txt', 'LOCAL-TEST*.txt'):
+                  for marker in root.glob(pattern):
+                      marker.unlink()
+
+              tmpzip = zpath.with_suffix('.tmp.zip')
+              if tmpzip.exists():
+                  tmpzip.unlink()
+              with zipfile.ZipFile(tmpzip, 'w', zipfile.ZIP_DEFLATED) as zf:
+                  for f in sorted(root.rglob('*')):
+                      if f.is_file():
+                          zf.write(f, Path('plugin.video.xship') / f.relative_to(root))
+              tmpzip.replace(zpath)
+
+              with zipfile.ZipFile(zpath, 'r') as zf:
+                  assert zf.testzip() is None
+                  addon_text = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+                  changelog_text = zf.read('plugin.video.xship/changelog.txt').decode('utf-8')
+                  assert 'version="2026.10.02.131"' in addon_text
+                  assert '2026.10.02.131' in addon_text
+                  assert '2026.10.02.131' in changelog_text
+                  assert 'LOCAL TEST' not in addon_text
+                  assert 'LOCAL TEST' not in changelog_text
+          finally:
+              shutil.rmtree(work, ignore_errors=True)
+          PY
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Verify published feed
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '<addon id="plugin.video.xship" version="2026.10.02.131"' zips/addons.xml
+          grep -q 'Beim ersten playExtern-Aufruf nach einem Kodi-Neustart' zips/addons.xml
+          grep -q 'SerienStream: In xShip werden nur noch VOE-Quellen zugelassen' zips/addons.xml
+          test -s zips/addons.xml.md5
+          unzip -t zips/plugin.video.xship/plugin.video.xship-2026.10.02.131.zip >/dev/null
+          python3 -c "import zipfile; z=zipfile.ZipFile('zips/plugin.video.xship/plugin.video.xship-2026.10.02.131.zip'); a=z.read('plugin.video.xship/addon.xml').decode('utf-8'); c=z.read('plugin.video.xship/changelog.txt').decode('utf-8'); assert '2026.10.02.131' in a and '2026.10.02.131' in c and 'LOCAL TEST' not in a and 'LOCAL TEST' not in c"
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add \
+            zips/plugin.video.xship/plugin.video.xship-2026.10.02.131.zip \
+            zips/addons.xml \
+            zips/addons.xml.md5 \
+            zips/repository.barclay
+          git commit -m "Release xShip 2026.10.02.131" || exit 0
+          git push
