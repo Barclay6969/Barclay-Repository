@@ -22,73 +22,50 @@ jobs:
           BASE='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.14.zip'
           OUT='zips/plugin.video.serienstream/plugin.video.serienstream-1.0.15.zip'
           WORK="$RUNNER_TEMP/serienstream115"
-
           rm -rf "$WORK"
           mkdir -p "$WORK"
           unzip -q "$BASE" -d "$WORK"
           ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
           export ROOT OUT
-
           python3 - <<'PY'
           from pathlib import Path
           import os, re, zipfile
-
           root = Path(os.environ['ROOT'])
           out = Path(os.environ['OUT'])
           addon = root / 'addon.xml'
           player = root / 'resources' / 'lib' / 'player.py'
-
           text = addon.read_text(encoding='utf-8-sig')
-          text, n = re.subn(
-              r'(<addon\s+id="plugin\.video\.serienstream"\s+name="SerienStream"\s+version=")[^"]+(")',
-              r'\g<1>1.0.15\2', text, count=1)
+          text, n = re.subn(r'(<addon\s+id="plugin\.video\.serienstream"\s+name="SerienStream"\s+version=")[^"]+(")', r'\g<1>1.0.15\2', text, count=1)
           assert n == 1
           addon.write_text(text, encoding='utf-8', newline='\n')
-
           s = player.read_text(encoding='utf-8-sig')
-          old = """        while (not monitor.abortRequested()) & (not xbmcPlayer.streamFinished):
-            if xbmcPlayer.isPlayingVideo():
-                xbmcPlayer.playedTime = xbmcPlayer.getTime()
-            monitor.waitForAbort(10)
-        return xbmcPlayer.streamSuccess
-"""
-          new = """        while (not monitor.abortRequested()) & (not xbmcPlayer.streamFinished):
-            if xbmcPlayer.isPlayingVideo():
-                xbmcPlayer.playedTime = xbmcPlayer.getTime()
-            monitor.waitForAbort(10)
-
-        # Trakt rating fix:
-        # Keep the custom player/plugin context alive briefly after Kodi reports
-        # PlaybackStopped/PlaybackEnded. script.trakt opens its rating dialog
-        # asynchronously after the stop event; returning immediately here can
-        # tear down the SerienStream playback context before that happens.
-        if xbmcPlayer.streamFinished and not monitor.abortRequested():
-            log(cConfig().getLocalizedString(30166) + ' -> [player]: waiting for Trakt rating callback', LOGNOTICE)
-            monitor.waitForAbort(2.5)
-
-        return xbmcPlayer.streamSuccess
-"""
-          assert old in s, 'Expected startPlayer block not found'
-          s = s.replace(old, new, 1)
+          needle = "        return xbmcPlayer.streamSuccess\n"
+          assert s.count(needle) == 1, s.count(needle)
+          insert = (
+              "        # Trakt rating fix: keep playback context alive briefly after stop/end.\n"
+              "        # script.trakt opens the rating dialog asynchronously after the stop event.\n"
+              "        if xbmcPlayer.streamFinished and not monitor.abortRequested():\n"
+              "            log(cConfig().getLocalizedString(30166) + ' -> [player]: waiting for Trakt rating callback', LOGNOTICE)\n"
+              "            monitor.waitForAbort(2.5)\n"
+              "\n"
+              "        return xbmcPlayer.streamSuccess\n"
+          )
+          s = s.replace(needle, insert, 1)
           player.write_text(s, encoding='utf-8', newline='\n')
-
           out.parent.mkdir(parents=True, exist_ok=True)
           if out.exists():
               out.unlink()
           with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
-              for f in sorted(root.rglob('*')):
-                  if f.is_file():
-                      zf.write(f, Path('plugin.video.serienstream') / f.relative_to(root))
-
+              for p in sorted(root.rglob('*')):
+                  if p.is_file():
+                      zf.write(p, Path('plugin.video.serienstream') / p.relative_to(root))
           with zipfile.ZipFile(out, 'r') as zf:
               addon_text = zf.read('plugin.video.serienstream/addon.xml').decode('utf-8')
               player_text = zf.read('plugin.video.serienstream/resources/lib/player.py').decode('utf-8')
-
           assert 'version="1.0.15"' in addon_text
           assert 'waiting for Trakt rating callback' in player_text
           print('Built', out)
           PY
-
           python3 -m py_compile "$ROOT/resources/lib/player.py"
 
       - name: Rebuild repository metadata
