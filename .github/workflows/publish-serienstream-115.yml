@@ -87,4 +87,17 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add -A zips/plugin.video.serienstream zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
           git commit -m "Release SerienStream 1.0.15 with Trakt rating fix" || exit 0
-          git push
+          git push          pattern = r'(?m)^(?P<indent>[ \\t]*)return xbmcPlayer\\.streamSuccess[ \\t]*$'
+          def repl(m):
+              i = m.group('indent')
+              return (
+                  i + "# Trakt rating fix: keep playback context alive briefly after stop/end.\\n"
+                  + i + "# script.trakt opens the rating dialog asynchronously after the stop event.\\n"
+                  + i + "if xbmcPlayer.streamFinished and not monitor.abortRequested():\\n"
+                  + i + "    log(cConfig().getLocalizedString(30166) + ' -> [player]: waiting for Trakt rating callback', LOGNOTICE)\\n"
+                  + i + "    monitor.waitForAbort(2.5)\\n\\n"
+                  + i + "return xbmcPlayer.streamSuccess"
+              )
+          s, n = re.subn(pattern, repl, s, count=1)
+          assert n == 1, 'startPlayer return not found'
+
