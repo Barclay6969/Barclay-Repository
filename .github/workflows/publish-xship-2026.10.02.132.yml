@@ -1,0 +1,115 @@
+name: Publish xShip 2026.10.02.132
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-xship-2026.10.02.132.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Finalize xShip 132
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, tempfile, zipfile, shutil
+
+          repo = Path.cwd()
+          zpath = repo / 'zips/plugin.video.xship/plugin.video.xship-2026.10.02.132.zip'
+          if not zpath.exists():
+              raise SystemExit(f'Missing uploaded ZIP: {zpath}')
+
+          entry = (
+              '2026.10.02.132\n'
+              '- Installation auf Geräten ohne script.module.cloudscraper korrigiert: Das Modul ist keine Pflicht-Abhängigkeit von xShip mehr.\n'
+              '- MoFlix bleibt funktionsfähig, auch wenn cloudscraper/cloudscraper2 nicht installiert ist; der vorhandene requests.Session-Transport wird weiter verwendet.\n'
+              '- Behebt den Installations-/Updatefehler „Abhängigkeit konnte nicht installiert werden“ auf betroffenen Android-TV-Boxen.\n\n'
+          )
+
+          work = Path(tempfile.mkdtemp(prefix='publish-xship-132-'))
+          try:
+              with zipfile.ZipFile(zpath, 'r') as zf:
+                  zf.extractall(work)
+
+              roots = [p.parent for p in work.rglob('addon.xml') if p.parent.name == 'plugin.video.xship']
+              if not roots:
+                  raise SystemExit('plugin.video.xship/addon.xml not found')
+              root = roots[0]
+
+              addon = root / 'addon.xml'
+              text = addon.read_text(encoding='utf-8-sig')
+              text, n = re.subn(
+                  r'(<addon\s+id="plugin\.video\.xship"\s+version=")[^"]+(")',
+                  r'\g<1>2026.10.02.132\2', text, count=1)
+              if n != 1:
+                  raise SystemExit('Could not set xShip version')
+              text = text.replace('2026.10.02.132 LOCAL TEST', '2026.10.02.132')
+              # Keep cloudscraper non-mandatory.
+              text = text.replace('    <import addon="script.module.cloudscraper" />\n', '')
+              if '<news>' not in text:
+                  raise SystemExit('No <news> element')
+              if 'Installation auf Geräten ohne script.module.cloudscraper korrigiert' not in text:
+                  text = text.replace('<news>', '<news>' + entry, 1)
+              addon.write_text(text, encoding='utf-8', newline='\n')
+
+              changelog = root / 'changelog.txt'
+              old = changelog.read_text(encoding='utf-8-sig') if changelog.exists() else ''
+              old = old.replace('2026.10.02.132 LOCAL TEST', '2026.10.02.132')
+              if 'Installation auf Geräten ohne script.module.cloudscraper korrigiert' not in old:
+                  old = entry + old
+              changelog.write_text(old, encoding='utf-8', newline='\n')
+
+              tmpzip = zpath.with_suffix('.tmp.zip')
+              with zipfile.ZipFile(tmpzip, 'w', zipfile.ZIP_DEFLATED) as zf:
+                  for f in sorted(root.rglob('*')):
+                      if f.is_file():
+                          zf.write(f, Path('plugin.video.xship') / f.relative_to(root))
+              tmpzip.replace(zpath)
+
+              with zipfile.ZipFile(zpath, 'r') as zf:
+                  assert zf.testzip() is None
+                  a = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+                  c = zf.read('plugin.video.xship/changelog.txt').decode('utf-8')
+                  assert 'version="2026.10.02.132"' in a
+                  assert '<import addon="script.module.cloudscraper"' not in a
+                  assert '2026.10.02.132' in c
+                  assert '2026.10.02.132 LOCAL TEST' not in a
+                  assert '2026.10.02.132 LOCAL TEST' not in c
+          finally:
+              shutil.rmtree(work, ignore_errors=True)
+          PY
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Verify release
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '<addon id="plugin.video.xship" version="2026.10.02.132"' zips/addons.xml
+          ! grep -A12 '<addon id="plugin.video.xship"' zips/addons.xml | grep -q 'script.module.cloudscraper'
+          test -s zips/addons.xml.md5
+          unzip -t zips/plugin.video.xship/plugin.video.xship-2026.10.02.132.zip >/dev/null
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add \
+            zips/plugin.video.xship/plugin.video.xship-2026.10.02.132.zip \
+            zips/addons.xml \
+            zips/addons.xml.md5 \
+            zips/repository.barclay
+          git commit -m "Release xShip 2026.10.02.132" || exit 0
+          git push
