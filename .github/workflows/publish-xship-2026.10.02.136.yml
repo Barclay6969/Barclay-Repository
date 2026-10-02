@@ -1,0 +1,191 @@
+name: Publish xShip 2026.10.02.136 clean changelog popup
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-xship-2026.10.02.136.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build xShip 2026.10.02.136
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.10.02.135.zip'
+          OUT='zips/plugin.video.xship/plugin.video.xship-2026.10.02.136.zip'
+          WORK="$RUNNER_TEMP/xship136"
+
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          export ROOT OUT
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          import xml.etree.ElementTree as ET
+
+          root = Path(os.environ['ROOT'])
+          addon = root / 'addon.xml'
+          tree = ET.parse(addon)
+          r = tree.getroot()
+          assert r.get('version') == '2026.10.02.135'
+          r.set('version', '2026.10.02.136')
+
+          # Restore the original xShip service as the actual Kodi service.
+          original_service = root / 'service_xship.py'
+          assert original_service.exists(), 'service_xship.py missing in 135'
+          original = original_service.read_text(encoding='utf-8-sig')
+
+          bootstrap = (
+              "# --- xShip changelog popup bootstrap ---\n"
+              "import os as _xship_os\n"
+              "import xbmc as _xship_xbmc\n"
+              "import xbmcaddon as _xship_xbmcaddon\n"
+              "import xbmcgui as _xship_xbmcgui\n"
+              "import xbmcvfs as _xship_xbmcvfs\n"
+              "\n"
+              "_XSHIP_CHANGELOG_BUILD = '2026.10.02.136'\n"
+              "_XSHIP_LOG_PREFIX = '[xShip Changelog]'\n"
+              "\n"
+              "def _xship_log(msg, level=_xship_xbmc.LOGINFO):\n"
+              "    try:\n"
+              "        _xship_xbmc.log('%s %s' % (_XSHIP_LOG_PREFIX, msg), level)\n"
+              "    except Exception:\n"
+              "        pass\n"
+              "\n"
+              "def _xship_read(path):\n"
+              "    try:\n"
+              "        if not _xship_xbmcvfs.exists(path):\n"
+              "            return ''\n"
+              "        fh = _xship_xbmcvfs.File(path)\n"
+              "        data = fh.read()\n"
+              "        fh.close()\n"
+              "        return data or ''\n"
+              "    except Exception as exc:\n"
+              "        _xship_log('read failed: %s' % exc, _xship_xbmc.LOGWARNING)\n"
+              "        return ''\n"
+              "\n"
+              "def _xship_write(path, data):\n"
+              "    try:\n"
+              "        fh = _xship_xbmcvfs.File(path, 'w')\n"
+              "        fh.write(data)\n"
+              "        fh.close()\n"
+              "    except Exception as exc:\n"
+              "        _xship_log('write failed: %s' % exc, _xship_xbmc.LOGWARNING)\n"
+              "\n"
+              "try:\n"
+              "    _xship_addon = _xship_xbmcaddon.Addon('plugin.video.xship')\n"
+              "    _xship_profile = _xship_xbmcvfs.translatePath(_xship_addon.getAddonInfo('profile'))\n"
+              "    _xship_path = _xship_xbmcvfs.translatePath(_xship_addon.getAddonInfo('path'))\n"
+              "    _xship_marker = _xship_os.path.join(_xship_profile, 'changelog_seen_build.txt')\n"
+              "    _xship_file = _xship_os.path.join(_xship_path, 'changelog.txt')\n"
+              "    if not _xship_xbmcvfs.exists(_xship_profile):\n"
+              "        _xship_xbmcvfs.mkdirs(_xship_profile)\n"
+              "    _xship_seen = _xship_read(_xship_marker).strip()\n"
+              "    _xship_log('service started build=%s marker=%s' % (_XSHIP_CHANGELOG_BUILD, _xship_seen or '<none>'))\n"
+              "    if _xship_seen != _XSHIP_CHANGELOG_BUILD:\n"
+              "        _xship_xbmc.sleep(8000)\n"
+              "        _xship_text = _xship_read(_xship_file).strip()\n"
+              "        if _xship_text:\n"
+              "            _xship_log('opening popup')\n"
+              "            _xship_xbmcgui.Dialog().textviewer('xShip – Neuigkeiten / Changelog', _xship_text)\n"
+              "            _xship_log('popup closed')\n"
+              "            _xship_write(_xship_marker, _XSHIP_CHANGELOG_BUILD)\n"
+              "except Exception as _xship_popup_error:\n"
+              "    _xship_log('popup error: %s' % _xship_popup_error, _xship_xbmc.LOGWARNING)\n"
+              "# --- end xShip changelog popup bootstrap ---\n\n"
+          )
+
+          (root / 'service.py').write_text(bootstrap + original, encoding='utf-8', newline='\n')
+          original_service.unlink()
+
+          metadata = next(e for e in r.findall('extension') if e.get('point') == 'xbmc.addon.metadata')
+          news = metadata.find('news')
+          current = (news.text or '').strip() if news is not None else ''
+          entry = (
+              '2026.10.02.136\n'
+              '- Changelog-Popup direkt in den normalen xShip-Service integriert.\n'
+              '- Entfernt die irreführende xShip-Fehlermeldung nach dem Update.\n'
+              '- Der bisherige xShip-Service läuft wieder im vollständigen Kodi-Add-on-Kontext.\n\n'
+          )
+          if news is None:
+              news = ET.SubElement(metadata, 'news')
+          if not current.startswith('2026.10.02.136'):
+              news.text = entry + current
+
+          tree.write(addon, encoding='UTF-8', xml_declaration=True)
+
+          changelog = root / 'changelog.txt'
+          old = changelog.read_text(encoding='utf-8-sig').strip()
+          if old.startswith('xShip – Changelog'):
+              old = old[len('xShip – Changelog'):].lstrip()
+          changelog.write_text(
+              'xShip – Changelog\n\n'
+              '2026.10.02.136\n'
+              '- Changelog-Popup direkt in den normalen xShip-Service integriert.\n'
+              '- Irreführende xShip-Fehlermeldung nach dem Update entfernt.\n'
+              '- Der bisherige xShip-Service läuft wieder im vollständigen Kodi-Add-on-Kontext.\n\n'
+              + old + '\n',
+              encoding='utf-8',
+              newline='\n'
+          )
+          PY
+
+          python3 -m py_compile "$ROOT/service.py"
+
+          ROOT="$ROOT" OUT="$OUT" python3 - <<'PY'
+          from pathlib import Path
+          import os, zipfile
+
+          root = Path(os.environ['ROOT'])
+          out = Path(os.environ['OUT'])
+          out.parent.mkdir(parents=True, exist_ok=True)
+          if out.exists():
+              out.unlink()
+
+          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file():
+                      zf.write(p, Path('plugin.video.xship') / p.relative_to(root))
+
+          with zipfile.ZipFile(out, 'r') as zf:
+              names = zf.namelist()
+              assert 'plugin.video.xship/service.py' in names
+              assert 'plugin.video.xship/service_xship.py' not in names
+              service = zf.read('plugin.video.xship/service.py').decode('utf-8')
+              addon = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+              assert "_XSHIP_CHANGELOG_BUILD = '2026.10.02.136'" in service
+              assert 'runpy.run_path' not in service
+              assert '2026.10.02.136' in addon
+          PY
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Verify release
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '2026.10.02.136' zips/addons.xml
+          test -s zips/addons.xml.md5
+          test -s zips/plugin.video.xship/plugin.video.xship-2026.10.02.136.zip
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add zips/plugin.video.xship/plugin.video.xship-2026.10.02.136.zip zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
+          git commit -m "Release xShip 2026.10.02.136 without changelog service error" || exit 0
+          git push
