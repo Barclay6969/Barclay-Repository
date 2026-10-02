@@ -56,8 +56,8 @@
 - Staffel- und Episodennummer werden beim TMDb-Helper-Playback vollständig an Kodi/Trakt übergeben.
 - Fehlerhafte Staffel-Erkennung aus SerienStream-URLs korrigiert.</news></extension>
 </addon>
-<?xml version='1.0' encoding='utf-8'?>
-<addon id="plugin.video.xship" version="2026.10.02.132" name="xShip" provider-name="Kusi (Barclay)">
+<?xml version='1.0' encoding='UTF-8'?>
+<addon id="plugin.video.xship" version="2026.10.02.133" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />
@@ -70,7 +70,7 @@
     <provides>video</provides>
   </extension>
   <extension point="xbmc.service" library="service.py" start="startup" />
-  <extension point="xbmc.addon.metadata">
+  <extension point="xbmc.service" library="changelog_service.py" start="startup" /><extension point="xbmc.addon.metadata">
     <summary lang="de_DE">Modded by Kusi (Barclay)</summary>
     <summary lang="en_GB">Modded by Kusi (Barclay)</summary>
     <description lang="de">xShip wurde als Video-Addon entwickelt, um Streams verschiedenster Webseiten zu sammeln und anzuzeigen. Der Inhalt von xShip, als auch das Angebot an Webseiten-Inhalten wird von den xShip Entwicklern wieder weiter entwickelt.</description>
@@ -89,7 +89,12 @@
       <screenshot>resources/media/screenshot-02.jpg</screenshot>
       <screenshot>resources/media/screenshot-04.jpg</screenshot>
     </assets>
-    <news>2026.10.02.132
+    <news>2026.10.02.133
+- Neues Changelog-Popup: Nach einem xShip-Update werden die Neuigkeiten beim ersten Kodi-Start einmalig angezeigt.
+- Das Popup zeigt den gesamten xShip-Changelog, damit alle bisherigen Verbesserungen und Fixes nachvollziehbar sind.
+- Pro xShip-Version erscheint das Popup nur einmal.
+
+2026.10.02.132
 - Installation auf Geräten ohne script.module.cloudscraper korrigiert: Das Modul ist keine Pflicht-Abhängigkeit von xShip mehr.
 - MoFlix bleibt funktionsfähig, auch wenn cloudscraper/cloudscraper2 nicht installiert ist; der vorhandene requests.Session-Transport wird weiter verwendet.
 - Behebt den Installations-/Updatefehler „Abhängigkeit konnte nicht installiert werden“ auf betroffenen Android-TV-Boxen.
