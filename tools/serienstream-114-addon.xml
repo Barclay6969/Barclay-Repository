@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.serienstream" name="SerienStream" version="1.0.14" provider-name="Barclay (Kusi)">
+	<requires>
+		<import addon="xbmc.python" version="3.0.0"/>
+		<import addon="script.module.requests"/>
+		<import addon="script.module.resolveurl" version="5.1.173"/>
+		<import addon="script.module.six" version="1.11.0"/>
+		<import addon="script.module.pyaes"/>
+		<import addon="repository.resolveurl" optional="true"/>
+		<import addon="script.module.inputstreamhelper" version="0.3.3" optional="true"/>
+	</requires>
+	<extension point="xbmc.python.pluginsource" library="default.py">
+		<provides>video</provides>
+	</extension>
+	<extension point="xbmc.service" library="service.py" start="startup" />
+	<extension point="xbmc.addon.metadata">
+		<summary lang="de">SerienStream - Serien Streaming</summary>
+		<summary lang="en_GB">SerienStream - Series Streaming</summary>
+		<description lang="de">SerienStream ist ein eigenständiges Serien-Streaming Addon für Kodi. Basierend auf xStream, optimiert für SerienStream.</description>
+		<description lang="en_GB">SerienStream is a standalone series streaming addon for Kodi. Based on xStream, optimized for SerienStream.</description>
+		<disclaimer lang="de">Der bereitgestellte Inhalt der Webseiten steht in keinem Bezug zu diesem Addon oder den Entwicklern!</disclaimer>
+		<disclaimer lang="en_GB">The content provided on the websites has no connection to this addon or the developers!</disclaimer>
+		<language>de en</language>
+		<platform>all</platform>
+		<license>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007</license>
+		<assets>
+			<icon>resources/icon.jpg</icon>
+		</assets>
+	</extension>
+</addon>
