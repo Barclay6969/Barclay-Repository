@@ -1,0 +1,35 @@
+name: Extract SerienStream 1.0.14 player
+
+on:
+  push:
+    paths:
+      - '.github/workflows/extract-serienstream-114-player.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract player.py
+        shell: bash
+        run: |
+          set -euo pipefail
+          TMP="$RUNNER_TEMP/ss114"
+          rm -rf "$TMP"
+          mkdir -p "$TMP"
+          unzip -q zips/plugin.video.serienstream/plugin.video.serienstream-1.0.14.zip -d "$TMP"
+          ROOT="$(find "$TMP" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          cp "$ROOT/resources/lib/player.py" tools/serienstream-114-player.py
+      - name: Commit extracted player
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add tools/serienstream-114-player.py
+          git commit -m "Extract SerienStream 1.0.14 player for Trakt fix" || exit 0
+          git push
