@@ -25,6 +25,7 @@ jobs:
           ROOT="$(find "$TMP" -type f -name addon.xml -printf '%h\n' | head -n1)"
           cp "$ROOT/resources/lib/player.py" tools/serienstream-114-player.py
           cp "$ROOT/addon.xml" tools/serienstream-114-addon.xml
+          cp "$ROOT/resources/lib/gui/guiElement.py" tools/serienstream-114-guielement.py
           cp "$ROOT/resources/lib/gui/gui.py" tools/serienstream-114-gui.py
           cp "$ROOT/sites/serienstream.py" tools/serienstream-114-site.py
       - name: Commit extracted player
@@ -33,6 +34,6 @@ jobs:
           set -euo pipefail
           git config user.name "Barclay Repo Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add tools/serienstream-114-player.py tools/serienstream-114-addon.xml tools/serienstream-114-gui.py tools/serienstream-114-site.py
+          git add tools/serienstream-114-player.py tools/serienstream-114-addon.xml tools/serienstream-114-gui.py tools/serienstream-114-site.py tools/serienstream-114-guielement.py
           git commit -m "Extract SerienStream 1.0.14 player for Trakt fix" || exit 0
           git push
