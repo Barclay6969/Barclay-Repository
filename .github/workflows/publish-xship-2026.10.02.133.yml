@@ -1,0 +1,210 @@
+name: Publish xShip 2026.10.02.133 changelog popup
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-xship-2026.10.02.133.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build xShip 2026.10.02.133
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.10.02.132.zip'
+          OUT='zips/plugin.video.xship/plugin.video.xship-2026.10.02.133.zip'
+          WORK="$RUNNER_TEMP/xship133"
+
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          export ROOT OUT
+
+          cat > "$ROOT/changelog_service.py" <<'PY'
+          # -*- coding: utf-8 -*-
+          import os
+          import xbmc
+          import xbmcaddon
+          import xbmcgui
+          import xbmcvfs
+
+          ADDON = xbmcaddon.Addon()
+          VERSION = ADDON.getAddonInfo('version')
+          PROFILE = xbmcvfs.translatePath(ADDON.getAddonInfo('profile'))
+          ADDON_PATH = xbmcvfs.translatePath(ADDON.getAddonInfo('path'))
+          MARKER = os.path.join(PROFILE, 'changelog_seen_version.txt')
+          CHANGELOG = os.path.join(ADDON_PATH, 'changelog.txt')
+
+          def _read(path):
+              try:
+                  if not xbmcvfs.exists(path):
+                      return ''
+                  f = xbmcvfs.File(path)
+                  data = f.read()
+                  f.close()
+                  return data or ''
+              except Exception:
+                  return ''
+
+          def _write(path, data):
+              try:
+                  if not xbmcvfs.exists(PROFILE):
+                      xbmcvfs.mkdirs(PROFILE)
+                  f = xbmcvfs.File(path, 'w')
+                  f.write(data)
+                  f.close()
+              except Exception:
+                  pass
+
+          monitor = xbmc.Monitor()
+
+          # Kodi zuerst vollständig hochfahren lassen.
+          if not monitor.waitForAbort(6):
+              last_seen = _read(MARKER).strip()
+              if last_seen != VERSION:
+                  changelog = _read(CHANGELOG).strip()
+                  if changelog:
+                      try:
+                          xbmcgui.Dialog().textviewer(
+                              'xShip – Neuigkeiten / Changelog',
+                              changelog
+                          )
+                      except Exception:
+                          pass
+                  _write(MARKER, VERSION)
+          PY
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          import xml.etree.ElementTree as ET
+
+          root = Path(os.environ['ROOT'])
+          addon = root / 'addon.xml'
+          tree = ET.parse(addon)
+          r = tree.getroot()
+
+          old = r.get('version')
+          assert old == '2026.10.02.132', old
+          r.set('version', '2026.10.02.133')
+
+          # Eigenen kleinen Startup-Service ergänzen, bestehenden xShip-Service unangetastet lassen.
+          exists = any(
+              e.get('point') == 'xbmc.service' and e.get('library') == 'changelog_service.py'
+              for e in r.findall('extension')
+          )
+          if not exists:
+              service = ET.Element('extension', {
+                  'point': 'xbmc.service',
+                  'library': 'changelog_service.py',
+                  'start': 'startup'
+              })
+              metadata_index = len(r)
+              for idx, e in enumerate(list(r)):
+                  if e.tag == 'extension' and e.get('point') == 'xbmc.addon.metadata':
+                      metadata_index = idx
+                      break
+              r.insert(metadata_index, service)
+
+          metadata = next(
+              e for e in r.findall('extension')
+              if e.get('point') == 'xbmc.addon.metadata'
+          )
+          news = metadata.find('news')
+          current_news = (news.text or '').strip() if news is not None else ''
+          entry = (
+              '2026.10.02.133\n'
+              '- Neues Changelog-Popup: Nach einem xShip-Update werden die Neuigkeiten beim ersten Kodi-Start einmalig angezeigt.\n'
+              '- Das Popup zeigt den gesamten xShip-Changelog, damit alle bisherigen Verbesserungen und Fixes nachvollziehbar sind.\n'
+              '- Pro xShip-Version erscheint das Popup nur einmal.\n\n'
+          )
+          if news is None:
+              news = ET.SubElement(metadata, 'news')
+          if not current_news.startswith('2026.10.02.133'):
+              news.text = entry + current_news
+
+          tree.write(addon, encoding='UTF-8', xml_declaration=True)
+
+          changelog = root / 'changelog.txt'
+          if changelog.exists():
+              current = changelog.read_text(encoding='utf-8-sig').strip()
+          else:
+              current = current_news
+          entry = (
+              'xShip – Changelog\n\n'
+              '2026.10.02.133\n'
+              '- Neues Changelog-Popup: Nach einem xShip-Update werden die Neuigkeiten beim ersten Kodi-Start einmalig angezeigt.\n'
+              '- Das Popup zeigt den gesamten xShip-Changelog, damit alle bisherigen Verbesserungen und Fixes nachvollziehbar sind.\n'
+              '- Pro xShip-Version erscheint das Popup nur einmal.\n\n'
+          )
+          # Falls die bestehende Datei bereits eine Überschrift trägt, keine zweite erzeugen.
+          if current.startswith('xShip'):
+              parts = current.split('\n', 2)
+              tail = parts[2] if len(parts) > 2 else ''
+              content = entry + tail
+          elif current:
+              content = entry + current
+          else:
+              content = entry
+          changelog.write_text(content.rstrip() + '\n', encoding='utf-8', newline='\n')
+          PY
+
+          python3 -m py_compile "$ROOT/changelog_service.py"
+
+          ROOT="$ROOT" OUT="$OUT" python3 - <<'PY'
+          from pathlib import Path
+          import os, zipfile, xml.etree.ElementTree as ET
+
+          root = Path(os.environ['ROOT'])
+          out = Path(os.environ['OUT'])
+          out.parent.mkdir(parents=True, exist_ok=True)
+          if out.exists():
+              out.unlink()
+
+          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file():
+                      zf.write(p, Path('plugin.video.xship') / p.relative_to(root))
+
+          with zipfile.ZipFile(out, 'r') as zf:
+              names = zf.namelist()
+              assert 'plugin.video.xship/changelog_service.py' in names
+              assert 'plugin.video.xship/changelog.txt' in names
+              addon_text = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+              changelog_text = zf.read('plugin.video.xship/changelog.txt').decode('utf-8')
+              assert 'version="2026.10.02.133"' in addon_text or "version='2026.10.02.133'" in addon_text
+              assert 'changelog_service.py' in addon_text
+              assert '2026.10.02.133' in changelog_text
+          print('Built', out)
+          PY
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Verify release
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'plugin.video.xship' zips/addons.xml
+          grep -q '2026.10.02.133' zips/addons.xml
+          test -s zips/addons.xml.md5
+          test -s zips/plugin.video.xship/plugin.video.xship-2026.10.02.133.zip
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add zips/plugin.video.xship/plugin.video.xship-2026.10.02.133.zip zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
+          git commit -m "Release xShip 2026.10.02.133 with changelog popup" || exit 0
+          git push
