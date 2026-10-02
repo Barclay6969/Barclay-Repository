@@ -35,8 +35,8 @@ jobs:
           addon = root / 'addon.xml'
           player = root / 'resources' / 'lib' / 'player.py'
           text = addon.read_text(encoding='utf-8-sig')
-          text, n = re.subn(r'(<addon\s+id="plugin\.video\.serienstream"\s+name="SerienStream"\s+version=")[^"]+(")', r'\g<1>1.0.15\2', text, count=1)
-          assert n == 1
+          text, n = re.subn(r'version="1\\.0\\.14"', 'version="1.0.15"', text, count=1)
+          assert n == 1, 'SerienStream version not found'
           addon.write_text(text, encoding='utf-8', newline='\n')
           s = player.read_text(encoding='utf-8-sig')
           needle = "        return xbmcPlayer.streamSuccess\n"
