@@ -23,16 +23,16 @@
   </extension>
 </addon>
 
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <addon id="plugin.video.serienstream" name="SerienStream" version="1.0.17" provider-name="Barclay (Kusi)">
 	<requires>
-		<import addon="xbmc.python" version="3.0.0"/>
-		<import addon="script.module.requests"/>
-		<import addon="script.module.resolveurl" version="5.1.173"/>
-		<import addon="script.module.six" version="1.11.0"/>
-		<import addon="script.module.pyaes"/>
-		<import addon="repository.resolveurl" optional="true"/>
-		<import addon="script.module.inputstreamhelper" version="0.3.3" optional="true"/>
+		<import addon="xbmc.python" version="3.0.0" />
+		<import addon="script.module.requests" />
+		<import addon="script.module.resolveurl" version="5.1.173" />
+		<import addon="script.module.six" version="1.11.0" />
+		<import addon="script.module.pyaes" />
+		<import addon="repository.resolveurl" optional="true" />
+		<import addon="script.module.inputstreamhelper" version="0.3.3" optional="true" />
 	</requires>
 	<extension point="xbmc.python.pluginsource" library="default.py">
 		<provides>video</provides>
@@ -51,9 +51,11 @@
 		<assets>
 			<icon>resources/icon.jpg</icon>
 		</assets>
-	</extension>
+	<news>1.0.17
+- Trakt-Bewertungsdialog nach Serienwiedergabe wiederhergestellt.
+- Staffel- und Episodennummer werden beim TMDb-Helper-Playback vollständig an Kodi/Trakt übergeben.
+- Fehlerhafte Staffel-Erkennung aus SerienStream-URLs korrigiert.</news></extension>
 </addon>
-
 <?xml version='1.0' encoding='utf-8'?>
 <addon id="plugin.video.xship" version="2026.10.02.132" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
