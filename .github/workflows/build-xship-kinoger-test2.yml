@@ -1,0 +1,90 @@
+name: Build xShip KinoGer TEST2
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-xship-kinoger-test2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='test-builds/plugin.video.xship-2026.10.05.138-KINOGER-TEST1.zip'
+          OUT='test-builds/plugin.video.xship-2026.10.05.139-KINOGER-TEST2.zip'
+          WORK="$RUNNER_TEMP/xship-kinoger-test2"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          export ROOT OUT
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, xml.etree.ElementTree as ET
+
+          root = Path(os.environ['ROOT'])
+          p = root / 'scrapers/scrapers_source/de/kinoger.py'
+          s = p.read_text(encoding='utf-8-sig')
+          old = "        self.domain = resolve_domain(SITE_IDENTIFIER, SITE_DOMAIN)\n        self.base_link = 'https://' + self.domain"
+          new = "        # KinoGer: feste aktuelle Domain verwenden. Der globale DomainManager\n        # liefert aktuell noch kinoger.com und wuerde kinoger.beer sonst ueberschreiben.\n        self.domain = SITE_DOMAIN\n        self.base_link = 'https://' + self.domain"
+          assert old in s, 'Kinoger domain block not found'
+          s = s.replace(old, new)
+          p.write_text(s, encoding='utf-8', newline='\n')
+
+          addon = root / 'addon.xml'
+          tree = ET.parse(addon)
+          r = tree.getroot()
+          r.set('version', '2026.10.05.139')
+          metadata = next(e for e in r.findall('extension') if e.get('point') == 'xbmc.addon.metadata')
+          news = metadata.find('news')
+          current = (news.text or '').strip() if news is not None else ''
+          entry = (
+              '2026.10.05.139 KINOGER TEST2\n'
+              '- KinoGer: DomainManager fuer diesen Provider umgangen, damit kinoger.beer nicht wieder auf kinoger.com zurueckgesetzt wird.\n'
+              '- TopStreamFilm und MeineCloud-Aenderungen aus den vorherigen Tests bleiben enthalten.\n\n'
+          )
+          if news is None:
+              news = ET.SubElement(metadata, 'news')
+          news.text = entry + current
+          tree.write(addon, encoding='UTF-8', xml_declaration=True)
+          PY
+
+          python3 -m py_compile "$ROOT/scrapers/scrapers_source/de/kinoger.py"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, zipfile
+          root = Path(os.environ['ROOT'])
+          out = Path(os.environ['OUT'])
+          out.parent.mkdir(parents=True, exist_ok=True)
+          if out.exists(): out.unlink()
+          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file():
+                      zf.write(p, Path('plugin.video.xship') / p.relative_to(root))
+          with zipfile.ZipFile(out, 'r') as zf:
+              kg = zf.read('plugin.video.xship/scrapers/scrapers_source/de/kinoger.py').decode('utf-8')
+              addon = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+              assert "self.domain = SITE_DOMAIN" in kg
+              assert "SITE_DOMAIN = 'kinoger.beer'" in kg
+              assert '2026.10.05.139' in addon
+          PY
+
+      - name: Commit test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add test-builds/plugin.video.xship-2026.10.05.139-KINOGER-TEST2.zip
+          git commit -m "Build KinoGer TEST2 with fixed beer domain" || exit 0
+          git push
