@@ -1,0 +1,52 @@
+name: Publish xShip 2026.10.05.141
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-xship-2026.10.05.141.yml'
+      - 'tools/build_xship_release_2026_10_05_141.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build official xShip release
+        run: python3 tools/build_xship_release_2026_10_05_141.py
+
+      - name: Compile check
+        shell: bash
+        run: |
+          set -euo pipefail
+          WORK="$RUNNER_TEMP/xship141"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q zips/plugin.video.xship/plugin.video.xship-2026.10.05.141.zip -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          python3 -m py_compile "$ROOT/service.py" "$ROOT/scrapers/scrapers_source/de/kinoger.py" "$ROOT/scrapers/modules/meinecloud_shared.py"
+
+      - name: Rebuild repository metadata
+        run: python3 tools/make_repo.py
+
+      - name: Verify release
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'plugin.video.xship" version="2026.10.05.141"' zips/addons.xml
+          test -s zips/addons.xml.md5
+          test -s zips/plugin.video.xship/plugin.video.xship-2026.10.05.141.zip
+
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add zips/plugin.video.xship/plugin.video.xship-2026.10.05.141.zip zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
+          git commit -m "Release xShip 2026.10.05.141" || exit 0
+          git push
