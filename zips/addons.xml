@@ -57,7 +57,7 @@
 - Fehlerhafte Staffel-Erkennung aus SerienStream-URLs korrigiert.</news></extension>
 </addon>
 <?xml version='1.0' encoding='UTF-8'?>
-<addon id="plugin.video.xship" version="2026.10.02.136" name="xShip" provider-name="Kusi (Barclay)">
+<addon id="plugin.video.xship" version="2026.10.05.141" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />
@@ -89,7 +89,14 @@
       <screenshot>resources/media/screenshot-02.jpg</screenshot>
       <screenshot>resources/media/screenshot-04.jpg</screenshot>
     </assets>
-    <news>2026.10.02.136
+    <news>2026.10.05.141
+- MeineCloud/FHDFilme: API-Quellensuche wiederhergestellt und stabilisiert.
+- KinoGer: Domain auf kinoger.beer aktualisiert; alte kinoger.com-Einstellung wird beim Start automatisch korrigiert.
+- KinoGer: Suche liefert wieder Quellen; Wiedergabe einzelner 0gomovies.beer-Links hängt von ResolveURL-Unterstützung ab.
+- HDFilme und FHDFilme mit aktuellen Domains und funktionierender Quellensuche bestätigt.
+- TopStreamFilm liefert wieder Quellen.
+
+2026.10.02.136
 - Changelog-Popup direkt in den normalen xShip-Service integriert.
 - Entfernt die irreführende xShip-Fehlermeldung nach dem Update.
 - Der bisherige xShip-Service läuft wieder im vollständigen Kodi-Add-on-Kontext.
