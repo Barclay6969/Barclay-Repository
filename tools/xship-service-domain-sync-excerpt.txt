@@ -1,0 +1,170 @@
+149-        if '://' in value:
+150-            value = (urlparse(value).hostname or value).lower()
+151-        else:
+152-            value = value.split('/')[0].strip()
+153-    except Exception:
+154-        pass
+155-    return value
+156-
+157-
+158-def _provider_source_file(provider):
+159-    return os.path.join(addonPath, 'scrapers', 'scrapers_source', 'de', '%s.py' % provider)
+160-
+161-
+162-def _write_provider_source_domain(provider, domain):
+163-    """Schreibt eine manuell geaenderte Domain zurueck in SITE_DOMAIN des Scrapers."""
+164-    domain = _normalize_provider_domain(domain)
+165-    if not provider or not domain:
+166-        return False
+167-    sourcefile = _provider_source_file(provider)
+168-    try:
+169-        with open(sourcefile, 'r', encoding='utf-8') as fh:
+170-            contents = fh.read()
+171-        pattern = r"(^\s*SITE_DOMAIN\s*=\s*['\"])([^'\"]+)(['\"])"
+172-        match = re.search(pattern, contents, flags=re.MULTILINE)
+173-        if not match:
+174-            return False
+175-        old_domain = _normalize_provider_domain(match.group(2))
+176-        if old_domain == domain:
+177-            return True
+178-        updated = contents[:match.start(2)] + domain + contents[match.end(2):]
+179-        tmpfile = sourcefile + '.domain-sync.tmp'
+180-        with open(tmpfile, 'w', encoding='utf-8', newline='') as fh:
+181-            fh.write(updated)
+182-        os.replace(tmpfile, sourcefile)
+183-        if isLogger:
+184:            logger.info(' -> [service]: Domain-Sync Setting -> Scraper %s: %s -> %s' % (provider, old_domain, domain))
+185-        return True
+186-    except Exception as exc:
+187-        if isLogger:
+188:            logger.warning(' -> [service]: Domain-Sync konnte Scraper %s nicht schreiben: %s' % (provider, str(exc)))
+189-        return False
+190-
+191-
+192-def sync_provider_domains():
+193:    """Bidirektionale Domain-Synchronisierung zwischen Kodi-Settings und Scraper-Dateien.
+194-
+195-    Pro Provider wird die zuletzt bekannte Scraper-Domain im Addon-Profil gemerkt.
+196-    Dadurch kann xShip unterscheiden:
+197-      * Scraper-Domain hat sich durch ein Addon-Update geaendert -> Setting nachziehen.
+198-      * Benutzer hat die Domain im Addon geaendert -> SITE_DOMAIN im Scraper nachziehen.
+199-
+200-    Manuelle Benutzerwerte haben Vorrang, wenn sie bereits von der zuletzt bekannten
+201-    Scraper-Domain abweichen. So werden bewusste Overrides bei einem Update nicht geloescht.
+202-    """
+203-    try:
+204-        if not os.path.isdir(addonProfilePath):
+205-            os.makedirs(addonProfilePath)
+206-        state_file = os.path.join(addonProfilePath, 'domain_sync.json')
+207-        try:
+208-            with open(state_file, 'r', encoding='utf-8') as fh:
+209-                state = json.load(fh)
+210-            if not isinstance(state, dict):
+211-                state = {}
+212-        except Exception:
+213-            state = {}
+214-
+215-        changed = False
+216-        for item in _getPluginData():
+217-            provider = (item.get('provider') or '').strip()
+218-            source_domain = _normalize_provider_domain(item.get('domain'))
+219-            if not provider or not source_domain:
+220-                continue
+221-
+222-            key = 'provider.%s.domain' % provider
+223-            current = _normalize_provider_domain(getSetting(key, ''))
+224-            previous_source = _normalize_provider_domain(state.get(provider, ''))
+225-
+226-            # Einmalige Bruecke fuer Installationen vor der neuen Sync-Logik.
+227-            # .08.16 brachte MegaKino 14 -> 15, Kodi behielt aber den alten gespeicherten Wert.
+228-            if (not previous_source and provider == 'megakino' and
+229-                    current == 'megakino14.com' and source_domain == 'megakino15.com'):
+230-                setSetting(key, source_domain)
+231-                current = source_domain
+232-                changed = True
+233-                if isLogger:
+234:                    logger.info(' -> [service]: Domain-Sync Migration megakino: megakino14.com -> megakino15.com')
+235-
+236-            if not previous_source:
+237-                # Erste Initialisierung: vorhandenen abweichenden Benutzerwert respektieren.
+238-                if not current:
+239-                    setSetting(key, source_domain)
+240-                    current = source_domain
+241-                    changed = True
+242-                elif current != source_domain:
+243-                    if _write_provider_source_domain(provider, current):
+244-                        source_domain = current
+245-                        changed = True
+246-                state[provider] = source_domain
+247-                continue
+248-
+249-            if source_domain != previous_source:
+250-                # Scraper wurde durch ein Addon-Update geaendert.
+251-                if not current or current == previous_source:
+252-                    setSetting(key, source_domain)
+253-                    current = source_domain
+254-                    changed = True
+255-                    if isLogger:
+256:                        logger.info(' -> [service]: Domain-Sync Scraper -> Setting %s: %s -> %s' % (provider, previous_source, source_domain))
+257-                else:
+258-                    # Benutzer hatte bereits einen bewussten Override: behalten und in den
+259-                    # frisch aktualisierten Scraper zurueckschreiben.
+260-                    if _write_provider_source_domain(provider, current):
+261-                        source_domain = current
+262-                        changed = True
+263-            elif current and current != source_domain:
+264-                # Setting wurde seit dem letzten Lauf durch den Benutzer geaendert.
+265-                if _write_provider_source_domain(provider, current):
+266-                    source_domain = current
+267-                    changed = True
+268-            elif not current:
+269-                setSetting(key, source_domain)
+270-                current = source_domain
+271-                changed = True
+272-
+273-            state[provider] = source_domain
+274-
+275-        tmp_state = state_file + '.tmp'
+276-        with open(tmp_state, 'w', encoding='utf-8') as fh:
+277-            json.dump(state, fh, ensure_ascii=False, indent=2, sort_keys=True)
+278-        os.replace(tmp_state, state_file)
+279-        if isLogger and changed:
+280:            logger.info(' -> [service]: Bidirektionaler Domain-Sync abgeschlossen')
+281-    except Exception as exc:
+282-        if isLogger:
+283:            logger.warning(' -> [service]: Bidirektionaler Domain-Sync fehlgeschlagen: %s' % str(exc))
+284-
+285-
+286-def repair_blocked_provider_domains():
+287-    """Repariert alte, bereits gespeicherte ISP-/CUII-Domainwerte sofort beim Start.
+288-
+289-    Der normale Domain-Check hat ein 90-Minuten-Intervall. Deshalb konnten alte
+290-    vodafone.de-Werte nach einem Addon-Update sichtbar bleiben. Diese Migration
+291-    laeuft bewusst unabhaengig davon bei jedem Service-Start.
+292-    """
+293-    try:
+294-        wrong = {
+295-            'vodafone.de', 'www.vodafone.de', 'notice.cuii.info',
+296-            'site-maps.cc', 'drei.at', 'www.drei.at', 'streamingunity.biz'
+297-        }
+298-        for item in _getPluginData():
+299-            provider = item.get('provider', '')
+300-            source_domain = (item.get('domain', '') or '').strip().lower()
+301-            if not provider or not source_domain or source_domain in wrong:
+302-                continue
+303-            key = 'provider.' + provider + '.domain'
+304-            current = (getSetting(key, '') or '').strip().lower()
+305-            if current in wrong:
+306-                setSetting(key, source_domain)
+307-                if isLogger:
+308-                    logger.info(' -> [service]: reparierte Provider-Domain %s: %s -> %s' % (provider, current, source_domain))
+309-    except Exception:
+310-        pass
+311-
+312-
+313-def check_domains():
+314-    """Prueft alle Provider-Domains parallel per HTTP HEAD.
+315-    Ergebnisse werden in Kodi-Settings geschrieben
+316-    (domain_status: 'ok', 'cf_blocked', 'dead')."""
+317-    import time
+318-    CHECK_INTERVAL = 60 * 90  # 90 Minuten in Sekunden
