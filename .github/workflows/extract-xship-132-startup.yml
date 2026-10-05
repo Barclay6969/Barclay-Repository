@@ -27,13 +27,15 @@ jobs:
           cp "$ROOT/addon.xml" tools/xship-132-addon.xml
           cp "$ROOT/service.py" tools/xship-132-service.py
           if [ -f "$ROOT/changelog.txt" ]; then cp "$ROOT/changelog.txt" tools/xship-132-changelog.txt; fi
+          cp "$ROOT/scrapers/modules/meinecloud_shared.py" tools/xship-132-meinecloud_shared.py
+          cp "$ROOT/scrapers/scrapers_source/de/meinecloud.py" tools/xship-132-meinecloud.py
       - name: Commit extracted files
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "Barclay Repo Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add tools/xship-132-addon.xml tools/xship-132-service.py
+          git add tools/xship-132-addon.xml tools/xship-132-service.py tools/xship-132-meinecloud_shared.py tools/xship-132-meinecloud.py
           if [ -f tools/xship-132-changelog.txt ]; then git add tools/xship-132-changelog.txt; fi
           git commit -m "Extract xShip 2026.10.02.132 startup files" || exit 0
           git push
