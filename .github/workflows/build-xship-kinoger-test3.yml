@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/build-xship-kinoger-test3.yml'
+      - 'tools/build_xship_kinoger_test3.py'
   workflow_dispatch:
 
 permissions:
@@ -15,107 +16,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build test ZIP
+        run: python3 tools/build_xship_kinoger_test3.py
+      - name: Compile check
         shell: bash
         run: |
           set -euo pipefail
-          BASE='test-builds/plugin.video.xship-2026.10.05.139-KINOGER-TEST2.zip'
-          OUT='test-builds/plugin.video.xship-2026.10.05.140-KINOGER-TEST3.zip'
-          WORK="$RUNNER_TEMP/xship-kinoger-test3"
+          WORK="$RUNNER_TEMP/verify140"
           rm -rf "$WORK"
           mkdir -p "$WORK"
-          unzip -q "$BASE" -d "$WORK"
+          unzip -q test-builds/plugin.video.xship-2026.10.05.140-KINOGER-TEST3.zip -d "$WORK"
           ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
-          export ROOT OUT
-
-          python3 - <<'PY'
-          from pathlib import Path
-          import os, xml.etree.ElementTree as ET
-
-          root = Path(os.environ['ROOT'])
-
-          # 1) KinoGer scraper stays hard-pinned to the currently valid domain.
-          p = root / 'scrapers/scrapers_source/de/kinoger.py'
-          s = p.read_text(encoding='utf-8-sig')
-          s = s.replace("SITE_DOMAIN = 'kinoger.com'", "SITE_DOMAIN = 'kinoger.beer'")
-          p.write_text(s, encoding='utf-8', newline='\n')
-
-          # 2) Prevent bidirectional domain sync from restoring the stale .com override.
-          service = root / 'service.py'
-          text = service.read_text(encoding='utf-8-sig')
-          needle = """            provider = (item.get('provider') or '').strip()
-            source_domain = _normalize_provider_domain(item.get('domain'))
-            if not provider or not source_domain:
-                continue
-
-            key = 'provider.%s.domain' % provider
-"""
-          replacement = """            provider = (item.get('provider') or '').strip()
-            source_domain = _normalize_provider_domain(item.get('domain'))
-            if not provider or not source_domain:
-                continue
-
-            # KinoGer moved from kinoger.com to kinoger.beer.
-            # Do not let an old saved setting rewrite SITE_DOMAIN back to .com.
-            if provider == 'kinoger':
-                forced_domain = 'kinoger.beer'
-                key = 'provider.%s.domain' % provider
-                current_kinoger = _normalize_provider_domain(getSetting(key, ''))
-                if current_kinoger != forced_domain:
-                    setSetting(key, forced_domain)
-                    changed = True
-                    if isLogger:
-                        logger.info(' -> [service]: KinoGer Domain fix: %s -> %s' % (current_kinoger or '<leer>', forced_domain))
-                state[provider] = forced_domain
-                continue
-
-            key = 'provider.%s.domain' % provider
-"""
-          assert needle in text, 'sync_provider_domains insertion point not found'
-          text = text.replace(needle, replacement, 1)
-          service.write_text(text, encoding='utf-8', newline='\n')
-
-          addon = root / 'addon.xml'
-          tree = ET.parse(addon)
-          r = tree.getroot()
-          r.set('version', '2026.10.05.140')
-          metadata = next(e for e in r.findall('extension') if e.get('point') == 'xbmc.addon.metadata')
-          news = metadata.find('news')
-          current = (news.text or '').strip() if news is not None else ''
-          entry = (
-              '2026.10.05.140 KINOGER TEST3\n'
-              '- KinoGer: alte gespeicherte kinoger.com-Domain wird beim Start automatisch auf kinoger.beer korrigiert.\n'
-              '- Bidirektionaler Domain-Sync darf KinoGer nicht mehr zurueck auf .com schreiben.\n'
-              '- MeineCloud-Fix und vorherige Aenderungen bleiben enthalten.\n\n'
-          )
-          if news is None:
-              news = ET.SubElement(metadata, 'news')
-          news.text = entry + current
-          tree.write(addon, encoding='UTF-8', xml_declaration=True)
-          PY
-
           python3 -m py_compile "$ROOT/service.py" "$ROOT/scrapers/scrapers_source/de/kinoger.py"
-
-          python3 - <<'PY'
-          from pathlib import Path
-          import os, zipfile
-          root = Path(os.environ['ROOT'])
-          out = Path(os.environ['OUT'])
-          out.parent.mkdir(parents=True, exist_ok=True)
-          if out.exists(): out.unlink()
-          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
-              for p in sorted(root.rglob('*')):
-                  if p.is_file():
-                      zf.write(p, Path('plugin.video.xship') / p.relative_to(root))
-          with zipfile.ZipFile(out, 'r') as zf:
-              kg = zf.read('plugin.video.xship/scrapers/scrapers_source/de/kinoger.py').decode('utf-8')
-              service = zf.read('plugin.video.xship/service.py').decode('utf-8')
-              addon = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
-              assert "SITE_DOMAIN = 'kinoger.beer'" in kg
-              assert "if provider == 'kinoger':" in service
-              assert "forced_domain = 'kinoger.beer'" in service
-              assert '2026.10.05.140' in addon
-          PY
-
       - name: Commit test ZIP
         shell: bash
         run: |
