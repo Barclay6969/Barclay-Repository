@@ -1,0 +1,36 @@
+name: Extract xShip 136 KinoGer
+
+on:
+  push:
+    paths:
+      - '.github/workflows/extract-xship-136-kinoger.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract KinoGer
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP='zips/plugin.video.xship/plugin.video.xship-2026.10.02.136.zip'
+          WORK="$RUNNER_TEMP/xship136"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$ZIP" -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          cp "$ROOT/scrapers/scrapers_source/de/kinoger.py" tools/xship-136-kinoger.py
+      - name: Commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add tools/xship-136-kinoger.py
+          git commit -m "Extract KinoGer source from xShip 136" || exit 0
+          git push
