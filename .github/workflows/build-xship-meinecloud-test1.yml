@@ -1,0 +1,75 @@
+name: Build xShip MeineCloud TEST1
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-xship-meinecloud-test1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='zips/plugin.video.xship/plugin.video.xship-2026.10.02.136.zip'
+          OUT='test-builds/plugin.video.xship-2026.10.05.137-MEINECLOUD-TEST1.zip'
+          WORK="$RUNNER_TEMP/xship-mc-test1"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$BASE" -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          cp 'tools/current-xship-105/scrapers/modules/meinecloud_shared.py' "$ROOT/scrapers/modules/meinecloud_shared.py"
+
+          python3 - "$ROOT" "$OUT" <<'PY'
+          from pathlib import Path
+          import sys, zipfile, xml.etree.ElementTree as ET
+          root = Path(sys.argv[1]); out = Path(sys.argv[2])
+
+          addon = root / 'addon.xml'
+          tree = ET.parse(addon)
+          r = tree.getroot()
+          r.set('version', '2026.10.05.137')
+          metadata = next(e for e in r.findall('extension') if e.get('point') == 'xbmc.addon.metadata')
+          news = metadata.find('news')
+          current = (news.text or '').strip() if news is not None else ''
+          entry = (
+              '2026.10.05.137 MEINECLOUD TEST1\n'
+              '- MeineCloud: funktionierende DeVideoSRC Token-API aus xShip 2026.09.28.105 wiederhergestellt.\n'
+              '- Filmweg: /movie/<IMDb> -> Token -> /api/embed-links.\n\n'
+          )
+          if news is None:
+              news = ET.SubElement(metadata, 'news')
+          news.text = entry + current
+          tree.write(addon, encoding='UTF-8', xml_declaration=True)
+
+          out.parent.mkdir(parents=True, exist_ok=True)
+          if out.exists(): out.unlink()
+          with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as zf:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file():
+                      zf.write(p, Path('plugin.video.xship') / p.relative_to(root))
+
+          with zipfile.ZipFile(out, 'r') as zf:
+              src = zf.read('plugin.video.xship/scrapers/modules/meinecloud_shared.py').decode('utf-8')
+              addon_text = zf.read('plugin.video.xship/addon.xml').decode('utf-8')
+              assert '/api/embed-links' in src
+              assert '[xShip MEINECLOUD-API]' in src
+              assert '2026.10.05.137' in addon_text
+          PY
+
+      - name: Commit test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add test-builds/plugin.video.xship-2026.10.05.137-MEINECLOUD-TEST1.zip
+          git commit -m "Build MeineCloud TEST1 from xShip 136" || exit 0
+          git push
