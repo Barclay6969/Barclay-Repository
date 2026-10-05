@@ -1,5 +1,4 @@
 <addons>
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="repository.barclay" name="Barclay Repository" version="1.0.4" provider-name="Barclay">
   <extension point="xbmc.addon.repository" name="Barclay Repository">
     <dir>
@@ -23,7 +22,6 @@
   </extension>
 </addon>
 
-<?xml version='1.0' encoding='UTF-8'?>
 <addon id="plugin.video.serienstream" name="SerienStream" version="1.0.17" provider-name="Barclay (Kusi)">
 	<requires>
 		<import addon="xbmc.python" version="3.0.0" />
@@ -56,7 +54,6 @@
 - Staffel- und Episodennummer werden beim TMDb-Helper-Playback vollständig an Kodi/Trakt übergeben.
 - Fehlerhafte Staffel-Erkennung aus SerienStream-URLs korrigiert.</news></extension>
 </addon>
-<?xml version='1.0' encoding='UTF-8'?>
 <addon id="plugin.video.xship" version="2026.10.05.141" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
@@ -254,7 +251,6 @@
 - SerienStream-Resolver, Session-Flow, Domain-Fallbacks und Hoster-Auflösung schrittweise verbessert.</news>
   </extension>
 </addon>
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.youtube" name="YouTube" version="7.4.4+barclay.1" provider-name="anxdpanic, bromix, MoojMidge">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
@@ -388,6 +384,27 @@
 
 ### New
 - Add option to play YouTube error notification video upon playback failure</news></extension>
+</addon>
+
+<addon id="service.kodi.autoupdate"
+       name="Kodi AutoUpdate"
+       version="1.0.1"
+       provider-name="Barclay (Kusi)">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+    </requires>
+
+    <extension point="xbmc.service" library="service.py" start="startup"/>
+
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en_GB">Checks add-on repositories for updates on every Kodi start.</summary>
+        <summary lang="de_DE">Prüft bei jedem Kodi-Start die Add-on-Repositories auf Aktualisierungen.</summary>
+        <description lang="en_GB">Waits at least 90 seconds after startup and for a quiet period, then requests one non-blocking repository refresh. Local add-ons are not rescanned. If Kodi is configured to install updates automatically, available updates can then be installed automatically.</description>
+        <description lang="de_DE">Wartet nach dem Kodi-Start mindestens 90 Sekunden und eine Ruhephase ab. Fordert danach einmalig eine Repositoryprüfung ohne blockierenden Aufruf an. Kein erneuter Scan der lokalen Add-ons. Wenn Kodi auf automatische Installation von Updates eingestellt ist, können verfügbare Updates anschliessend automatisch installiert werden.</description>
+        <news>1.0.1: Blockierende Aufrufe und lokalen Add-on-Scan entfernt. Startverzögerung und Ruhephase ergänzt; wartet bei Wiedergabe und Bibliotheksscans.</news>
+        <platform>all</platform>
+        <license>MIT</license>
+    </extension>
 </addon>
 
 </addons>
