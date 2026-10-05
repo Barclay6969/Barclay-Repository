@@ -1,0 +1,36 @@
+name: Extract xShip service domain sync excerpt
+
+on:
+  push:
+    paths:
+      - '.github/workflows/extract-xship-service-domain-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract excerpt
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP='test-builds/plugin.video.xship-2026.10.05.139-KINOGER-TEST2.zip'
+          WORK="$RUNNER_TEMP/xship-service"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q "$ZIP" -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          grep -n -B 35 -A 35 'Domain-Sync' "$ROOT/service.py" > tools/xship-service-domain-sync-excerpt.txt || true
+      - name: Commit excerpt
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add tools/xship-service-domain-sync-excerpt.txt
+          git commit -m "Extract xShip service domain sync excerpt" || exit 0
+          git push
