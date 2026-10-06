@@ -1,0 +1,31 @@
+name: Inspect xShip KinoX 2026.10.06
+
+on:
+  push:
+    paths:
+      - '.github/workflows/inspect-xship-kinox-2026.10.06.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract current KinoX source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p test-builds
+          unzip -p zips/plugin.video.xship/plugin.video.xship-2026.10.05.141.zip plugin.video.xship/scrapers/scrapers_source/de/kinox.py > test-builds/kinox-current-2026.10.06.txt
+      - name: Commit extracted source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add test-builds/kinox-current-2026.10.06.txt
+          git commit -m "Inspect current KinoX source" || exit 0
+          git push
