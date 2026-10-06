@@ -141,7 +141,9 @@ with tempfile.TemporaryDirectory() as td:
 with zipfile.ZipFile(OUT, "r") as zf:
     kg = zf.read("plugin.video.xship/scrapers/scrapers_source/de/kinoking.py").decode("utf-8")
     addon_text = zf.read("plugin.video.xship/addon.xml").decode("utf-8")
-    assert "movie GET" in kg\n    assert "requests.Session" in kg\n    assert "SERVERS parsed" in kg
+    assert "movie GET" in kg
+    assert "requests.Session" in kg
+    assert "SERVERS parsed" in kg
     assert "server.get('mirrors')" in kg
     assert "legacy chk_year fallback" in kg
     assert f'version="{VERSION}"' in addon_text
