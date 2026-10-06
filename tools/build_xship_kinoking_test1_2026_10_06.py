@@ -1,6 +1,4 @@
 from pathlib import Path
-import json
-import re
 import tempfile
 import zipfile
 import xml.etree.ElementTree as ET
@@ -26,30 +24,35 @@ with tempfile.TemporaryDirectory() as td:
     kg_path = root / "scrapers/scrapers_source/de/kinoking.py"
     kg = kg_path.read_text(encoding="utf-8-sig")
 
-    # KinoKing movie pages now expose all mirrors in:
-    #   const SERVERS = [...]
-    # Parse those mirrors directly. Keep the old chk_year path as fallback.
-    pattern = re.compile(
-        r"        if season == 0:\n"
-        r"            self\.list = \[\]\n"
-        r"            with concurrent\.futures\.ThreadPoolExecutor\(\) as executor:\n"
-        r"                futures = \[executor\.submit\(self\.chk_year, i, year\) for i in links\]\n"
-        r"                concurrent\.futures\.wait\(futures\)\n"
-        r"            if len\(self\.list\) > 0: hoster = self\.list\n"
-        r"        else:\n"
-    )
-
-    replacement = """        if season == 0:
+    old = """        else:
             self.list = []
-            seen_hoster = set()
+            pages = [self.base_link + '/movie.php?id=%s' % mid for mid in candidates]
+            if pages:
+                with concurrent.futures.ThreadPoolExecutor() as ex:
+                    concurrent.futures.wait([ex.submit(self.chk_year, p, year) for p in pages])
+            links = list(self.list)
+"""
 
-            for movie_url in links:
+    new = """        else:
+            self.list = []
+            pages = [self.base_link + '/movie.php?id=%s' % mid for mid in candidates]
+            seen_movie_links = set()
+
+            for page in pages:
                 parsed_servers = False
                 try:
-                    movie_html = cRequestHandler(movie_url).request()
-                    m_servers = re.search(r'const\\s+SERVERS\\s*=\\s*(\\[[\\s\\S]*?\\])\\s*;', movie_html, re.I)
-                    if m_servers:
-                        servers = json.loads(m_servers.group(1))
+                    html = cRequestHandler(page, caching=False).request() or ''
+
+                    # Keep the previous year guard where KinoKing exposes a year.
+                    ym = re.search(r'<title>.*?(\\d{4})', html, re.I | re.S)
+                    if ym and year and int(ym.group(1)) != int(year):
+                        continue
+
+                    # Current KinoKing movie pages expose every provider/mirror
+                    # as JSON in: const SERVERS = [...]
+                    sm = re.search(r'const\\s+SERVERS\\s*=\\s*(\\[[\\s\\S]*?\\])\\s*;', html, re.I)
+                    if sm:
+                        servers = json.loads(sm.group(1))
                         mirror_count = 0
                         for server in servers if isinstance(servers, list) else []:
                             if not isinstance(server, dict):
@@ -58,51 +61,44 @@ with tempfile.TemporaryDirectory() as td:
                             if isinstance(mirrors, str):
                                 mirrors = [mirrors]
                             for mirror in mirrors:
-                                mirror = str(mirror or '').strip()
-                                if not mirror or mirror in seen_hoster:
+                                mirror = str(mirror or '').replace('\\/', '/').strip()
+                                if not mirror or mirror in seen_movie_links:
                                     continue
-                                seen_hoster.add(mirror)
-                                hoster.append(mirror)
+                                seen_movie_links.add(mirror)
+                                self.list.append(mirror)
                                 mirror_count += 1
+
                         if mirror_count:
                             parsed_servers = True
-                            log_utils.log('[KINOKING-TEST1] SERVERS parsed | url=%s | mirrors=%s' % (movie_url, mirror_count), log_utils.LOGINFO)
+                            print('[KINOKING-TEST1] SERVERS parsed | page=%s | mirrors=%s' % (page, mirror_count))
                 except Exception as e:
-                    log_utils.log('[KINOKING-TEST1] SERVERS parse failed | url=%s | error=%s' % (movie_url, e), log_utils.LOGWARNING)
+                    print('[KINOKING-TEST1] SERVERS parse failed | page=%s | error=%s' % (page, e))
 
-                # Compatibility fallback for older KinoKing movie markup.
+                # Compatibility fallback for an older KinoKing layout.
                 if not parsed_servers:
-                    try:
-                        self.chk_year(movie_url, year)
-                        log_utils.log('[KINOKING-TEST1] legacy chk_year fallback | url=%s' % movie_url, log_utils.LOGINFO)
-                    except Exception:
-                        pass
+                    self.chk_year(page, year)
+                    print('[KINOKING-TEST1] legacy chk_year fallback | page=%s' % page)
 
-            if len(self.list) > 0:
-                for old_link in self.list:
-                    if old_link and old_link not in seen_hoster:
-                        seen_hoster.add(old_link)
-                        hoster.append(old_link)
-        else:
+            links = list(self.list)
 """
 
-    kg2, n = pattern.subn(lambda _m: replacement, kg, count=1)
-    if n != 1:
-        idx = kg.find("if len(links)")\n        raise SystemExit("KinoKing insertion point not found. Current section:\\n" + kg[max(0, idx-300):idx+2500])
+    if old not in kg:
+        raise SystemExit("Current KinoKing movie block not found")
+    kg = kg.replace(old, new, 1)
 
-    # Add useful movie-search diagnostics without altering the working series flow.
-    needle = "        if len(links) == 0: return self.sources\n\n"
+    # Test diagnostics: confirms whether movie search found a KinoKing movie id.
+    needle = "        links = []\n        if int(season or 0) > 0:\n"
     diag = (
-        "        if season == 0:\n"
-        "            log_utils.log('[KINOKING-TEST1] movie search | titles=%s | year=%s | links=%s' % (titles, year, links), log_utils.LOGINFO)\n"
-        "        if len(links) == 0: return self.sources\n\n"
+        "        if int(season or 0) == 0:\n"
+        "            print('[KINOKING-TEST1] movie search | titles=%s | year=%s | candidates=%s' % (titles, year, candidates))\n\n"
+        "        links = []\n"
+        "        if int(season or 0) > 0:\n"
     )
-    if needle not in kg2:
-        raise SystemExit("KinoKing links diagnostic insertion point not found")
-    kg2 = kg2.replace(needle, diag, 1)
-    kg_path.write_text(kg2, encoding="utf-8", newline="\n")
+    if needle not in kg:
+        raise SystemExit("KinoKing diagnostics insertion point not found")
+    kg = kg.replace(needle, diag, 1)
+    kg_path.write_text(kg, encoding="utf-8", newline="\n")
 
-    # Test build version only; production repository metadata stays untouched.
     addon = root / "addon.xml"
     tree = ET.parse(addon)
     ar = tree.getroot()
@@ -112,8 +108,8 @@ with tempfile.TemporaryDirectory() as td:
     current = (news.text or "").strip() if news is not None else ""
     entry = (
         f"{VERSION} KINOKING TEST1\n"
-        "- KinoKing Filme: neue SERVERS-Struktur der Filmseite wird direkt ausgewertet.\n"
-        "- Alle mirrors aus const SERVERS werden an den bestehenden xShip-Resolver uebergeben.\n"
+        "- KinoKing Filme: const SERVERS der Filmseite wird direkt ausgewertet.\n"
+        "- Alle mirrors werden an den bestehenden xShip-Resolver uebergeben.\n"
         "- Alte KinoKing-Filmlogik bleibt als Fallback erhalten; Serienlogik bleibt unveraendert.\n\n"
     )
     if news is None:
@@ -129,12 +125,11 @@ with tempfile.TemporaryDirectory() as td:
             if fp.is_file():
                 zf.write(fp, Path("plugin.video.xship") / fp.relative_to(root))
 
-# Verify final ZIP.
 with zipfile.ZipFile(OUT, "r") as zf:
     kg = zf.read("plugin.video.xship/scrapers/scrapers_source/de/kinoking.py").decode("utf-8")
     addon_text = zf.read("plugin.video.xship/addon.xml").decode("utf-8")
-    assert "const\\s+SERVERS" in kg
-    assert "[KINOKING-TEST1] SERVERS parsed" in kg
+    assert "SERVERS parsed" in kg
+    assert "server.get('mirrors')" in kg
     assert "legacy chk_year fallback" in kg
     assert f'version="{VERSION}"' in addon_text
 
