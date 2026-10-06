@@ -86,7 +86,7 @@ with tempfile.TemporaryDirectory() as td:
         else:
 """
 
-    kg2, n = pattern.subn(replacement, kg, count=1)
+    kg2, n = pattern.subn(lambda _m: replacement, kg, count=1)
     if n != 1:
         raise SystemExit("KinoKing movie branch insertion point not found in 2026.10.05.141")
 
