@@ -1,0 +1,41 @@
+name: Build xShip KinoKing TEST1 2026.10.06
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-xship-kinoking-test1-2026.10.06.yml'
+      - 'tools/build_xship_kinoking_test1_2026_10_06.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build test ZIP
+        run: python3 tools/build_xship_kinoking_test1_2026_10_06.py
+
+      - name: Compile check
+        shell: bash
+        run: |
+          set -euo pipefail
+          WORK="$RUNNER_TEMP/verify142"
+          rm -rf "$WORK"
+          mkdir -p "$WORK"
+          unzip -q test-builds/plugin.video.xship-2026.10.06.142-KINOKING-TEST1.zip -d "$WORK"
+          ROOT="$(find "$WORK" -type f -name addon.xml -printf '%h\n' | head -n1)"
+          python3 -m py_compile "$ROOT/scrapers/scrapers_source/de/kinoking.py"
+
+      - name: Commit test ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add test-builds/plugin.video.xship-2026.10.06.142-KINOKING-TEST1.zip
+          git commit -m "Build xShip KinoKing TEST1" || exit 0
+          git push
