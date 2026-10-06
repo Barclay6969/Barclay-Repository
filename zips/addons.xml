@@ -54,7 +54,7 @@
 - Staffel- und Episodennummer werden beim TMDb-Helper-Playback vollständig an Kodi/Trakt übergeben.
 - Fehlerhafte Staffel-Erkennung aus SerienStream-URLs korrigiert.</news></extension>
 </addon>
-<addon id="plugin.video.xship" version="2026.10.05.141" name="xShip" provider-name="Kusi (Barclay)">
+<addon id="plugin.video.xship" version="2026.10.06.149" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />
@@ -86,7 +86,12 @@
       <screenshot>resources/media/screenshot-02.jpg</screenshot>
       <screenshot>resources/media/screenshot-04.jpg</screenshot>
     </assets>
-    <news>2026.10.05.141
+    <news>2026.10.06.149
+- Movie2k: Netzwerk-Timeout auf 4 Sekunden reduziert.
+- Movie2k: Nach einem Verbindungsfehler wird die Suche sofort beendet; weitere Titelvarianten erzeugen keine zusätzlichen Timeouts.
+- Quellensuche auf Android bestätigt: Movie2k benötigt bei Nichterreichbarkeit rund 4 statt bis zu 30 Sekunden.
+
+2026.10.05.141
 - MeineCloud/FHDFilme: API-Quellensuche wiederhergestellt und stabilisiert.
 - KinoGer: Domain auf kinoger.beer aktualisiert; alte kinoger.com-Einstellung wird beim Start automatisch korrigiert.
 - KinoGer: Suche liefert wieder Quellen; Wiedergabe einzelner 0gomovies.beer-Links hängt von ResolveURL-Unterstützung ab.
