@@ -88,7 +88,7 @@ with tempfile.TemporaryDirectory() as td:
 
     kg2, n = pattern.subn(lambda _m: replacement, kg, count=1)
     if n != 1:
-        raise SystemExit("KinoKing movie branch insertion point not found in 2026.10.05.141")
+        idx = kg.find("if len(links)")\n        raise SystemExit("KinoKing insertion point not found. Current section:\\n" + kg[max(0, idx-300):idx+2500])
 
     # Add useful movie-search diagnostics without altering the working series flow.
     needle = "        if len(links) == 0: return self.sources\n\n"
