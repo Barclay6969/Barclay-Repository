@@ -14,6 +14,7 @@ ALLOWED_VIDEO_IDS = {
     "plugin.video.serienstream",
     "plugin.video.xship",
     "plugin.video.youtube",
+    "plugin.video.filmpalast.ex",
 }
 
 
@@ -78,7 +79,7 @@ def latest_video_entries():
         candidates.sort(key=lambda item: item[0])
         _, version, fn, text = candidates[-1]
         print(f"Publishing {addon_id} {version} from {fn}")
-        entries.append(text)
+        entries.append(re.sub(r"<\?xml[^?]*\?>\s*", "", text))
 
     return entries
 
@@ -93,13 +94,20 @@ def gather_entries():
     with open(repo_xml, "r", encoding="utf-8") as f:
         entries.append(f.read().lstrip("\ufeff"))
 
-    # Video section is intentionally restricted to SerienStream + xShip + YouTube.
+    # Video section is intentionally restricted to the explicitly allowed video add-ons.
     entries.extend(latest_video_entries())
+    # Keep service add-ons in the catalogue when rebuilding.
+    for service_dir in sorted(os.listdir(ADDONS_DIR)):
+        if service_dir.startswith("service."):
+            service_xml = os.path.join(ADDONS_DIR, service_dir, "addon.xml")
+            if os.path.isfile(service_xml):
+                with open(service_xml, "r", encoding="utf-8") as f:
+                    entries.append(f.read().lstrip("\ufeff"))
     return entries
 
 
 def write_addons_xml(entries):
-    txt = "<addons>\n" + "\n".join(entries) + "\n</addons>\n"
+    txt = "<addons>\n" + "\n".join(re.sub(r"<\?xml[^?]*\?>\s*", "", entry) for entry in entries) + "\n</addons>\n"
     with open(os.path.join(ZIPS_DIR, "addons.xml"), "w", encoding="utf-8") as f:
         f.write(txt)
     with open(os.path.join(ZIPS_DIR, "addons.xml.md5"), "w", encoding="utf-8") as f:
@@ -127,7 +135,7 @@ def zip_repo():
 def main():
     write_addons_xml(gather_entries())
     zip_repo()
-    print("Repository built: SerienStream, xShip and YouTube are published as video add-ons.")
+    print("Repository built: allowed video add-ons and services published.")
 
 
 if __name__ == "__main__":

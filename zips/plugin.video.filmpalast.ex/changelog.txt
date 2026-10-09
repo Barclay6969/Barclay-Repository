@@ -1,0 +1,100 @@
+0.5.2 (2026-10-09)
+  - Neues 3D-Weltraum-Logo powered by Barclay in voller Auflösung.
+  - Aufnahme ins Barclay Repository für zukünftige Updates.
+  - Bereits verwendete Kodi-Six-Abhängigkeit deklariert.
+
+0.5.1
+  - resolverULR version changed
+
+0.5.0
+  - code refactoring
+
+0.4.3
+  - bug fix invalid utf-8 codes ignored
+
+0.4.1
+  - refactoring
+
+0.4.1
+  - bug fix file operation utf-8 encoding added
+
+0.4.0
+  - movie description, year in list view added
+
+0.3.0
+  - bypassDNSlock, page caching
+
+0.3.0
+  - bypassDNSlock, page caching
+
+0.2.7m
+  - setting items_per_page updated
+
+0.2.6m
+  - url resolver updated
+
+0.2.5m
+  - wrong plugin name fix
+
+0.2.4m
+  - repo struct changed
+
+0.2.3m
+  - kodi19 matrix version
+
+0.2.2
+  - kod19 and python3 refactoring
+  
+0.2.1
+  - repo fix
+
+0.2.0
+  - url resolver changed
+  - preload movie info
+  - repexp changed
+  - settings added
+  - list view option added
+  
+0.1.17
+ - openload fix
+ 
+0.1.14
+ - additional movie info (rating/votes/genre/runtime/year)
+   configurable in addon settings
+
+0.1.13
+ - openload support
+
+0.1.12
+ - url fix
+
+0.1.11
+ - fixes due to page changes
+ - cloudyvideo fixed again
+
+0.1.10
+ - cloudyvideo fixed
+
+0.1.9
+ - search feature added
+ 
+0.1.8
+ - update younow resolver
+ 
+0.1.7
+ - update flashx resolver
+
+0.1.6
+ - missing requirement fixed
+
+0.1.5
+ - hoster fixed
+ - hoster added
+ 
+0.1.4
+ - dbg output removed
+
+...
+
+0.1.0
+ - first try

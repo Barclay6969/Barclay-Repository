@@ -1,0 +1,58 @@
+msgid ""
+msgstr ""
+
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de\n"
+
+msgctxt "#30101"
+msgid "Nicht unterstützte Anbieter herausfiltern"
+msgstr ""
+
+msgctxt "#30102"
+msgid "View erzwingen"
+msgstr ""
+
+msgctxt "#30103"
+msgid "ViewID"
+msgstr ""
+
+msgctxt "#30104"
+msgid "Filminfo im Dialog anzeigen"
+msgstr ""
+
+msgctxt "#30105"
+msgid "FP Bewertung in Listenansicht"
+msgstr ""
+
+msgctxt "#30106"
+msgid "FP Stimmen in Listenansicht"
+msgstr ""
+
+msgctxt "#30107"
+msgid "Filminfo vorladen (langsam)"
+msgstr ""
+
+msgctxt "#30108"
+msgid "IMDB Bewertung in Listenansicht"
+msgstr ""
+
+msgctxt "#30109"
+msgid "Genre in Listenansicht"
+msgstr ""
+
+msgctxt "#30110"
+msgid "Beschreibung anzeigen"
+msgstr ""
+
+msgctxt "#30111"
+msgid "DNS Netzsperre ignorieren"
+msgstr ""
+
+msgctxt "#30112"
+msgid "Seiten zwischenspeichern"
+msgstr ""
+
+msgctxt "#30113"
+msgid "Jahr in Listenansicht"
+msgstr ""
