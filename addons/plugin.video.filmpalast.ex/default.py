@@ -490,39 +490,42 @@ def PLAYVIDEO(url):
         xbmc.executebuiltin("XBMC.Notification(Fehler!, Video nicht gefunden, 4000)")
         return
     
-    if config.get('auto_hoster'):
-        from auto_hoster import check_sources
-        progress = xbmcgui.DialogProgress()
-        progress.create('FilmPalast: Auto-Hoster', 'Quellen werden geprüft …')
-        def report(checked, total, working):
-            progress.update(int(checked * 100 / max(total, 1)),
-                            '{} von {} geprüft · {} erreichbar'.format(checked, total, working))
-            return not progress.iscanceled() and not xbmc.Monitor().abortRequested()
-        def resolve_source(name, source):
-            return _resolveVoeDirect(source, {'source': name}) or resolveUrl(source)
-        try:
-            results = check_sources(videos, resolve_source, report)
-        finally:
-            progress.close()
-        if results is None:
-            xbmcplugin.setResolvedUrl(pluginhandle, False, xbmcgui.ListItem())
-            return
-        if results:
-            labels = ['{} | {} | {} | ca. {:.1f} Mbit/s'.format(
-                result['hoster'], result['format'],
-                '{}p'.format(result['height']) if result['height'] else 'Auflösung unbekannt',
-                result['speed'] * 8 / 1000000) for result in results]
-            selected = results[0]
-            xbmcgui.Dialog().notification('FilmPalast: Auto-Hoster', labels[0], time=4000)
-            xbmc.log('[FilmPalast] Auto-Hoster selected: {} / {} / {:.1f} Mbit/s'.format(
-                selected['hoster'], selected['format'], selected['speed'] * 8 / 1000000), xbmc.LOGINFO)
-            play_resolved_video(selected['stream'], already_resolved=True)
-            return
-        xbmcgui.Dialog().notification('FilmPalast', 'Keine Quelle bestätigt – manuelle Auswahl', time=4000)
-    # Select video source
-    selected_url = select_video_source(videos, url, data)
-    if selected_url:
-        play_resolved_video(selected_url)
+    from auto_hoster import check_sources, manual_choices
+    automatic = config.get('auto_hoster', False)
+    progress = xbmcgui.DialogProgress()
+    progress.create('FilmPalast: Hosterprüfung', 'Quellen werden geprüft …')
+    def report(checked, total, working):
+        progress.update(int(checked * 100 / max(total, 1)),
+                        '{} von {} geprüft · {} erreichbar'.format(checked, total, working))
+        return not progress.iscanceled() and not xbmc.Monitor().abortRequested()
+    def resolve_source(name, source):
+        return _resolveVoeDirect(source, {'source': name}) or resolveUrl(source)
+    try:
+        results = check_sources(videos, resolve_source, report)
+    finally:
+        progress.close()
+    if results is None:
+        xbmcplugin.setResolvedUrl(pluginhandle, False, xbmcgui.ListItem())
+        return
+    if automatic and results:
+        selected = results[0]
+        height = '{}p'.format(selected['height']) if selected['height'] else 'Auflösung unbekannt'
+        xbmcgui.Dialog().notification('FilmPalast: Auto-Hoster',
+            '{} | {} | {} | ca. {:.1f} Mbit/s'.format(selected['hoster'], selected['format'],
+                height, selected['speed'] * 8 / 1000000), time=4000)
+        xbmc.log('[FilmPalast] Auto-Hoster selected: {} / {} / {:.1f} Mbit/s'.format(
+            selected['hoster'], selected['format'], selected['speed'] * 8 / 1000000), xbmc.LOGINFO)
+        play_resolved_video(selected['stream'], already_resolved=True)
+        return
+    choices = manual_choices(videos, results)
+    index = xbmcgui.Dialog().select('FilmPalast: Hoster wählen', [item['label'] for item in choices])
+    if index < 0:
+        xbmcplugin.setResolvedUrl(pluginhandle, False, xbmcgui.ListItem())
+        return
+    selected = choices[index]
+    xbmc.log('[FilmPalast] Manual hoster selected: {} / probe={}'.format(
+        selected['hoster'], 'confirmed' if selected['resolved'] else 'unconfirmed'), xbmc.LOGINFO)
+    play_resolved_video(selected['url'], already_resolved=selected['resolved'])
 
 def get_video_sources(data):
     # Extract video sources from page data

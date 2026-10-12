@@ -84,6 +84,7 @@ def check_sources(videos, resolve, progress, deadline_seconds=20):
                 if stream and not stop.is_set():
                     result = probe(stream)
                     result['hoster'] = name
+                    result['source'] = url
             except Exception:
                 pass
             completed.put(result)
@@ -107,3 +108,20 @@ def check_sources(videos, resolve, progress, deadline_seconds=20):
     finally:
         stop.set()
     return sorted(results, key=lambda item: item['speed'], reverse=True)
+
+
+def manual_choices(videos, results):
+    """Keep all original hosters; unconfirmed does not imply definitively broken."""
+    confirmed = {(item['hoster'], item['source']): item for item in results}
+    choices = []
+    for name, source in dict.fromkeys(videos):
+        result = confirmed.get((name, source))
+        if result:
+            height = '{}p'.format(result['height']) if result['height'] else 'Auflösung unbekannt'
+            label = '{} | erreichbar | {} | {} | ca. {:.1f} Mbit/s'.format(
+                name, result['format'], height, result['speed'] * 8 / 1000000)
+            choices.append({'hoster': name, 'label': label, 'url': result['stream'], 'resolved': True})
+        else:
+            choices.append({'hoster': name, 'label': name + ' | Prüfung nicht bestätigt',
+                            'url': source, 'resolved': False})
+    return choices

@@ -1,4 +1,7 @@
-0.6.1
+0.6.2
+- Quellenprüfung auch bei manueller Auswahl.
+- Hosterliste zeigt Erreichbarkeit, Format, verfügbare Auflösung und Speed.
+- Manuelle Auswahl startet erst nach Bestätigung; Abbrechen beendet den Vorgang.
 - Auto-Hoster ist standardmässig aktiviert.
 - Optionaler Auto-Hoster-Modus: bis zu vier parallele Prüfungen, 20 Sekunden Gesamtlimit.
 - Kleine MP4-/HLS-Videoproben prüfen Erreichbarkeit und schätzen Geschwindigkeit.
