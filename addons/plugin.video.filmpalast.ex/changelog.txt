@@ -1,3 +1,7 @@
+0.5.9 (2026-10-12)
+- Vollständiger Changelog in Kodi sichtbar; Aktualisierung der installierten Testversion.
+- Wiedergabecode unverändert gegenüber der getesteten 0.5.8.
+
 0.5.8 (2026-10-12)
 - TMDbHelper: eindeutige Filmtreffer öffnen direkt die Hosterauswahl.
 - Robustere Suche bei Sonderzeichen und abweichenden Titeln.
