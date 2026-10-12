@@ -7,6 +7,13 @@ import hashlib
 import re
 import os
 import sys
+import html
+import unicodedata
+import base64
+import json
+import uuid
+from urllib.parse import urlparse, urljoin, urlencode
+from html import unescape as html_unescape
 import xlibs.urllib3 as urllib3p
 from kodi_six import xbmc, xbmcaddon, xbmcgui, xbmcplugin, xbmcvfs
 #import web_pdb; web_pdb.set_trace()
@@ -224,6 +231,55 @@ def SEARCH(url):
         search_string = urllib.parse.quote(keyboard.getText())
         INDEX(url + search_string)
 
+def normalized_title(value):
+    value = html.unescape(re.sub(r'\[[^\]]*\]', '', value or ''))
+    value = value.casefold().replace('ä', 'a').replace('ö', 'o').replace('ü', 'u')
+    value = ''.join(c for c in unicodedata.normalize('NFKD', value)
+                    if not unicodedata.combining(c))
+    return ''.join(c for c in value if c.isalnum())
+
+def TMDBSEARCH(params):
+    query = urllib.parse.unquote_plus(params.get('query', ''))
+    season = urllib.parse.unquote_plus(params.get('season', ''))
+    episode = urllib.parse.unquote_plus(params.get('episode', ''))
+    variants = [query, re.sub(r'[^\w\s]', ' ', query)]
+    prefix = re.split(r'\s*[-–—:]\s*', query, maxsplit=1)[0]
+    if prefix != query:
+        variants.append(prefix)
+    words = query.split()
+    if len(words) > 1:
+        variants.append(' '.join(words[:2]))
+        variants.append(words[0])
+    found, seen = [], set()
+    for term in dict.fromkeys(' '.join(v.split()) for v in variants if v.strip()):
+        data = getUrl(BASE_URL + '/search/title/' + urllib.parse.quote(term, safe=''))
+        if not data:
+            xbmc.log('[FilmPalast] TMDb search: no response for ' + term, xbmc.LOGINFO)
+            continue
+        sections = re.findall(PATTERNS['content_entries'], data, re.S | re.I) or [data]
+        for section in sections:
+            for rating, url, title, image in re.findall(PATTERNS['movie_data'], section, re.S | re.I):
+                url = normalize_url(url)
+                if url not in seen:
+                    seen.add(url)
+                    found.append((html.unescape(title), url, normalize_url(image)))
+        xbmc.log('[FilmPalast] TMDb search: %s -> %d entries' % (term, len(found)), xbmc.LOGINFO)
+        if found:
+            break
+    exact = [item for item in found if normalized_title(item[0]) == normalized_title(query)]
+    # A series-name match alone cannot identify the requested episode.
+    if not season and not episode and len(exact) == 1:
+        found = exact
+        xbmc.log('[FilmPalast] Unique normalized title match', xbmc.LOGINFO)
+    if not found:
+        keyboard = xbmc.Keyboard(query, 'Filmpalast: Suchbegriff anpassen')
+        keyboard.doModal()
+        if keyboard.isConfirmed() and keyboard.getText():
+            INDEX(BASE_URL + '/search/title/' + urllib.parse.quote(keyboard.getText(), safe=''))
+        return
+    for title, url, image in found:
+        addLink(title, url, 10, image)
+
 def clean(text):
     # Clean HTML entities from text
     matches = re.findall(PATTERNS['html_entities'], text)
@@ -336,6 +392,73 @@ def extract_genres_actors(data, info):
     actors = re.findall(PATTERNS['actors'], data, re.S | re.I | re.DOTALL)
     info['actors'] = " / ".join(actors)
 
+def _decodeVoePayload(encoded, replacements):
+    tokens = [re.escape(token) for token in replacements[2:-2].split("','")]
+    text = ''
+    for char in encoded:
+        value = ord(char)
+        if 64 < value < 91:
+            value = (value - 52) % 26 + 65
+        elif 96 < value < 123:
+            value = (value - 84) % 26 + 97
+        text += chr(value)
+    for token in tokens:
+        text = re.sub(token, '', text)
+    step = base64.b64decode(text).decode('utf-8', errors='replace')
+    step = ''.join(chr(ord(char) - 3) for char in step)
+    return json.loads(base64.b64decode(step[::-1]).decode('utf-8', errors='replace'))
+
+
+def _resolveVoeDirect(url, item):
+    try:
+        if 'voe' not in str(item.get('source', '')).lower() and 'voe' not in urlparse(str(url).split('|', 1)[0]).netloc.lower():
+            return None
+
+        import requests
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        }
+        page_url = str(url).split('|', 1)[0]
+        response = requests.get(page_url, headers=headers, timeout=12, allow_redirects=True)
+        html = response.text or ''
+        real_url = response.url
+
+        for _ in range(3):
+            redirect = re.search(r"window\.location\.href\s*=\s*'([^']+)'", html)
+            if not redirect:
+                break
+            page_url = urljoin(real_url, html_unescape(redirect.group(1)))
+            response = requests.get(page_url, headers=headers, timeout=12, allow_redirects=True)
+            html = response.text or ''
+            real_url = response.url
+
+        packed = re.search(r'json">\["([^"]+)"\]</script>\s*<script\s+src="([^"]+)', html)
+        if not packed:
+            return None
+
+        script_url = urljoin(real_url, html_unescape(packed.group(2)))
+        script = requests.get(script_url, headers=headers, timeout=12).text or ''
+        repl = re.search(r"(\[(?:'\W{2}'[,\]]){1,9})", script)
+        if not repl:
+            return None
+
+        data = _decodeVoePayload(packed.group(1), repl.group(1))
+        media_url = data.get('direct_access_url') or data.get('source') or data.get('file')
+        if not media_url:
+            return None
+
+        stream_headers = urlencode({
+            'User-Agent': headers['User-Agent'],
+            'Referer': real_url,
+        })
+        xbmc.log('[FilmPalast] VOE direct field: ' + ('direct_access_url' if data.get('direct_access_url') else 'source/file'), xbmc.LOGINFO)
+        return '%s|%s' % (media_url, stream_headers)
+    except Exception as e:
+        xbmc.log('[FilmPalast] VOE direct failed: ' + str(e), xbmc.LOGWARNING)
+        return None
+
+
 def resolveUrl(media_url, validate_only=False):
     # Resolve media URL using available resolver
     try:
@@ -389,13 +512,98 @@ def select_video_source(videos, url, data):
         return videos[0][1]
     return selectVideoDialog(videos, url, data)
 
+def apply_playback_metadata(listitem, params):
+    def value(key):
+        raw = params.get(key, '')
+        decoded = urllib.parse.unquote_plus(str(raw))
+        return '' if decoded in ('', 'None', 'null') else decoded
+    media_type = value('mediatype')
+    if media_type not in ('movie', 'episode'):
+        return
+    info = {'mediatype': media_type}
+    for key in ('title', 'tvshowtitle'):
+        if value(key):
+            info[key] = value(key)
+    for key in ('year', 'season', 'episode'):
+        if value(key).isdigit():
+            info[key] = int(value(key))
+    listitem.setInfo('video', info)
+    if info.get('title'):
+        listitem.setLabel(info['title'])
+    tag = listitem.getVideoInfoTag()
+    tag.setMediaType(media_type)
+    if info.get('title'):
+        tag.setTitle(info['title'])
+    if info.get('tvshowtitle'):
+        tag.setTvShowTitle(info['tvshowtitle'])
+    if 'year' in info:
+        tag.setYear(info['year'])
+    ids = {key: value(key) for key in ('tmdb', 'imdb') if value(key)}
+    if ids:
+        tag.setUniqueIDs(ids, 'imdb' if 'imdb' in ids else 'tmdb')
+    if 'imdb' in ids:
+        tag.setIMDBNumber(ids['imdb'])
+    listitem.setProperty('IsPlayable', 'true')
+    if media_type == 'episode':
+        if 'season' in info:
+            tag.setSeason(info['season'])
+        if 'episode' in info:
+            tag.setEpisode(info['episode'])
+    xbmc.log('[FilmPalast] Playback metadata: type={} IDs={} season={} episode={}'.format(
+        media_type, ','.join(sorted(ids)), info.get('season', '-'), info.get('episode', '-')), xbmc.LOGINFO)
+    xbmc.log('[FilmPalast] Final video tag: type={} title={} year={} imdb={} season={} episode={}'.format(
+        tag.getMediaType(), tag.getTitle(), tag.getYear(), tag.getIMDBNumber(),
+        tag.getSeason(), tag.getEpisode()), xbmc.LOGINFO)
+
+def prepare_trakt_ids(params):
+    def value(key):
+        decoded = urllib.parse.unquote_plus(str(params.get(key, '')))
+        return '' if decoded in ('', 'None', 'null') else decoded
+    media_type = value('mediatype')
+    keys = {'imdb': 'imdb', 'tmdb': 'tmdb'} if media_type == 'movie' else (
+        {'imdb': 'showimdb', 'tmdb': 'showtmdb'} if media_type == 'episode' else {})
+    ids = {}
+    for provider, key in keys.items():
+        identity = value(key)
+        if provider == 'imdb' and re.fullmatch(r'tt\d+', identity):
+            ids[provider] = identity
+        elif provider == 'tmdb' and identity.isdigit() and int(identity) > 0:
+            ids[provider] = int(identity)
+    if not ids:
+        return
+    home = xbmcgui.Window(10000)
+    owner = uuid.uuid4().hex
+    payload = json.dumps(ids, sort_keys=True)
+    home.setProperty('filmpalast.trakt.owner', owner)
+    home.setProperty('filmpalast.trakt.payload', payload)
+    home.setProperty('filmpalast.trakt.title', value('title'))
+    home.setProperty('script.trakt.ids', payload)
+    script = os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'trakt_bridge.py')
+    xbmc.executebuiltin('RunScript("{}",{})'.format(script, owner))
+    xbmc.log('[FilmPalast] Trakt bridge: {} IDs supplied ({})'.format(media_type, ','.join(sorted(ids))), xbmc.LOGINFO)
+
 def play_resolved_video(url):
     # Resolve and play the video URL
-    stream_url = resolveUrl(url)
+    stream_url = _resolveVoeDirect(url, {'source': urlparse(str(url)).netloc}) or resolveUrl(url)
     if stream_url:
         if DEBUG:
             print('Opening stream:', stream_url)
+        media_path = stream_url.split('|', 1)[0].lower().split('?', 1)[0]
+        stream_type = 'MP4' if media_path.endswith('.mp4') else ('HLS' if media_path.endswith('.m3u8') else 'unknown')
+        xbmc.log('[FilmPalast] Playback stream type: ' + stream_type, xbmc.LOGINFO)
         listitem = xbmcgui.ListItem(path=stream_url)
+        if stream_type == 'MP4':
+            listitem.setMimeType('video/mp4')
+            listitem.setContentLookup(False)
+        metadata = get_params()
+        apply_playback_metadata(listitem, metadata)
+        art = {key: urllib.parse.unquote_plus(metadata[key])
+               for key in ('poster', 'fanart', 'thumb') if metadata.get(key) and metadata[key] not in ('None', 'null')}
+        if art:
+            art.setdefault('thumb', art.get('poster', ''))
+            art.setdefault('icon', art.get('poster', art.get('thumb', '')))
+            listitem.setArt(art)
+        prepare_trakt_ids(metadata)
         return xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
     raise Exception("Could not resolve stream URL")
 
@@ -454,6 +662,10 @@ def addLink(name, url, mode, image, description=""):
     )
     
     liz = xbmcgui.ListItem(name)
+    metadata = get_params()
+    for key in ('poster', 'fanart', 'thumb', 'mediatype', 'title', 'tvshowtitle', 'year', 'season', 'episode', 'tmdb', 'imdb', 'showtmdb', 'showimdb'):
+        if metadata.get(key) and metadata[key] not in ('None', 'null'):
+            u += '&' + key + '=' + metadata[key]
     liz.setArt({'icon': 'DefaultVideo.png', 'thumb': image})
     liz.setInfo(type="Video", infoLabels={"Title": name, "plot": description})
     liz.setProperty('IsPlayable', 'true')
@@ -521,6 +733,8 @@ def main():
             ALPHA()
         elif mode == 4:
             SEARCH(url)
+        elif mode == 20:
+            TMDBSEARCH(params)
         elif mode == 10:
             PLAYVIDEO(url)
         

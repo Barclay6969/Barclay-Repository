@@ -1,0 +1,30 @@
+{
+  "name": "[COLORgreen]F[/COLOR][COLORsilver]ilmpalas[/COLOR][COLORgreen]t[/COLOR]",
+  "plugin": "plugin.video.filmpalast.ex",
+  "priority": 200,
+  "language": "de",
+  "is_resolvable": "true",
+  "assert": {
+    "play_movie": [
+      "title"
+    ],
+    "play_episode": [
+      "showname",
+      "season",
+      "episode"
+    ]
+  },
+  "play_movie": [
+    "plugin://plugin.video.filmpalast.ex/?mode=20&url=https%3A%2F%2Ffilmpalast.to&poster={poster_url+}&fanart={fanart_url+}&thumb={thumbnail_url+}&query={title_url+}&mediatype=movie&title={title_url+}&year={year}&tmdb={tmdb}&imdb={imdb}",
+    {
+      "dialog": "auto"
+    }
+  ],
+  "play_episode": [
+    "plugin://plugin.video.filmpalast.ex/?mode=20&url=https%3A%2F%2Ffilmpalast.to&poster={poster_url+}&fanart={fanart_url+}&thumb={thumbnail_url+}&query={showname_url+}&season={season}&episode={episode}&mediatype=episode&title={title_url+}&tvshowtitle={showname_url+}&year={year}&tmdb={eptmdb}&imdb={epimdb}&showtmdb={tmdb}&showimdb={imdb}",
+    {
+      "dialog": "true"
+    }
+  ],
+  "make_playlist": "false"
+}

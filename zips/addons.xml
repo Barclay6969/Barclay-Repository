@@ -22,28 +22,6 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.5.2" provider-name="seizu">
-    <requires>
-        <import addon="xbmc.python" version="3.0.0"/>
-        <import addon="script.module.resolveurl" version="5.1.192"/>
-        <import addon="script.module.web-pdb" version="1.6.2" optional="true"/>
-        <import addon="script.module.kodi-six"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" library="default.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <platform>all</platform>
-        <summary lang="de">FilmPalast.to FiLME &amp; SERiEN sofort &amp; kostenlos online ansehen!</summary>
-        <summary lang="en">FilmPalast.to MOViS &amp; SERiES, watch online instantly free!</summary>
-        <description lang="en">FilmPalastEx - Based on FilmPalast plugin by Lary_Loose</description>
-		<news>0.5.2: Neues 3D-Weltraum-Logo powered by Barclay; Aufnahme ins Barclay Repository; Kodi-Six-Abhängigkeit deklariert.</news>
-		<assets>
-			<icon>icon.png</icon>
-		</assets>        
-    </extension>
-</addon>
-
 <addon id="plugin.video.serienstream" name="SerienStream" version="1.0.17" provider-name="Barclay (Kusi)">
 	<requires>
 		<import addon="xbmc.python" version="3.0.0" />
@@ -280,17 +258,17 @@
 </addon>
 <addon id="plugin.video.youtube" name="YouTube" version="7.4.4+barclay.1" provider-name="anxdpanic, bromix, MoojMidge">
     <requires>
-        <import addon="xbmc.python" version="3.0.0"/>
-        <import addon="script.module.requests" version="2.27.1"/>
-        <import addon="inputstream.adaptive" version="19.0.0"/>
-        <import addon="script.module.inputstreamhelper" version="0.2.2" optional="true"/>
-        <import addon="script.module.pysocks" optional="true"/>
+        <import addon="xbmc.python" version="3.0.0" />
+        <import addon="script.module.requests" version="2.27.1" />
+        <import addon="inputstream.adaptive" version="19.0.0" />
+        <import addon="script.module.inputstreamhelper" version="0.2.2" optional="true" />
+        <import addon="script.module.pysocks" optional="true" />
     </requires>
     <extension point="xbmc.python.pluginsource" library="resources/lib/plugin.py">
         <provides>video</provides>
     </extension>
-    <extension point="xbmc.service" library="resources/lib/service.py"/>
-    <extension point="xbmc.python.module" library="resources/lib/"/>
+    <extension point="xbmc.service" library="resources/lib/service.py" />
+    <extension point="xbmc.python.module" library="resources/lib/" />
     <extension point="xbmc.python.script" library="resources/lib/script.py">
         <provides>executable</provides>
     </extension>
@@ -413,15 +391,12 @@
 - Add option to play YouTube error notification video upon playback failure</news></extension>
 </addon>
 
-<addon id="service.kodi.autoupdate"
-       name="Kodi AutoUpdate"
-       version="1.0.1"
-       provider-name="Barclay (Kusi)">
+<addon id="service.kodi.autoupdate" name="Kodi AutoUpdate" version="1.0.1" provider-name="Barclay (Kusi)">
     <requires>
-        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="xbmc.python" version="3.0.0" />
     </requires>
 
-    <extension point="xbmc.service" library="service.py" start="startup"/>
+    <extension point="xbmc.service" library="service.py" start="startup" />
 
     <extension point="xbmc.addon.metadata">
         <summary lang="en_GB">Checks add-on repositories for updates on every Kodi start.</summary>
@@ -434,4 +409,25 @@
     </extension>
 </addon>
 
-</addons>
+<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.5.8" provider-name="Barclay (Kusi)">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0" />
+        <import addon="script.module.resolveurl" version="5.1.192" />
+        <import addon="script.module.web-pdb" version="1.6.2" optional="true" />
+        <import addon="script.module.kodi-six" />
+        <import addon="script.module.requests" />
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang="de">FilmPalast.to FiLME &amp; SERiEN sofort &amp; kostenlos online ansehen!</summary>
+        <summary lang="en">FilmPalast.to MOViS &amp; SERiES, watch online instantly free!</summary>
+        <description lang="en">FilmPalastEx - Based on FilmPalast plugin by Lary_Loose</description>
+		<news>0.5.8: Direkte TMDbHelper-Suche, Titelvarianten, Coverübergabe, VOE-Direktauflösung und Trakt-ID-Übergabe mit automatischer Bereinigung.</news>
+		<assets>
+			<icon>icon.png</icon>
+		</assets>        
+    </extension>
+</addon></addons>
