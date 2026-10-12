@@ -239,6 +239,26 @@ def normalized_title(value):
                     if not unicodedata.combining(c))
     return ''.join(c for c in value if c.isalnum())
 
+def foreign_release(title, url='', query=''):
+    if re.search(r'\b(?:english|englisch)\b', query, re.I):
+        return False
+    title = html.unescape(title or '').strip()
+    slug = urllib.parse.urlparse(url or '').path.rstrip('/').rsplit('/', 1)[-1]
+    return bool(re.search(r'(?:[\s\-*([:])(?:english|englisch|ov|omu)[\s\]*)]*$', title, re.I)
+                or re.search(r'-(?:english|englisch|ov|omu)$', slug, re.I))
+
+
+def title_match_score(query, title):
+    if normalized_title(query) == normalized_title(title):
+        return 100
+    parts = re.split(r'\s*[-–—:]\s*', query, maxsplit=1)
+    if len(parts) == 2 and parts[0] and parts[1]:
+        numbered = re.sub(r'^(%s)\s+\d+\s*[-–—:]\s*' % re.escape(parts[0]),
+                          r'\1: ', title, flags=re.I)
+        if numbered != title and normalized_title(numbered) == normalized_title(query):
+            return 90
+    return 0
+
 def TMDBSEARCH(params):
     query = urllib.parse.unquote_plus(params.get('query', ''))
     season = urllib.parse.unquote_plus(params.get('season', ''))
@@ -265,9 +285,9 @@ def TMDBSEARCH(params):
                     seen.add(url)
                     found.append((html.unescape(title), url, normalize_url(image)))
         xbmc.log('[FilmPalast] TMDb search: %s -> %d entries' % (term, len(found)), xbmc.LOGINFO)
-        if found:
+        if any(title_match_score(query, item[0]) and not foreign_release(item[0], item[1], query) for item in found):
             break
-    exact = [item for item in found if normalized_title(item[0]) == normalized_title(query)]
+    exact = [item for item in found if title_match_score(query, item[0]) and not foreign_release(item[0], item[1], query)]
     # A series-name match alone cannot identify the requested episode.
     if not season and not episode and len(exact) == 1:
         found = exact
@@ -278,6 +298,10 @@ def TMDBSEARCH(params):
         if keyboard.isConfirmed() and keyboard.getText():
             INDEX(BASE_URL + '/search/title/' + urllib.parse.quote(keyboard.getText(), safe=''))
         return
+    found.sort(key=lambda item: (foreign_release(item[0], item[1], query), -title_match_score(query, item[0])))
+    if len(found) == 1 and foreign_release(found[0][0], found[0][1], query):
+        if not xbmcgui.Dialog().yesno('FilmPalast: Sprachversion', 'Nur eine als fremdsprachig markierte Version gefunden. Diese auswählen?'):
+            return
     for title, url, image in found:
         addLink(title, url, 10, image)
 

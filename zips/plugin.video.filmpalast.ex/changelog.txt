@@ -1,4 +1,6 @@
-0.6.2
+0.6.3
+- Fremdsprachige Filmversionen nicht automatisch bevorzugen.
+- Suche bei unpassenden Treffern erweitern; zusätzliche Teilnummer vor Untertitel berücksichtigen.
 - Quellenprüfung auch bei manueller Auswahl.
 - Hosterliste zeigt Erreichbarkeit, Format, verfügbare Auflösung und Speed.
 - Manuelle Auswahl startet erst nach Bestätigung; Abbrechen beendet den Vorgang.
