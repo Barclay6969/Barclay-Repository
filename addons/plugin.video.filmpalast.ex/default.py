@@ -50,6 +50,7 @@ def load_settings():
     settings = xbmcaddon.Addon(id='plugin.video.filmpalast.ex')
     
     return {
+        'auto_hoster': settings.getSetting('autoHoster') == 'true',
         'filter_unknown_hoster': settings.getSetting("filterUnknownHoster") == 'true',
         'force_view_mode': settings.getSetting("forceViewMode") == 'true',
         'view_mode': str(settings.getSetting("viewMode")),
@@ -489,6 +490,35 @@ def PLAYVIDEO(url):
         xbmc.executebuiltin("XBMC.Notification(Fehler!, Video nicht gefunden, 4000)")
         return
     
+    if config.get('auto_hoster'):
+        from auto_hoster import check_sources
+        progress = xbmcgui.DialogProgress()
+        progress.create('FilmPalast: Auto-Hoster', 'Quellen werden geprüft …')
+        def report(checked, total, working):
+            progress.update(int(checked * 100 / max(total, 1)),
+                            '{} von {} geprüft · {} erreichbar'.format(checked, total, working))
+            return not progress.iscanceled() and not xbmc.Monitor().abortRequested()
+        def resolve_source(name, source):
+            return _resolveVoeDirect(source, {'source': name}) or resolveUrl(source)
+        try:
+            results = check_sources(videos, resolve_source, report)
+        finally:
+            progress.close()
+        if results is None:
+            xbmcplugin.setResolvedUrl(pluginhandle, False, xbmcgui.ListItem())
+            return
+        if results:
+            labels = ['{} | {} | {} | ca. {:.1f} Mbit/s'.format(
+                result['hoster'], result['format'],
+                '{}p'.format(result['height']) if result['height'] else 'Auflösung unbekannt',
+                result['speed'] * 8 / 1000000) for result in results]
+            selected = results[0]
+            xbmcgui.Dialog().notification('FilmPalast: Auto-Hoster', labels[0], time=4000)
+            xbmc.log('[FilmPalast] Auto-Hoster selected: {} / {} / {:.1f} Mbit/s'.format(
+                selected['hoster'], selected['format'], selected['speed'] * 8 / 1000000), xbmc.LOGINFO)
+            play_resolved_video(selected['stream'], already_resolved=True)
+            return
+        xbmcgui.Dialog().notification('FilmPalast', 'Keine Quelle bestätigt – manuelle Auswahl', time=4000)
     # Select video source
     selected_url = select_video_source(videos, url, data)
     if selected_url:
@@ -582,9 +612,9 @@ def prepare_trakt_ids(params):
     xbmc.executebuiltin('RunScript("{}",{})'.format(script, owner))
     xbmc.log('[FilmPalast] Trakt bridge: {} IDs supplied ({})'.format(media_type, ','.join(sorted(ids))), xbmc.LOGINFO)
 
-def play_resolved_video(url):
+def play_resolved_video(url, already_resolved=False):
     # Resolve and play the video URL
-    stream_url = _resolveVoeDirect(url, {'source': urlparse(str(url)).netloc}) or resolveUrl(url)
+    stream_url = url if already_resolved else (_resolveVoeDirect(url, {'source': urlparse(str(url)).netloc}) or resolveUrl(url))
     if stream_url:
         if DEBUG:
             print('Opening stream:', stream_url)

@@ -1,4 +1,3 @@
-<?xml version='1.0' encoding='utf8'?>
 <addons>
 <addon id="repository.barclay" name="Barclay Repository" version="1.0.4" provider-name="Barclay">
   <extension point="xbmc.addon.repository" name="Barclay Repository">
@@ -410,7 +409,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.5.9" provider-name="Barclay (Kusi)">
+<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.1" provider-name="Barclay (Kusi)">
     <requires>
         <import addon="xbmc.python" version="3.0.0" />
         <import addon="script.module.resolveurl" version="5.1.192" />
@@ -426,7 +425,14 @@
         <summary lang="de">FilmPalast.to FiLME &amp; SERiEN sofort &amp; kostenlos online ansehen!</summary>
         <summary lang="en">FilmPalast.to MOViS &amp; SERiES, watch online instantly free!</summary>
         <description lang="en">FilmPalastEx - Based on FilmPalast plugin by Lary_Loose</description>
-		<news lang="de">0.5.9 (2026-10-12)
+		<news lang="de">0.6.1
+- Auto-Hoster ist standardmässig aktiviert.
+- Optionaler Auto-Hoster-Modus: bis zu vier parallele Prüfungen, 20 Sekunden Gesamtlimit.
+- Kleine MP4-/HLS-Videoproben prüfen Erreichbarkeit und schätzen Geschwindigkeit.
+- Schnellste bestätigte Quelle direkt starten; manuelle Auswahl bei fehlenden Treffern.
+- HLS-Auflösung anzeigen, soweit verfügbar.
+
+0.5.9 (2026-10-12)
 - Vollständiger Changelog in Kodi sichtbar; Aktualisierung der installierten Testversion.
 - Wiedergabecode unverändert gegenüber der getesteten 0.5.8.
 
@@ -440,7 +446,14 @@
 - Autor: Barclay (Kusi); ursprüngliche Credits erhalten.
 - TMDbHelper-Player unter players/filmpalast_barclay_trakt.json.
 </news>
-        <news lang="en">0.5.9 (2026-10-12)
+<news lang="en">0.6.1
+- Auto-Hoster ist standardmässig aktiviert.
+- Optionaler Auto-Hoster-Modus: bis zu vier parallele Prüfungen, 20 Sekunden Gesamtlimit.
+- Kleine MP4-/HLS-Videoproben prüfen Erreichbarkeit und schätzen Geschwindigkeit.
+- Schnellste bestätigte Quelle direkt starten; manuelle Auswahl bei fehlenden Treffern.
+- HLS-Auflösung anzeigen, soweit verfügbar.
+
+0.5.9 (2026-10-12)
 - Vollständiger Changelog in Kodi sichtbar; Aktualisierung der installierten Testversion.
 - Wiedergabecode unverändert gegenüber der getesteten 0.5.8.
 
