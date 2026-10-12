@@ -1,5 +1,10 @@
 SerienStream – Changelog
 
+1.0.18
+- Neuinstallation: serienstream.to als Standarddomain.
+- Gemeinsame Kontodaten für Neuinstallationen vorbelegt.
+- Domain-Fallback im Startdienst auf serienstream.to angepasst.
+
 1.0.17
 - Trakt-Bewertungsdialog nach Serienwiedergabe wiederhergestellt.
 - Staffel- und Episodennummer werden beim TMDb-Helper-Playback vollständig an Kodi/Trakt übergeben.
