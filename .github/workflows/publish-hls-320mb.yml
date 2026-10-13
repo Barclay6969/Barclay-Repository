@@ -1,0 +1,37 @@
+name: Publish FilmPalast and xShip with 320MB HLS buffer
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-hls-320mb.yml'
+      - 'tools/build_hls_320mb_releases.py'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and validate both releases
+        run: python3 tools/build_hls_320mb_releases.py
+      - name: Rebuild repository catalogue
+        run: python3 tools/make_repo.py
+      - name: Verify published versions and checksum
+        run: |
+          python3 - <<'PY'
+          import hashlib, pathlib, xml.etree.ElementTree as ET
+          p = pathlib.Path('zips/addons.xml')
+          assert hashlib.md5(p.read_bytes()).hexdigest() == pathlib.Path('zips/addons.xml.md5').read_text().strip()
+          actual = {a.get('id'): a.get('version') for a in ET.fromstring(p.read_bytes())}
+          assert actual['plugin.video.xship'] == '2026.10.13.157'
+          assert actual['plugin.video.filmpalast.ex'] == '0.6.6'
+          PY
+      - name: Commit releases
+        run: |
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add addons/plugin.video.filmpalast.ex zips/plugin.video.filmpalast.ex/plugin.video.filmpalast.ex-0.6.6.zip zips/plugin.video.filmpalast.ex/changelog.txt zips/plugin.video.xship/plugin.video.xship-2026.10.13.157.zip zips/plugin.video.xship/changelog.txt zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Release FilmPalast 0.6.6 and xShip 2026.10.13.157: default HLS buffer 320MB"
+          git push
