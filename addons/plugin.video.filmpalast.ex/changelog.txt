@@ -1,3 +1,21 @@
+0.6.6
+- HLS-RAM-Vorpuffer wie xShip, standardmaessig 320 MB; von 16 bis 512 MB einstellbar.
+- HLS auch ohne Dateiendung erkennen; Playlists und lokale Segmente fuer native Wiedergabe aufbereiten.
+- Pufferstandsmeldung nur beim Druecken von Pause, optionale Textanzeige waehrend Pause.
+- Zusatzcache nach Stopp schliessen; keine Pufferdateien auf dem Datentraeger.
+
+0.6.5
+- Korrektur der HLS-Proxy-Uebergabe an Kodi/FFmpeg: Range-Anfragen auf Playlists vollstaendig beantworten.
+- Endungslose Segmentadressen mit HLS-kompatibler lokaler Endung bereitstellen.
+- Puffergrösse und Meldung nur bei Pause bleiben erhalten.
+
+0.6.4
+- HLS-RAM-Vorpuffer wie xShip: 16 bis 512 MB einstellbar, Standard 64 MB.
+- HLS auch ohne Dateiendung erkennen; native Wiedergabe beibehalten.
+- Pufferstand auf Wunsch nur beim Druecken von Pause melden.
+- Optionale Textanzeige waehrend Pause; keine automatischen Fuellstandsmeldungen.
+- Zusatzpuffer nach Stopp schliessen; keine Pufferdateien auf dem Datentraeger.
+
 0.6.3
 - Fremdsprachige Filmversionen nicht automatisch bevorzugen.
 - Suche bei unpassenden Treffern erweitern; zusätzliche Teilnummer vor Untertitel berücksichtigen.

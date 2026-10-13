@@ -22,7 +22,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.3" provider-name="Barclay (Kusi)">
+<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.6" provider-name="Barclay (Kusi)">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.resolveurl" version="5.1.192"/>
@@ -38,7 +38,22 @@
         <summary lang="de">FilmPalast.to FiLME &amp; SERiEN sofort &amp; kostenlos online ansehen!</summary>
         <summary lang="en">FilmPalast.to MOViS &amp; SERiES, watch online instantly free!</summary>
         <description lang="en">FilmPalastEx - Based on FilmPalast plugin by Lary_Loose</description>
-		<news lang="de">0.6.3
+		<news lang="de">0.6.6
+- HLS-RAM-Puffer standardmaessig 320 MB, einstellbar bis 512 MB.
+- Pufferstand nur beim Druecken von Pause melden.
+
+0.6.5
+- HLS-Proxy: Playlists bei Range-Anfragen vollstaendig laden und umschreiben.
+- Native HLS-Wiedergabe: unbekannte Segmentendung lokal als TS bereitstellen.
+
+0.6.4
+- HLS-RAM-Vorpuffer wie xShip: 16 bis 512 MB einstellbar, Standard 64 MB.
+- HLS auch ohne Dateiendung erkennen; native Wiedergabe beibehalten.
+- Pufferstand auf Wunsch nur beim Druecken von Pause melden.
+- Optionale Textanzeige waehrend Pause; keine automatischen Fuellstandsmeldungen.
+- Zusatzpuffer nach Stopp schliessen; keine Pufferdateien auf dem Datentraeger.
+
+0.6.3
 - Fremdsprachige Filmversionen nicht automatisch bevorzugen.
 - Suche bei unpassenden Treffern erweitern; zusätzliche Teilnummer vor Untertitel berücksichtigen.
 - Quellenprüfung auch bei manueller Auswahl.
@@ -64,7 +79,22 @@
 - Autor: Barclay (Kusi); ursprüngliche Credits erhalten.
 - TMDbHelper-Player unter players/filmpalast_barclay_trakt.json.
 </news>
-<news lang="en">0.6.3
+<news lang="en">0.6.6
+- Default HLS RAM buffer: 320 MB, configurable up to 512 MB.
+- Buffer notification only when pausing.
+
+0.6.5
+- Fix complete playlist loading for ranged HLS requests.
+- Use compatible local segment extensions for native HLS playback.
+
+0.6.4
+- HLS-RAM-Vorpuffer wie xShip: 16 bis 512 MB einstellbar, Standard 64 MB.
+- HLS auch ohne Dateiendung erkennen; native Wiedergabe beibehalten.
+- Pufferstand auf Wunsch nur beim Druecken von Pause melden.
+- Optionale Textanzeige waehrend Pause; keine automatischen Fuellstandsmeldungen.
+- Zusatzpuffer nach Stopp schliessen; keine Pufferdateien auf dem Datentraeger.
+
+0.6.3
 - Fremdsprachige Filmversionen nicht automatisch bevorzugen.
 - Suche bei unpassenden Treffern erweitern; zusätzliche Teilnummer vor Untertitel berücksichtigen.
 - Quellenprüfung auch bei manueller Auswahl.
@@ -128,7 +158,7 @@
 - Gemeinsame Kontodaten für Neuinstallationen vorbelegt.
 - Domain-Fallback im Startdienst auf serienstream.to angepasst.</news></extension>
 </addon>
-<addon id="plugin.video.xship" version="2026.10.13.156" name="xShip" provider-name="Kusi (Barclay)">
+<addon id="plugin.video.xship" version="2026.10.13.157" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />

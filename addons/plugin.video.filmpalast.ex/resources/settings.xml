@@ -1,4 +1,10 @@
 <settings>
+  <category label="HLS-Puffer">
+    <setting id="playback.hls_prebuffer_test" type="bool" label="HLS: FilmPalast-RAM-Puffer aktivieren" default="true" />
+    <setting id="playback.hls_prebuffer_mb" type="slider" label="HLS-Puffergrösse (MB)" default="320" range="16,16,512" option="int" enable="eq(-1,true)" />
+    <setting id="playback.hls_buffer_notifications" type="bool" label="HLS-Pufferstand beim Pausieren melden" default="true" />
+    <setting id="playback.hls_buffer_status" type="bool" label="HLS-Pufferstatus während Pause anzeigen" default="true" />
+  </category>
   <category label="Auto-Hoster">
     <setting id="autoHoster" type="bool" label="Hoster automatisch prüfen und schnellste Quelle starten" default="true"/>
   </category>

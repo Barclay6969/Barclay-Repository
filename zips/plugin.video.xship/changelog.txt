@@ -1,3 +1,7 @@
+2026.10.13.157
+- HLS-RAM-Puffer standardmaessig auf 320 MB voreingestellt, weiterhin 16 bis 512 MB einstellbar.
+- Pufferstandsmeldung weiterhin nur beim Druecken von Pause.
+
 2026.10.13.156
 - Neuer xShip-RAM-Vorpuffer fuer HLS-Streams: Videosegmente werden im Hintergrund vorgeladen.
 - Puffer unter Allgemein aktivierbar und von 16 bis 512 MB einstellbar; Standard 64 MB.

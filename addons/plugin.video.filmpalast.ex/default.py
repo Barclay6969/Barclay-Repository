@@ -648,20 +648,32 @@ def play_resolved_video(url, already_resolved=False):
         media_path = stream_url.split('|', 1)[0].lower().split('?', 1)[0]
         stream_type = 'MP4' if media_path.endswith('.mp4') else ('HLS' if media_path.endswith('.m3u8') else 'unknown')
         xbmc.log('[FilmPalast] Playback stream type: ' + stream_type, xbmc.LOGINFO)
+        from buffered_playback import prepare
+        stream_url, buffered = prepare(stream_url)
         listitem = xbmcgui.ListItem(path=stream_url)
+        if buffered is not None:
+            listitem.setMimeType('application/vnd.apple.mpegurl')
+            listitem.setContentLookup(False)
         if stream_type == 'MP4':
             listitem.setMimeType('video/mp4')
             listitem.setContentLookup(False)
-        metadata = get_params()
-        apply_playback_metadata(listitem, metadata)
-        art = {key: urllib.parse.unquote_plus(metadata[key])
-               for key in ('poster', 'fanart', 'thumb') if metadata.get(key) and metadata[key] not in ('None', 'null')}
-        if art:
-            art.setdefault('thumb', art.get('poster', ''))
-            art.setdefault('icon', art.get('poster', art.get('thumb', '')))
-            listitem.setArt(art)
-        prepare_trakt_ids(metadata)
-        return xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
+        try:
+            metadata = get_params()
+            apply_playback_metadata(listitem, metadata)
+            art = {key: urllib.parse.unquote_plus(metadata[key])
+                   for key in ('poster', 'fanart', 'thumb') if metadata.get(key) and metadata[key] not in ('None', 'null')}
+            if art:
+                art.setdefault('thumb', art.get('poster', ''))
+                art.setdefault('icon', art.get('poster', art.get('thumb', '')))
+                listitem.setArt(art)
+            prepare_trakt_ids(metadata)
+            result = xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
+            if buffered is not None:
+                buffered.wait()
+            return result
+        finally:
+            if buffered is not None:
+                buffered.close()
     raise Exception("Could not resolve stream URL")
 
 def getUrl(url):
