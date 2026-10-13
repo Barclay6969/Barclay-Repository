@@ -1,0 +1,36 @@
+name: Publish xShip 2026.10.13.156
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-xship-2026.10.13.156.yml'
+      - 'tools/build_xship_release_2026_10_13_156.py'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and validate xShip release
+        run: python3 tools/build_xship_release_2026_10_13_156.py
+      - name: Rebuild repository catalogue
+        run: python3 tools/make_repo.py
+      - name: Verify catalogue and checksum
+        run: |
+          python3 - <<'PY'
+          import hashlib, pathlib, xml.etree.ElementTree as ET
+          p = pathlib.Path('zips/addons.xml')
+          assert hashlib.md5(p.read_bytes()).hexdigest() == pathlib.Path('zips/addons.xml.md5').read_text().strip()
+          root = ET.fromstring(p.read_bytes())
+          assert next(a for a in root if a.get('id') == 'plugin.video.xship').get('version') == '2026.10.13.156'
+          PY
+      - name: Commit release
+        run: |
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add zips/plugin.video.xship/plugin.video.xship-2026.10.13.156.zip zips/plugin.video.xship/changelog.txt zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Release xShip 2026.10.13.156: HLS RAM buffer and pause status"
+          git push
