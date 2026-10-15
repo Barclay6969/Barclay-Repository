@@ -86,10 +86,38 @@ def consume_info_request(window):
             log('Expired pending info request', xbmc.LOGWARNING)
             window.clearProperty(INFO_QUEUE_KEY)
             return False
-        # EndOfDirectory must have returned and Kodi must have released its
-        # directory-busy dialog before the native Info window opens.
-        if time.time() < issued + 1.2 or not kodi_idle():
+        # Kodi has entered the clicked virtual mode=30 *folder*. Restore
+        # the previous FilmPalast listing via a single Back navigation, then
+        # open TMDb details. This preserves the film list after playback stops.
+        now = time.time()
+        if now < issued + 0.8 or not kodi_idle():
             return False
+        folder = xbmc.getInfoLabel('Container.FolderPath') or ''
+        within_virtual_folder = (
+            'plugin.video.filmpalast.ex' in folder and
+            ('mode=30' in folder or 'mode%3D30' in folder))
+        if not request.get('navigation_restored'):
+            # Do not Back from an unrelated window or parent directory.
+            if within_virtual_folder:
+                request['navigation_restored'] = True
+                request['return_issued'] = now
+                window.setProperty(INFO_QUEUE_KEY, json.dumps(request))
+                log('Restoring FilmPalast movie list with Action(Back)')
+                xbmc.executebuiltin('Action(Back)')
+                return False
+            # On some Kodi skins FolderPath is temporarily empty while
+            # opening the virtual folder. Wait for the destination to load.
+            if now < issued + 4.0:
+                return False
+            # Fallback: preserve current list if the skin exposes no path.
+            # Never send a blind Back that could leave FilmPalast entirely.
+            log('Cannot identify virtual folder; skipping Back', xbmc.LOGWARNING)
+        else:
+            # Wait until Kodi has actually returned to the movie list.
+            if now < float(request['return_issued']) + 0.6:
+                return False
+            if within_virtual_folder:
+                return False
     except Exception as exc:
         window.clearProperty(INFO_QUEUE_KEY)
         log('Invalid info request: %s' % exc, xbmc.LOGWARNING)
