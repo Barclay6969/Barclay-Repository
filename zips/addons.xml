@@ -40,10 +40,9 @@
         <summary lang="en">FilmPalast.to MOViS &amp; SERiES, watch online instantly free!</summary>
         <description lang="en">FilmPalastEx - Based on FilmPalast plugin by Lary_Loose</description>
 		<news lang="de">0.6.12 (2026-10-15)
-- Nach der Filmwiedergabe bleibt Kodi wieder in der vorherigen FilmPalast-Filmauswahl.
-- Behebt den unbeabsichtigten Sprung ins Kodi-Hauptmenü Videos beim Öffnen von TMDb-Details.
-- Der Kodi-Filmordner wird erfolgreich beendet und die Liste vor dem Infofenster wiederhergestellt.
-- Funktionierende TMDb-Player-Integration, Changelog-Popup und 320-MB-HLS-Puffer unverändert.
+- Neu: FilmPalast ist direkt mit TMDb Helper verbunden.
+- Beim Öffnen eines Films erscheinen die vollständigen TMDb-Filminformationen.
+- Über «Wiedergeben» startet der ausgewählte Film direkt in FilmPalast.
 
 0.6.11 (2026-10-15)
 - Android: TMDb-Filmansicht wieder funktionsfähig. Aufruf läuft jetzt über den Kodi-Dienst von FilmPalast mit gültiger Add-on-ID.
@@ -119,10 +118,9 @@
 - TMDbHelper-Player unter players/filmpalast_barclay_trakt.json.
 </news>
 <news lang="en">0.6.12 (2026-10-15)
-- Return to the previous FilmPalast movie listing after playback stops.
-- Fix unintended navigation to Kodi's Videos root when opening native TMDb details.
-- Complete the virtual movie folder successfully and restore parent listing before opening Info.
-- Preserve TMDb player, changelog popup and 320 MB HLS buffer.
+- New: Direct integration of FilmPalast with TMDb Helper.
+- Opening a movie shows its full TMDb movie details.
+- Selecting Play starts the chosen movie directly with FilmPalast.
 
 0.6.11 (2026-10-15)
 - Android: native TMDb details now open from FilmPalast's Kodi service with valid add-on identity.
