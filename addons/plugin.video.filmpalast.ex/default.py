@@ -817,7 +817,11 @@ def main():
             # Kodi Android: do not hold the directory-busy dialog open while
             # the TMDb Helper Info/play dialog is displayed. Completing this
             # callback first prevents nested busy dialogs and a hard Kodi exit.
-            xbmcplugin.endOfDirectory(pluginhandle, succeeded=False, cacheToDisc=False)
+            # A failed directory invalidates Kodi's navigation stack and
+            # sends users back to the global Videos screen after playback.
+            # Return a valid (empty) folder, then let our service navigate
+            # back to the existing FilmPalast movie list before Info opens.
+            xbmcplugin.endOfDirectory(pluginhandle, succeeded=True, cacheToDisc=False)
             # Do not use RunScript(path): on Android Kodi invokes it without
             # an addon id, so TMDb Helper fails with "No valid addon id".
             # The FilmPalast xbmc.service entrypoint owns the correct Kodi
