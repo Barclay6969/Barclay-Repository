@@ -163,7 +163,7 @@ def direct_play(url, title, year):
 def open_tmdb_info(site_url, params):
     title = clean_title(params.get('title') or
         site_url.rstrip('/').split('/')[-1].replace('-', ' '))
-    year = get_year(params.get('year'))
+    year = get_year(params.get('year')) or get_year(params.get('title'))
     if not site_url.startswith('https://filmpalast.to/stream/'):
         log('Refused unrelated URL: %r' % site_url, xbmc.LOGERROR)
         return
