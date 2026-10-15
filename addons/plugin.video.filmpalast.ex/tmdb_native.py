@@ -24,7 +24,7 @@ SCOPE_KEY = 'filmpalast.barclay.native_direct_068'
 PLAYER_CONFIG = {
     'name': '[COLORgreen]FilmPalast[/COLOR] (Direkt)',
     'plugin': FILMPALAST,
-    'priority': 200,
+    'priority': 800,
     'language': 'de',
     'is_resolvable': 'true',
     'assert': {'play_movie': ['title']},
@@ -192,14 +192,28 @@ def ensure_native_player():
     intended = json.dumps(PLAYER_CONFIG, ensure_ascii=False, indent=2) + '\n'
     if os.path.isfile(dest):
         with open(dest, 'r', encoding='utf-8') as infile:
-            installed = infile.read()
-        if installed == intended:
+            installed = json.load(infile)
+        if installed == PLAYER_CONFIG:
             return
-        # Never replace a user-edited custom player.
-        raise ValueError('Native player configuration differs: ' + dest)
+        # Automatically migrate the identical FilmPalast player originally
+        # shipped in 0.6.12. Customers must NOT have to edit TMDb players.
+        # Do not overwrite an independently customized player.
+        previous = dict(PLAYER_CONFIG, priority=200)
+        if installed != previous:
+            raise ValueError('Native player was customized; leaving unchanged: ' + dest)
+        tmp = dest + '.priority-update'
+        try:
+            with open(tmp, 'w', encoding='utf-8') as outfile:
+                outfile.write(intended)
+            os.replace(tmp, dest)
+        finally:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+        log('FilmPalast player priority migrated automatically: 200 -> 800')
+        return
     with open(dest, 'w', encoding='utf-8') as outfile:
         outfile.write(intended)
-    log('FilmPalast player installed: ' + PLAYER_FILE)
+    log('FilmPalast player installed with priority 800: ' + PLAYER_FILE)
 
 
 def native_direct_url(params):

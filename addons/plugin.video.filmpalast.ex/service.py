@@ -144,6 +144,15 @@ def run():
     if root not in sys.path:
         sys.path.insert(0, root)
     log('Service ready with Kodi addon context: ' + active_addon)
+    # On every add-on startup, repair the 0.6.12 TMDb player priority
+    # before users open any films; playback continues to force this player
+    # explicitly regardless of its position in TMDb's general player menu.
+    try:
+        if xbmc.getCondVisibility('System.HasAddon(plugin.video.themoviedb.helper)'):
+            from tmdb_native import ensure_native_player
+            ensure_native_player()
+    except Exception:
+        log('Automatic TMDb player priority migration failed:\n' + traceback.format_exc(), xbmc.LOGWARNING)
     monitor = xbmc.Monitor()
     window = xbmcgui.Window(10000)
     started = time.monotonic()

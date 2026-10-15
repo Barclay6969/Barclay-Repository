@@ -1,3 +1,7 @@
+0.6.13 (2026-10-15)
+- FilmPalast-Direktplayer im TMDb Helper auf Priorität 800 gesetzt.
+- Bereits installierte FilmPalast-Direktplayer werden automatisch angepasst; keine manuelle Änderung nötig.
+
 0.6.12 (2026-10-15)
 - Neu: FilmPalast ist direkt mit TMDb Helper verbunden.
 - Beim Öffnen eines Films erscheinen die vollständigen TMDb-Filminformationen.
