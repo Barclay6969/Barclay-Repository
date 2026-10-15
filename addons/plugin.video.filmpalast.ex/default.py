@@ -812,6 +812,14 @@ def main():
         elif mode == 30:
             from tmdb_native import open_tmdb_info
             open_tmdb_info(url, params)
+        elif mode == 31:
+            from tmdb_native import native_direct_url
+            exact_page = native_direct_url(params)
+            if exact_page:
+                PLAYVIDEO(exact_page)
+            else:
+                xbmc.log('[FilmPalast TMDb Native] Missing or expired film scope', xbmc.LOGWARNING)
+                xbmcplugin.setResolvedUrl(pluginhandle, False, xbmcgui.ListItem())
         elif mode == 10:
             PLAYVIDEO(url)
         
