@@ -12,6 +12,7 @@ import unicodedata
 import base64
 import json
 import uuid
+import time
 from urllib.parse import urlparse, urljoin, urlencode
 from html import unescape as html_unescape
 import xlibs.urllib3 as urllib3p
@@ -817,14 +818,18 @@ def main():
             # the TMDb Helper Info/play dialog is displayed. Completing this
             # callback first prevents nested busy dialogs and a hard Kodi exit.
             xbmcplugin.endOfDirectory(pluginhandle, succeeded=False, cacheToDisc=False)
-            payload = base64.urlsafe_b64encode(
-                json.dumps({'url': url, 'params': params},
-                           ensure_ascii=True).encode('utf-8')).decode('ascii').rstrip('=')
-            launcher = os.path.join(
-                xbmcaddon.Addon(id='plugin.video.filmpalast.ex').getAddonInfo('path'),
-                'tmdb_info_launcher.py')
-            xbmc.log('[FilmPalast TMDb Native] Info launcher queued after directory close', xbmc.LOGINFO)
-            xbmc.executebuiltin('RunScript("%s",%s)' % (launcher, payload))
+            # Do not use RunScript(path): on Android Kodi invokes it without
+            # an addon id, so TMDb Helper fails with "No valid addon id".
+            # The FilmPalast xbmc.service entrypoint owns the correct Kodi
+            # addon context and opens the original TMDb dialog only after
+            # this plugin directory callback has finished.
+            request = {
+                'url': url, 'params': params, 'issued': time.time()
+            }
+            xbmcgui.Window(10000).setProperty(
+                'filmpalast.barclay.native_info_queue_0611',
+                json.dumps(request, ensure_ascii=True))
+            xbmc.log('[FilmPalast TMDb Native] Queued info in FilmPalast service context', xbmc.LOGINFO)
             return
         elif mode == 31:
             from tmdb_native import native_direct_url
