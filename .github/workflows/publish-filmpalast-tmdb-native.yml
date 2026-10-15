@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-      - fix/filmpalast-tmdb-native-0.6.10
+      - fix/filmpalast-tmdb-android-dialog-0.6.10
     paths:
       - 'addons/plugin.video.filmpalast.ex/**'
       - '.github/workflows/publish-filmpalast-tmdb-native.yml'
@@ -28,7 +28,8 @@ jobs:
           for name in ('default.py','tmdb_native.py','tmdb_info_launcher.py','service.py'):
               ast.parse((folder/name).read_text(encoding='utf-8'))
           script=(folder/'default.py').read_text(encoding='utf-8')
-          assert "from tmdb_native import open_tmdb_info" in script
+          assert "tmdb_info_launcher.py" in script
+          assert "xbmcplugin.endOfDirectory(pluginhandle, succeeded=False, cacheToDisc=False)" in script
           assert "isFolder=(mode == 30)" in script
           assert "play_resolved_video(selected['stream'], already_resolved=True)" in script
           bridge=(folder/'tmdb_native.py').read_text(encoding='utf-8')
