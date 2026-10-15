@@ -40,11 +40,41 @@ def popup_for_new_version():
     with open(marker, 'w', encoding='utf-8') as f:
         f.write(current)
 
+def is_safe_to_display():
+    # Do not stack the release-notes popup on the TMDb info dialog, Kodi's
+    # directory/player progress dialogs or video playback.
+    if xbmc.Player().isPlaying():
+        return False
+    for condition in (
+        'Window.IsVisible(videoinfo)',
+        'Window.IsActive(videoinfo)',
+        'Window.IsVisible(busydialog)',
+        'Window.IsVisible(progressdialog)',
+        'Window.IsVisible(DialogVideoInfo.xml)',
+    ):
+        if xbmc.getCondVisibility(condition):
+            return False
+    # Native Kodi GUI dialog IDs: 0 or 9999 are idle on supported devices.
+    return xbmcgui.getCurrentWindowDialogId() in (0, 9999)
+
+
 if __name__ == '__main__':
     monitor = xbmc.Monitor()
-    if not monitor.waitForAbort(12):
+    if not monitor.waitForAbort(25):
         try:
-            popup_for_new_version()
+            # Wait for a stable idle window, not merely the end of startup.
+            # If there is ongoing activity, leave marker untouched and try
+            # again at next start rather than interrupt playback.
+            idle_seconds = 0
+            for _ in range(240):
+                if monitor.abortRequested():
+                    break
+                idle_seconds = idle_seconds + 1 if is_safe_to_display() else 0
+                if idle_seconds >= 4:
+                    popup_for_new_version()
+                    break
+                if monitor.waitForAbort(1):
+                    break
         except Exception as exc:
             xbmc.log('[FilmPalast Changelog Popup] %s: %s\n%s' % (
                 type(exc).__name__, exc, traceback.format_exc()), xbmc.LOGWARNING)
