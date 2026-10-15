@@ -1,3 +1,11 @@
+0.6.8 (2026-10-15)
+- Originale TMDb-Helper-Filminformationen beim Öffnen eines Films.
+- «Wiedergeben» startet ausschliesslich FilmPalast ohne Player-Auswahl.
+- Die genaue FilmPalast-Filmseite wird übergeben; keine zweite Filmsuche während der Wiedergabe.
+- Kein Eingriff in TMDb-Helper-Programmdateien oder globale Player-Einstellungen.
+- Changelog wird bei der Installation eines Updates automatisch einmal als Popup angezeigt.
+- Original-Hosterprüfung und 320-MB-HLS-Puffer bleiben unverändert.
+
 0.6.7 (2026-10-15)
 - Originale TMDb-Helper-Filmdetails beim Öffnen eines FilmPalast-Films.
 - Verbesserte Titelsuche, Originaltitel und toleranter Jahresvergleich; manuelle Auswahl bei mehreren Treffern.
