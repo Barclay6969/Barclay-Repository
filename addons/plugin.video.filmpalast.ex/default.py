@@ -797,7 +797,10 @@ def main():
     mode = int(params.get("mode", "0")) if params.get("mode") else None
     
     try:
-        if mode is None or not url:
+        # mode=31 is a scoped TMDb Helper player callback: the original
+        # FilmPalast page is stored in the one-shot window property, not in
+        # the plugin URL. Never route it to START() for missing 'url'.
+        if mode is None or (not url and mode != 31):
             START()
         elif mode == 1:
             INDEX(url)
