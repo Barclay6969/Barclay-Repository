@@ -22,7 +22,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.11" provider-name="Barclay (Kusi)">
+<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.12" provider-name="Barclay (Kusi)">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.resolveurl" version="5.1.192"/>
@@ -39,7 +39,12 @@
         <summary lang="de">FilmPalast.to FiLME &amp; SERiEN sofort &amp; kostenlos online ansehen!</summary>
         <summary lang="en">FilmPalast.to MOViS &amp; SERiES, watch online instantly free!</summary>
         <description lang="en">FilmPalastEx - Based on FilmPalast plugin by Lary_Loose</description>
-		<news lang="de">0.6.11 (2026-10-15)
+		<news lang="de">0.6.12 (2026-10-15)
+- Nach dem Stoppen des Films zur ursprünglichen FilmPalast-Filmauswahl zurückkehren statt ins Videos-Hauptmenü.
+- Kodi-Verzeichnisabfrage erfolgreich abschliessen, Navigation vor Öffnen des TMDb-Infofensters zurücksetzen.
+- Keine Änderungen an TMDb-Player, Hosterprüfung, Changelog-Popup oder 320-MB-HLS-Puffer.
+
+0.6.11 (2026-10-15)
 - Android: TMDb-Filmansicht wieder funktionsfähig. Aufruf läuft jetzt über den Kodi-Dienst von FilmPalast mit gültiger Add-on-ID.
 - Kodi-Verzeichnis wird vorher geschlossen, damit beim Start kein doppelter Ladedialog entsteht.
 - Bewertungs- und Genre-Zusätze werden aus der TMDb-Titelsuche entfernt.
@@ -112,7 +117,12 @@
 - Autor: Barclay (Kusi); ursprüngliche Credits erhalten.
 - TMDbHelper-Player unter players/filmpalast_barclay_trakt.json.
 </news>
-<news lang="en">0.6.11 (2026-10-15)
+<news lang="en">0.6.12 (2026-10-15)
+- Restore the FilmPalast movie listing after stopping playback rather than returning to the Kodi Videos root.
+- Complete the temporary directory successfully and pop it before opening TMDb details.
+- No changes to native TMDb player, hoster checks, changelog popup, or 320 MB HLS prebuffer.
+
+0.6.11 (2026-10-15)
 - Android: native TMDb details now open from FilmPalast's Kodi service with valid add-on identity.
 - Complete the originating directory callback first to avoid concurrent busy dialogs.
 - Strip colored rating and genre display metadata from TMDb search terms.
