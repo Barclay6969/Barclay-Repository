@@ -86,9 +86,27 @@ def consume_info_request(window):
             log('Expired pending info request', xbmc.LOGWARNING)
             window.clearProperty(INFO_QUEUE_KEY)
             return False
-        # EndOfDirectory must have returned and Kodi must have released its
-        # directory-busy dialog before the native Info window opens.
-        if time.time() < issued + 1.2 or not kodi_idle():
+        # The mode=30 item is a Kodi folder. Kodi has now completed it
+        # successfully, keeping the navigation history intact. Pop the empty
+        # temporary folder and return to the original FilmPalast movie list
+        # BEFORE opening the native TMDb details dialog.
+        if not request.get('restored_at'):
+            if time.time() < issued + 1.2 or not kodi_idle():
+                return False
+            folder = xbmc.getInfoLabel('Container.FolderPath') or ''
+            if 'mode=30' in folder or not folder:
+                xbmc.executebuiltin('Action(Back)')
+                log('Returning to FilmPalast movie list before TMDb details')
+            else:
+                # Kodi or the skin may have already restored the parent.
+                # Avoid jumping backwards again to the Videos home screen.
+                log('Previous listing is already active: %s' % folder[:180])
+            request['restored_at'] = time.time()
+            window.setProperty(INFO_QUEUE_KEY, json.dumps(request))
+            return False
+        # Allow the parent folder to finish rendering before opening Info,
+        # otherwise Kodi Android can hit the duplicate-busydialog crash.
+        if time.time() < float(request['restored_at']) + 0.65 or not kodi_idle():
             return False
     except Exception as exc:
         window.clearProperty(INFO_QUEUE_KEY)
