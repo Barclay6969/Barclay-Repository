@@ -80,7 +80,17 @@ first_end=next(i for i,x in enumerate(case) if x[0]=='end')
 queue_index=next(i for i,x in enumerate(case) if x[0]=='queue')
 assert first_end < queue_index, case
 assert len([x for x in case if x[0]=='end']) == 1, case
+# success=True keeps Kodi's folder history; False caused GetDirectory failed
+# and the Videos root to appear after playback.
+assert ('end',) in case, case  # callback completed
+source=Path('addons/plugin.video.filmpalast.ex/default.py').read_text(encoding='utf-8')
+assert 'endOfDirectory(pluginhandle, succeeded=True, cacheToDisc=False)' in source
+assert 'endOfDirectory(pluginhandle, succeeded=False, cacheToDisc=False)' not in source
 service=Path('addons/plugin.video.filmpalast.ex/service.py').read_text(encoding='utf-8')
+assert "xbmc.executebuiltin('Action(Back)')" in service
+assert "request['restored_at'] = time.time()" in service
+assert "request.get('restored_at')" in service
+assert "time.time() < float(request['restored_at']) + 0.65" in service
 assert 'active_addon = xbmcaddon.Addon().getAddonInfo' in service
 assert 'from tmdb_native import open_tmdb_info' in service
 assert "native_info_queue_0611" in service
