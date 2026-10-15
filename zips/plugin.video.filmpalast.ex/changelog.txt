@@ -1,3 +1,10 @@
+0.6.11 (2026-10-15)
+- Android: TMDb-Details öffnen wieder über den FilmPalast-Kodi-Dienst mit gültigem Add-on-Kontext.
+- Das FilmPalast-Verzeichnis wird zuerst beendet, bevor die TMDb-Detailansicht erscheint.
+- Keine parallelen Lade-Dialoge und kein fehlerhafter Python-Launcher mehr.
+- Farbige Bewertungs- und Genre-Zusätze werden bei der TMDb-Titelsuche entfernt.
+- Changelog-Popup einmal pro neuer Version; 320-MB-HLS-Puffer unverändert.
+
 0.6.10 (2026-10-15)
 - Behebt den Android-Absturz wegen zweier gleichzeitiger Kodi-Ladedialoge.
 - Schließt die FilmPalast-Verzeichnisanfrage, bevor der TMDb-Infodialog separat geöffnet wird.
