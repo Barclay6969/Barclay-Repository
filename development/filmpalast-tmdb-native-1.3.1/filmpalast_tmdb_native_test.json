@@ -1,0 +1,14 @@
+{
+  "name": "[COLORgreen]FilmPalast[/COLOR] (Native Test / Direkt)",
+  "plugin": "plugin.video.filmpalast.ex",
+  "priority": 200,
+  "language": "de",
+  "is_resolvable": "true",
+  "assert": {
+    "play_movie": [
+      "title"
+    ]
+  },
+  "play_movie": "plugin://plugin.video.filmpalast.ex/?mode=31&tmdb={tmdb}&title={title_url+}&year={year}&mediatype=movie&imdb={imdb}",
+  "make_playlist": "false"
+}
