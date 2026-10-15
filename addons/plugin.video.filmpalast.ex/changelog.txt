@@ -1,3 +1,9 @@
+0.6.9 (2026-10-15)
+- Kritischen Fehler beim Start über «Wiedergeben» aus TMDb Helper behoben.
+- Der spezielle FilmPalast-Player-Aufruf ohne URL springt nicht mehr ins Hauptmenü.
+- Weiterhin direkte Wiedergabe der ausgewählten Filmseite ohne zusätzliche Filmsuche.
+- Changelog-Popup erscheint einmal nach dem Update; 320-MB-HLS-Puffer bleibt erhalten.
+
 0.6.8 (2026-10-15)
 - Originale TMDb-Helper-Filminformationen beim Öffnen eines Films.
 - «Wiedergeben» startet ausschliesslich FilmPalast ohne Player-Auswahl.
