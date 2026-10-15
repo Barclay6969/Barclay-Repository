@@ -22,7 +22,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.6" provider-name="Barclay (Kusi)">
+<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.7" provider-name="Barclay (Kusi)">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.resolveurl" version="5.1.192"/>
@@ -38,7 +38,15 @@
         <summary lang="de">FilmPalast.to FiLME &amp; SERiEN sofort &amp; kostenlos online ansehen!</summary>
         <summary lang="en">FilmPalast.to MOViS &amp; SERiES, watch online instantly free!</summary>
         <description lang="en">FilmPalastEx - Based on FilmPalast plugin by Lary_Loose</description>
-		<news lang="de">0.6.6
+		<news lang="de">0.6.7
+- TMDb-Helper-Filmdetails beim Öffnen eines FilmPalast-Films.
+- Verbesserte Filmsuche mit Originaltiteln und Jahresvergleich; Auswahl bei Mehrdeutigkeit.
+- Direkter FilmPalast-Wiedergabepfad ohne fremde TMDb-Helper-Patches oder Player-Auswahl.
+- Bei fehlendem TMDb Helper wird FilmPalast direkt verwendet.
+- FilmPalast-Einstellung zum Deaktivieren der TMDb-Detailansicht.
+- 320-MB-HLS-Puffer und bisherige Hosterprüfung bleiben erhalten.
+
+0.6.6
 - HLS-RAM-Puffer standardmaessig 320 MB, einstellbar bis 512 MB.
 - Pufferstand nur beim Druecken von Pause melden.
 
@@ -79,7 +87,14 @@
 - Autor: Barclay (Kusi); ursprüngliche Credits erhalten.
 - TMDbHelper-Player unter players/filmpalast_barclay_trakt.json.
 </news>
-<news lang="en">0.6.6
+<news lang="en">0.6.7
+- Native TMDb Helper movie details from FilmPalast movie listings.
+- Better title matching, alternate names and tolerant release year checks.
+- Direct FilmPalast playback URL without patching TMDb Helper or global player settings.
+- Safe fallback when TMDb Helper is missing; toggle in FilmPalast settings.
+- Existing 320-MB HLS buffer and hoster checks remain unchanged.
+
+0.6.6
 - Default HLS RAM buffer: 320 MB, configurable up to 512 MB.
 - Buffer notification only when pausing.
 

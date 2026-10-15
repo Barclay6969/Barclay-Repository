@@ -5,6 +5,9 @@
     <setting id="playback.hls_buffer_notifications" type="bool" label="HLS-Pufferstand beim Pausieren melden" default="true" />
     <setting id="playback.hls_buffer_status" type="bool" label="HLS-Pufferstatus während Pause anzeigen" default="true" />
   </category>
+  <category label="TMDb-Integration">
+    <setting id="tmdbNativeInfo" type="bool" label="TMDb Helper: Film-Detailansicht vor der Wiedergabe anzeigen" default="true" />
+  </category>
   <category label="Auto-Hoster">
     <setting id="autoHoster" type="bool" label="Hoster automatisch prüfen und schnellste Quelle starten" default="true"/>
   </category>
