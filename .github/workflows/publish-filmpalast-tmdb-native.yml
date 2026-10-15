@@ -29,7 +29,7 @@ jobs:
               ast.parse((folder/name).read_text(encoding='utf-8'))
           script=(folder/'default.py').read_text(encoding='utf-8')
           assert "filmpalast.barclay.native_info_queue_0611" in script
-          assert "xbmcplugin.endOfDirectory(pluginhandle, succeeded=False, cacheToDisc=False)" in script
+          assert "xbmcplugin.endOfDirectory(pluginhandle, succeeded=True, cacheToDisc=False)" in script
           assert "isFolder=(mode == 30)" in script
           assert "play_resolved_video(selected['stream'], already_resolved=True)" in script
           bridge=(folder/'tmdb_native.py').read_text(encoding='utf-8')
