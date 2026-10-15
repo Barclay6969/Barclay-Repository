@@ -1,3 +1,9 @@
+0.6.10 (2026-10-15)
+- Behebt den Android-Absturz wegen zweier gleichzeitiger Kodi-Ladedialoge.
+- Schließt die FilmPalast-Verzeichnisanfrage, bevor der TMDb-Infodialog separat geöffnet wird.
+- Changelog-Popup wartet auf einen ruhigen Zeitpunkt; erscheint einmal pro Versionswechsel.
+- Erweiterte TMDb-Filmsuche, FilmPalast-Wiedergabe und 320-MB-Puffer bleiben bestehen.
+
 0.6.9 (2026-10-15)
 - Kritischen Fehler beim Start über «Wiedergeben» aus TMDb Helper behoben.
 - Der spezielle FilmPalast-Player-Aufruf ohne URL springt nicht mehr ins Hauptmenü.

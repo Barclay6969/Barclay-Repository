@@ -22,7 +22,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.9" provider-name="Barclay (Kusi)">
+<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.10" provider-name="Barclay (Kusi)">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.resolveurl" version="5.1.192"/>
@@ -39,7 +39,13 @@
         <summary lang="de">FilmPalast.to FiLME &amp; SERiEN sofort &amp; kostenlos online ansehen!</summary>
         <summary lang="en">FilmPalast.to MOViS &amp; SERiES, watch online instantly free!</summary>
         <description lang="en">FilmPalastEx - Based on FilmPalast plugin by Lary_Loose</description>
-		<news lang="de">0.6.9 (2026-10-15)
+		<news lang="de">0.6.10 (2026-10-15)
+- Android-Absturz behoben: TMDb-Detailansicht erst öffnen, nachdem der Kodi-Ladedialog des FilmPalast-Verzeichnisses geschlossen ist.
+- Gleichzeitige Kodi-Ladedialoge beim Start von TMDb Helper vermeiden.
+- Changelog-Popup wartet auf eine freie Kodi-Oberfläche, statt während der Film-Detailansicht zu erscheinen.
+- Verbesserte Suche, Filmpalast-Player und 320-MB-Puffer bleiben erhalten.
+
+0.6.9 (2026-10-15)
 - Kritischer Fix: TMDb-Helper-Wiedergabeaufruf ohne URL wird jetzt korrekt verarbeitet.
 - Kein Rücksprung mehr ins FilmPalast-Hauptmenü beim internen mode=31-Aufruf.
 - Bestehende TMDb-Filminformationen, direkter FilmPalast-Player, Changelog-Popup und 320-MB-HLS-Puffer bleiben erhalten.
@@ -100,7 +106,13 @@
 - Autor: Barclay (Kusi); ursprüngliche Credits erhalten.
 - TMDbHelper-Player unter players/filmpalast_barclay_trakt.json.
 </news>
-<news lang="en">0.6.9 (2026-10-15)
+<news lang="en">0.6.10 (2026-10-15)
+- Android crash prevention: finish Kodi directory request before opening the TMDb info dialog.
+- Avoid concurrent busy dialogs when starting TMDb Helper playback.
+- Once-per-version changelog popup waits until Kodi has no active dialogs or playback.
+- Preserve matching, FilmPalast player and 320 MB HLS prebuffer.
+
+0.6.9 (2026-10-15)
 - Fix critical TMDb playback callback: mode 31 resolves the saved FilmPalast page without a URL parameter.
 - Avoid the accidental main-menu fallback; preserve TMDb metadata, forced FilmPalast player, changelog popup and 320 MB HLS buffer.
 
