@@ -1,8 +1,7 @@
 0.6.12 (2026-10-15)
-- Nach dem Stoppen eines Films bleibt Kodi wieder bei der vorherigen FilmPalast-Filmauswahl.
-- Kein ungewollter Sprung auf die Kodi-Videos-Startseite beim Öffnen der TMDb-Detailansicht.
-- Verzeichnisanfrage erfolgreich abschliessen, Filmauswahl wiederherstellen und danach TMDb öffnen.
-- TMDb-Player, einmaliges Changelog-Popup, Hoster und 320-MB-HLS-Puffer unverändert.
+- Neu: FilmPalast ist direkt mit TMDb Helper verbunden.
+- Beim Öffnen eines Films erscheinen die vollständigen TMDb-Filminformationen.
+- Über «Wiedergeben» startet der ausgewählte Film direkt in FilmPalast.
 
 0.6.11 (2026-10-15)
 - Android: TMDb-Details öffnen wieder über den FilmPalast-Kodi-Dienst mit gültigem Add-on-Kontext.
