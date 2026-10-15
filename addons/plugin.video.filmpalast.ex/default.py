@@ -51,6 +51,7 @@ def load_settings():
     
     return {
         'auto_hoster': settings.getSetting('autoHoster') == 'true',
+        'tmdb_native_info': settings.getSetting('tmdbNativeInfo') != 'false',
         'filter_unknown_hoster': settings.getSetting("filterUnknownHoster") == 'true',
         'force_view_mode': settings.getSetting("forceViewMode") == 'true',
         'view_mode': str(settings.getSetting("viewMode")),
@@ -170,7 +171,8 @@ def process_movie_entries(entry):
         title = enhance_title_with_ratings(title, rating, url)
         description = get_preload_description(url) if config['preload_info'] else ""
         
-        addLink(clean(title), url, 10, image, description)
+        movie_mode = 30 if (config.get('tmdb_native_info') and url.startswith(BASE_URL + '/stream/')) else 10
+        addLink(clean(title), url, movie_mode, image, description)
         itemcnt += 1
 
 def enhance_title_with_ratings(title, rating, url):
@@ -730,6 +732,8 @@ def addLink(name, url, mode, image, description=""):
         str(mode)
     )
     
+    if mode == 30:
+        u += '&title=' + urllib.parse.quote_plus(name)
     liz = xbmcgui.ListItem(name)
     metadata = get_params()
     for key in ('poster', 'fanart', 'thumb', 'mediatype', 'title', 'tvshowtitle', 'year', 'season', 'episode', 'tmdb', 'imdb', 'showtmdb', 'showimdb'):
@@ -737,12 +741,13 @@ def addLink(name, url, mode, image, description=""):
             u += '&' + key + '=' + metadata[key]
     liz.setArt({'icon': 'DefaultVideo.png', 'thumb': image})
     liz.setInfo(type="Video", infoLabels={"Title": name, "plot": description})
-    liz.setProperty('IsPlayable', 'true')
+    liz.setProperty('IsPlayable', 'false' if mode == 30 else 'true')
     
     return xbmcplugin.addDirectoryItem(
         handle=int(sys.argv[1]), 
         url=u, 
-        listitem=liz
+        listitem=liz,
+        isFolder=(mode == 30)
     )
 
 def addDir(name, url, mode, image, is_folder=False):
@@ -804,6 +809,9 @@ def main():
             SEARCH(url)
         elif mode == 20:
             TMDBSEARCH(params)
+        elif mode == 30:
+            from tmdb_native import open_tmdb_info
+            open_tmdb_info(url, params)
         elif mode == 10:
             PLAYVIDEO(url)
         
