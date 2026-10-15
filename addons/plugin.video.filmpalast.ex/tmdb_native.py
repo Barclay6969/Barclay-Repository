@@ -5,6 +5,8 @@ Deliberately does not patch TMDb Helper, its player JSON, or user settings.
 Kodi 21+ / TMDb Helper 6.17.9. Only loaded when a film is selected.
 """
 import html
+import json
+import time
 import os
 import re
 import sys
@@ -13,9 +15,23 @@ from urllib.parse import quote_plus, urlencode, unquote_plus
 import xbmc
 import xbmcaddon
 import xbmcgui
+import xbmcvfs
 
 HELPER = 'plugin.video.themoviedb.helper'
 FILMPALAST = 'plugin.video.filmpalast.ex'
+PLAYER_FILE = 'filmpalast_barclay_native.json'
+SCOPE_KEY = 'filmpalast.barclay.native_direct_068'
+PLAYER_CONFIG = {
+    'name': '[COLORgreen]FilmPalast[/COLOR] (Direkt)',
+    'plugin': FILMPALAST,
+    'priority': 200,
+    'language': 'de',
+    'is_resolvable': 'true',
+    'assert': {'play_movie': ['title']},
+    'play_movie': 'plugin://plugin.video.filmpalast.ex/?mode=31&tmdb={tmdb}&title={title_url+}&year={year}&mediatype=movie&imdb={imdb}',
+    'make_playlist': 'false',
+}
+
 
 def log(message, level=xbmc.LOGINFO):
     xbmc.log('[FilmPalast TMDb Native] ' + str(message), level)
@@ -160,6 +176,56 @@ def playback_url(url, title, year, tmdb='', imdb=''):
 def direct_play(url, title, year):
     xbmc.executebuiltin('PlayMedia(%s)' % playback_url(url,title,year))
 
+
+def ensure_native_player():
+    """Install only FilmPalast's *own* JSON into the official TMDb players folder.
+
+    Unlike the 1.3.1 test, no TMDb Helper Python files are modified.
+    """
+    dest = xbmcvfs.translatePath('special://profile/addon_data/' +
+        HELPER + '/players/' + PLAYER_FILE)
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    intended = json.dumps(PLAYER_CONFIG, ensure_ascii=False, indent=2) + '\n'
+    if os.path.isfile(dest):
+        with open(dest, 'r', encoding='utf-8') as infile:
+            installed = infile.read()
+        if installed == intended:
+            return
+        # Never replace a user-edited custom player.
+        raise ValueError('Native player configuration differs: ' + dest)
+    with open(dest, 'w', encoding='utf-8') as outfile:
+        outfile.write(intended)
+    log('FilmPalast player installed: ' + PLAYER_FILE)
+
+
+def native_direct_url(params):
+    """One-shot replay of the exact FilmPalast page chosen before info dialog."""
+    win = xbmcgui.Window(10000)
+    try:
+        scope = json.loads(win.getProperty(SCOPE_KEY) or '{}')
+    except (TypeError, ValueError):
+        scope = {}
+    win.clearProperty(SCOPE_KEY)
+    url = str(scope.get('url') or '')
+    tmdb_id = unquote_plus(str(params.get('tmdb') or ''))
+    try:
+        valid = (
+            scope.get('tmdb_id') == tmdb_id and
+            int(scope.get('expires', 0)) >= int(time.time()) and
+            url.startswith('https://filmpalast.to/stream/'))
+    except (ValueError, TypeError):
+        valid = False
+    log('Exact page playback: ' + ('selected ' + url if valid else 'rejected'))
+    return url if valid else None
+
+
+def native_player_path(tmdb_id):
+    """Force only this Info dialog to FilmPalast using TMDb Helper public params."""
+    return 'plugin://' + HELPER + '/?' + urlencode({
+        'info':'play', 'tmdb_type':'movie', 'tmdb_id':str(tmdb_id),
+        'player':PLAYER_FILE, 'mode':'play', 'ignore_default':'true'
+    })
+
 def open_tmdb_info(site_url, params):
     title = clean_title(params.get('title') or
         site_url.rstrip('/').split('/')[-1].replace('-', ' '))
@@ -198,13 +264,19 @@ def open_tmdb_info(site_url, params):
             if not xbmcgui.Dialog().yesno('FilmPalast: TMDb-Treffer',
                 'FilmPalast: %s\nTMDb Helper: %s\nDiesen Film öffnen?' % (title,name)):
                 return
+        ensure_native_player()
         item = movie.get_listitem()
-        # The native Helper ListItem supplies all artwork and metadata.
-        # The Play button targets FilmPalast's existing resolved URL callback.
-        imdb = (movie.unique_ids or {}).get('imdb') or ''
-        item.setPath(playback_url(site_url, title, year, tmdb_id, imdb))
+        # Keep the TMDb Helper-generated movie metadata and original Info dialog.
+        # The Play button must invoke TMDb Helper with an explicitly forced
+        # FilmPalast JSON player, not change the ListItem to a FilmPalast URL.
+        scope = {'tmdb_id':str(tmdb_id), 'url':site_url,
+                 'expires':int(time.time()) + 900}
+        xbmcgui.Window(10000).setProperty(SCOPE_KEY, json.dumps(scope))
+        forced_url = native_player_path(tmdb_id)
+        item.setPath(forced_url)
         item.setProperty('IsPlayable', 'true')
-        log('Native TMDb details: title=%r tmdb=%s, direct FilmPalast' % (title,tmdb_id))
+        log('Native details + forced player: title=%r tmdb=%s target=%s' %
+            (title,tmdb_id, forced_url))
         xbmcgui.Dialog().info(item)
     except Exception as exc:
         log('Native info error %s: %s' % (type(exc).__name__, exc), xbmc.LOGERROR)
