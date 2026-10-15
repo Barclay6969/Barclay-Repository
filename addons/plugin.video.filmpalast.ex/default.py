@@ -12,6 +12,7 @@ import unicodedata
 import base64
 import json
 import uuid
+import time
 from urllib.parse import urlparse, urljoin, urlencode
 from html import unescape as html_unescape
 import xlibs.urllib3 as urllib3p
@@ -797,7 +798,10 @@ def main():
     mode = int(params.get("mode", "0")) if params.get("mode") else None
     
     try:
-        if mode is None or not url:
+        # mode=31 is a scoped TMDb Helper player callback: the original
+        # FilmPalast page is stored in the one-shot window property, not in
+        # the plugin URL. Never route it to START() for missing 'url'.
+        if mode is None or (not url and mode != 31):
             START()
         elif mode == 1:
             INDEX(url)
@@ -810,8 +814,36 @@ def main():
         elif mode == 20:
             TMDBSEARCH(params)
         elif mode == 30:
-            from tmdb_native import open_tmdb_info
-            open_tmdb_info(url, params)
+            # Kodi Android: do not hold the directory-busy dialog open while
+            # the TMDb Helper Info/play dialog is displayed. Completing this
+            # callback first prevents nested busy dialogs and a hard Kodi exit.
+            # This is a Kodi folder item. Returning succeeded=False tells
+            # Kodi the folder failed, so Android loses the parent FilmPalast
+            # listing and falls back to the Videos root screen.
+            # Complete successfully; our own service will navigate one level
+            # back to the original movie list BEFORE opening TMDb details.
+            xbmcplugin.endOfDirectory(pluginhandle, succeeded=True, cacheToDisc=False)
+            # Do not use RunScript(path): on Android Kodi invokes it without
+            # an addon id, so TMDb Helper fails with "No valid addon id".
+            # The FilmPalast xbmc.service entrypoint owns the correct Kodi
+            # addon context and opens the original TMDb dialog only after
+            # this plugin directory callback has finished.
+            request = {
+                'url': url, 'params': params, 'issued': time.time()
+            }
+            xbmcgui.Window(10000).setProperty(
+                'filmpalast.barclay.native_info_queue_0611',
+                json.dumps(request, ensure_ascii=True))
+            xbmc.log('[FilmPalast TMDb Native] Queued info in FilmPalast service context', xbmc.LOGINFO)
+            return
+        elif mode == 31:
+            from tmdb_native import native_direct_url
+            exact_page = native_direct_url(params)
+            if exact_page:
+                PLAYVIDEO(exact_page)
+            else:
+                xbmc.log('[FilmPalast TMDb Native] Missing or expired film scope', xbmc.LOGWARNING)
+                xbmcplugin.setResolvedUrl(pluginhandle, False, xbmcgui.ListItem())
         elif mode == 10:
             PLAYVIDEO(url)
         

@@ -22,7 +22,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.7" provider-name="Barclay (Kusi)">
+<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.12" provider-name="Barclay (Kusi)">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.resolveurl" version="5.1.192"/>
@@ -33,12 +33,42 @@
     <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>video</provides>
     </extension>
+    <extension point="xbmc.service" library="service.py" start="startup" />
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
         <summary lang="de">FilmPalast.to FiLME &amp; SERiEN sofort &amp; kostenlos online ansehen!</summary>
         <summary lang="en">FilmPalast.to MOViS &amp; SERiES, watch online instantly free!</summary>
         <description lang="en">FilmPalastEx - Based on FilmPalast plugin by Lary_Loose</description>
-		<news lang="de">0.6.7
+		<news lang="de">0.6.12 (2026-10-15)
+- Neu: FilmPalast ist direkt mit TMDb Helper verbunden.
+- Beim Öffnen eines Films erscheinen die vollständigen TMDb-Filminformationen.
+- Über «Wiedergeben» startet der ausgewählte Film direkt in FilmPalast.
+
+0.6.11 (2026-10-15)
+- Android: TMDb-Filmansicht wieder funktionsfähig. Aufruf läuft jetzt über den Kodi-Dienst von FilmPalast mit gültiger Add-on-ID.
+- Kodi-Verzeichnis wird vorher geschlossen, damit beim Start kein doppelter Ladedialog entsteht.
+- Bewertungs- und Genre-Zusätze werden aus der TMDb-Titelsuche entfernt.
+- Einmaliges Changelog-Popup und 320-MB-HLS-Puffer bleiben erhalten.
+
+0.6.10 (2026-10-15)
+- Android-Absturz behoben: TMDb-Detailansicht erst öffnen, nachdem der Kodi-Ladedialog des FilmPalast-Verzeichnisses geschlossen ist.
+- Gleichzeitige Kodi-Ladedialoge beim Start von TMDb Helper vermeiden.
+- Changelog-Popup wartet auf eine freie Kodi-Oberfläche, statt während der Film-Detailansicht zu erscheinen.
+- Verbesserte Suche, Filmpalast-Player und 320-MB-Puffer bleiben erhalten.
+
+0.6.9 (2026-10-15)
+- Kritischer Fix: TMDb-Helper-Wiedergabeaufruf ohne URL wird jetzt korrekt verarbeitet.
+- Kein Rücksprung mehr ins FilmPalast-Hauptmenü beim internen mode=31-Aufruf.
+- Bestehende TMDb-Filminformationen, direkter FilmPalast-Player, Changelog-Popup und 320-MB-HLS-Puffer bleiben erhalten.
+
+0.6.8 (2026-10-15)
+- TMDb-Detailansicht: Weitergabe des echten TMDb-Helper-Abspielpfads an einen ausdrücklich erzwungenen FilmPalast-Player.
+- Genaue FilmPalast-Filmseite über einmalige Zuordnung; keine zusätzliche Titelsuche bei der Wiedergabe.
+- Keine Änderungen an TMDb-Helper-Programmdateien und keine Änderung des globalen Standardplayers.
+- Changelog wird nach dem Update automatisch als Popup angezeigt (einmal pro Version).
+- 320-MB-HLS-Puffer und Hosterprüfung unverändert.
+
+0.6.7
 - TMDb-Helper-Filmdetails beim Öffnen eines FilmPalast-Films.
 - Verbesserte Filmsuche mit Originaltiteln und Jahresvergleich; Auswahl bei Mehrdeutigkeit.
 - Direkter FilmPalast-Wiedergabepfad ohne fremde TMDb-Helper-Patches oder Player-Auswahl.
@@ -87,7 +117,35 @@
 - Autor: Barclay (Kusi); ursprüngliche Credits erhalten.
 - TMDbHelper-Player unter players/filmpalast_barclay_trakt.json.
 </news>
-<news lang="en">0.6.7
+<news lang="en">0.6.12 (2026-10-15)
+- New: Direct integration of FilmPalast with TMDb Helper.
+- Opening a movie shows its full TMDb movie details.
+- Selecting Play starts the chosen movie directly with FilmPalast.
+
+0.6.11 (2026-10-15)
+- Android: native TMDb details now open from FilmPalast's Kodi service with valid add-on identity.
+- Complete the originating directory callback first to avoid concurrent busy dialogs.
+- Strip colored rating and genre display metadata from TMDb search terms.
+- Keep the one-time changelog popup and 320 MB HLS buffer.
+
+0.6.10 (2026-10-15)
+- Android crash prevention: finish Kodi directory request before opening the TMDb info dialog.
+- Avoid concurrent busy dialogs when starting TMDb Helper playback.
+- Once-per-version changelog popup waits until Kodi has no active dialogs or playback.
+- Preserve matching, FilmPalast player and 320 MB HLS prebuffer.
+
+0.6.9 (2026-10-15)
+- Fix critical TMDb playback callback: mode 31 resolves the saved FilmPalast page without a URL parameter.
+- Avoid the accidental main-menu fallback; preserve TMDb metadata, forced FilmPalast player, changelog popup and 320 MB HLS buffer.
+
+0.6.8 (2026-10-15)
+- Native TMDb detail dialog now forces a per-item FilmPalast player URL.
+- Exact selected FilmPalast page, without a second title search during playback.
+- No changes to TMDb Helper source or global player defaults.
+- Automatic once-per-version changelog popup.
+- Existing 320 MB HLS prebuffer and hoster checks retained.
+
+0.6.7
 - Native TMDb Helper movie details from FilmPalast movie listings.
 - Better title matching, alternate names and tolerant release year checks.
 - Direct FilmPalast playback URL without patching TMDb Helper or global player settings.
