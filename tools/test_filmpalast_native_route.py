@@ -46,7 +46,7 @@ def run_case(mode, url='', resolved_url=None):
                                      LOGWARNING=2,LOGINFO=1),
         'xbmcgui':types.SimpleNamespace(ListItem=lambda: object(), Window=lambda x:types.SimpleNamespace(setProperty=set_prop)),
         'xbmcplugin':types.SimpleNamespace(
-            endOfDirectory=lambda *args,**kwargs:calls.append(('end',)),
+            endOfDirectory=lambda *args,**kwargs:calls.append(('end', kwargs.get('succeeded'), kwargs.get('cacheToDisc'))),
             setResolvedUrl=lambda *args:calls.append(('failed_resolve',))),
     }
     try:
@@ -80,6 +80,7 @@ first_end=next(i for i,x in enumerate(case) if x[0]=='end')
 queue_index=next(i for i,x in enumerate(case) if x[0]=='queue')
 assert first_end < queue_index, case
 assert len([x for x in case if x[0]=='end']) == 1, case
+assert ('end', True, False) in case, 'mode=30 must report a successful folder completion to preserve Kodi navigation: %s' % case
 service=Path('addons/plugin.video.filmpalast.ex/service.py').read_text(encoding='utf-8')
 assert 'active_addon = xbmcaddon.Addon().getAddonInfo' in service
 assert 'from tmdb_native import open_tmdb_info' in service
