@@ -813,8 +813,19 @@ def main():
         elif mode == 20:
             TMDBSEARCH(params)
         elif mode == 30:
-            from tmdb_native import open_tmdb_info
-            open_tmdb_info(url, params)
+            # Kodi Android: do not hold the directory-busy dialog open while
+            # the TMDb Helper Info/play dialog is displayed. Completing this
+            # callback first prevents nested busy dialogs and a hard Kodi exit.
+            xbmcplugin.endOfDirectory(pluginhandle, succeeded=False, cacheToDisc=False)
+            payload = base64.urlsafe_b64encode(
+                json.dumps({'url': url, 'params': params},
+                           ensure_ascii=True).encode('utf-8')).decode('ascii').rstrip('=')
+            launcher = os.path.join(
+                xbmcaddon.Addon(id='plugin.video.filmpalast.ex').getAddonInfo('path'),
+                'tmdb_info_launcher.py')
+            xbmc.log('[FilmPalast TMDb Native] Info launcher queued after directory close', xbmc.LOGINFO)
+            xbmc.executebuiltin('RunScript("%s",%s)' % (launcher, payload))
+            return
         elif mode == 31:
             from tmdb_native import native_direct_url
             exact_page = native_direct_url(params)
