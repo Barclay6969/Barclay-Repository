@@ -1,3 +1,9 @@
+0.6.12 (2026-10-15)
+- Nach dem Stoppen eines Films bleibt die FilmPalast-Filmauswahl erhalten.
+- Kein unerwünschter Sprung mehr in die allgemeine Kodi-Videos-Übersicht.
+- Die ursprüngliche Verzeichnisnavigation wird vor dem TMDb-Fenster wiederhergestellt.
+- Filmsuche, Player, Hosterprüfung, Changelog-Popup und 320-MB-Puffer unverändert.
+
 0.6.11 (2026-10-15)
 - Android: TMDb-Details öffnen wieder über den FilmPalast-Kodi-Dienst mit gültigem Add-on-Kontext.
 - Das FilmPalast-Verzeichnis wird zuerst beendet, bevor die TMDb-Detailansicht erscheint.
