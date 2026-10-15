@@ -1,3 +1,10 @@
+0.6.7 (2026-10-15)
+- Originale TMDb-Helper-Filmdetails beim Öffnen eines FilmPalast-Films.
+- Verbesserte Titelsuche, Originaltitel und toleranter Jahresvergleich; manuelle Auswahl bei mehreren Treffern.
+- Direkter Wiedergabepfad im FilmPalast, keine Änderungen am TMDb Helper oder dessen Playereinstellungen.
+- Bei fehlendem TMDb Helper normale Wiedergabe via FilmPalast; Option zum Deaktivieren der Detailansicht.
+- Bestehende Hosterprüfung, Trakt-Metadaten und 320-MB-HLS-Puffer bleiben unverändert.
+
 0.6.6
 - HLS-RAM-Vorpuffer wie xShip, standardmaessig 320 MB; von 16 bis 512 MB einstellbar.
 - HLS auch ohne Dateiendung erkennen; Playlists und lokale Segmente fuer native Wiedergabe aufbereiten.
