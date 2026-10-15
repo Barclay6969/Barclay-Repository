@@ -54,6 +54,8 @@ jobs:
           (out.parent/'changelog.txt').write_bytes((folder/'changelog.txt').read_bytes())
           print('Verified ZIP',out,'size',out.stat().st_size,'sha256',hashlib.sha256(out.read_bytes()).hexdigest())
           PY
+      - name: Verify playback routing regression cases
+        run: python3 tools/test_filmpalast_native_route.py
       - name: Rebuild Kodi repository index
         run: |
           python3 tools/make_repo.py
