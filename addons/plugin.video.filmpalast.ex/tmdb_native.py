@@ -43,6 +43,10 @@ def normalize(text):
 
 def clean_title(value):
     value = html.unescape(unquote_plus(str(value or '')))
+    # FilmPalast enriches displayed list titles with coloured ratings,
+    # genres and year. Strip those *blocks*, not only their colour tags:
+    # otherwise TMDb searches for e.g. "Before the Fire 4.3/10 Thriller".
+    value = re.sub(r'\[COLOR(?:=[^\]]*)?\].*?\[/COLOR\]', '', value, flags=re.I | re.S)
     value = re.sub(r'\[[^]]*\]', '', value)
     value = re.sub(r'\s+\d+(?:[.,]\d+)?\s*/\s*10\b.*$', '', value, flags=re.I)
     value = re.sub(r'\s*\((19|20)\d\d\)\s*$', '', value)
