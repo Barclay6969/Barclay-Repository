@@ -4,6 +4,7 @@ import ast
 import base64
 import json
 import os
+import time
 from pathlib import Path
 import sys
 import types
@@ -20,10 +21,14 @@ def run_case(mode, url='', resolved_url=None):
     dummy = types.ModuleType('tmdb_native')
     dummy.native_direct_url = lambda params: calls.append(('scope', params.get('tmdb'))) or resolved_url
     sys.modules['tmdb_native'] = dummy
+    home_properties = {}
+    def set_prop(name, value):
+        calls.append(('queue', name, value))
+        home_properties[name] = value
     namespace = {
         'sys':types.SimpleNamespace(argv=['plugin://plugin.video.filmpalast.ex', '3',
                                         '?mode='+str(mode)]),
-        'urllib':urllib, 'base64':base64, 'json':json, 'os':os,
+        'urllib':urllib, 'base64':base64, 'json':json, 'os':os, 'time':time,
         'xbmcaddon':types.SimpleNamespace(Addon=lambda id:types.SimpleNamespace(getAddonInfo=lambda x:'/test/addon')),
         'ensure_temp_dir':lambda:calls.append(('init',)),
         'get_params':lambda:{'mode':str(mode), 'url':urllib.parse.quote_plus(url),
@@ -39,7 +44,7 @@ def run_case(mode, url='', resolved_url=None):
         'xbmc':types.SimpleNamespace(log=lambda *args:calls.append(('log',)),
                                      executebuiltin=lambda x:calls.append(('execute', x)),
                                      LOGWARNING=2,LOGINFO=1),
-        'xbmcgui':types.SimpleNamespace(ListItem=lambda: object()),
+        'xbmcgui':types.SimpleNamespace(ListItem=lambda: object(), Window=lambda x:types.SimpleNamespace(setProperty=set_prop)),
         'xbmcplugin':types.SimpleNamespace(
             endOfDirectory=lambda *args,**kwargs:calls.append(('end',)),
             setResolvedUrl=lambda *args:calls.append(('failed_resolve',))),
@@ -67,12 +72,19 @@ print('PASS expired scope exits without trying another movie')
 case=run_case(30, url=stream)
 assert ('START',) not in case, case
 assert any(x[0]=='end' for x in case), case
-assert any(x[0]=='execute' and 'tmdb_info_launcher.py' in x[1] for x in case), case
+queued = [x for x in case if x[0]=='queue']
+assert len(queued)==1 and queued[0][1]=='filmpalast.barclay.native_info_queue_0611', case
+assert json.loads(queued[0][2])['url']==stream, case
+assert not any(x[0]=='execute' for x in case), case
 first_end=next(i for i,x in enumerate(case) if x[0]=='end')
-first_launch=next(i for i,x in enumerate(case) if x[0]=='execute')
-assert first_end < first_launch, case
+queue_index=next(i for i,x in enumerate(case) if x[0]=='queue')
+assert first_end < queue_index, case
 assert len([x for x in case if x[0]=='end']) == 1, case
-print('PASS mode=30 completes Kodi directory before queuing info launcher')
+service=Path('addons/plugin.video.filmpalast.ex/service.py').read_text(encoding='utf-8')
+assert 'active_addon = xbmcaddon.Addon().getAddonInfo' in service
+assert 'from tmdb_native import open_tmdb_info' in service
+assert "native_info_queue_0611" in service
+print('PASS mode=30 completes Kodi directory, queues Info to addon-owned service')
 
 case=run_case(10, url=stream)
 assert ('PLAYVIDEO',stream) in case and ('START',) not in case, case
