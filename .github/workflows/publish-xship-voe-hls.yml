@@ -1,0 +1,53 @@
+name: Publish xShip 2026.10.13.158 (VOE HLS default)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-xship-voe-hls.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build from tested xShip 2026.10.13.157
+        run: python3 tools/publish_xship_voe_hls.py
+      - name: Update Kodi repository catalogue
+        run: python3 tools/make_repo.py
+      - name: Verify release and metadata
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,zipfile,xml.etree.ElementTree as ET
+          folder=Path('zips/plugin.video.xship')
+          path=folder/'plugin.video.xship-2026.10.13.158.zip'
+          assert path.is_file()
+          assert hashlib.sha256(path.read_bytes()).hexdigest()=='5561dd8c44155f4fee3528b287ecadb4daf98c3694968d8b8bdcd5ae2f8b3b8a'
+          with zipfile.ZipFile(path) as z:
+              assert z.testzip() is None
+              a=ET.fromstring(z.read('plugin.video.xship/addon.xml'))
+              assert a.get('version')=='2026.10.13.158'
+              settings=ET.fromstring(z.read('plugin.video.xship/resources/settings.xml'))
+              preference=[s for s in settings.iter('setting') if s.get('id')=='voe.stream_preference']
+              assert len(preference)==1 and preference[0].get('default')=='1'
+          feed=Path('zips/addons.xml').read_bytes()
+          assert hashlib.md5(feed).hexdigest()==Path('zips/addons.xml.md5').read_text().strip()
+          addons=ET.fromstring(feed)
+          xship=[x for x in addons if x.get('id')=='plugin.video.xship']
+          assert len(xship)==1 and xship[0].get('version')=='2026.10.13.158'
+          assert (folder/'changelog.txt').read_text(encoding='utf8').startswith('2026.10.13.158')
+          print('Validated xShip HLS default=1, ZIP, repository catalogue and checksum')
+          PY
+      - name: Commit and publish release
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add zips/plugin.video.xship/plugin.video.xship-2026.10.13.158.zip zips/plugin.video.xship/changelog.txt zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Release xShip 2026.10.13.158: VOE HLS preferred by default"
+          git push
