@@ -239,7 +239,7 @@
 - Gemeinsame Kontodaten für Neuinstallationen vorbelegt.
 - Domain-Fallback im Startdienst auf serienstream.to angepasst.</news></extension>
 </addon>
-<addon id="plugin.video.xship" version="2026.10.13.157" name="xShip" provider-name="Kusi (Barclay)">
+<addon id="plugin.video.xship" version="2026.10.13.158" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />
@@ -271,7 +271,12 @@
       <screenshot>resources/media/screenshot-02.jpg</screenshot>
       <screenshot>resources/media/screenshot-04.jpg</screenshot>
     </assets>
-    <news>2026.10.12.150
+    <news>2026.10.13.158
+- VOE: HLS wird jetzt standardmaessig bevorzugt, sofern verfuegbar; MP4 bleibt als Alternative.
+- Neue Einstellung unter Wiedergabe: Automatisch / HLS bevorzugen / MP4 bevorzugen.
+- VOE-Direktaufloesung, Player, InputStream Adaptive und 320-MB-Puffer bleiben erhalten.
+
+2026.10.12.150
 - FilmPalast: Fremdsprachig markierte Treffer nicht als deutsche Quellen verwenden.
 - Suche bei fehlenden passenden Treffern mit dem Haupttitel erweitern.
 - Zusätzliche Teilnummer vor identischem Untertitel berücksichtigen (z. B. Insidious 6).

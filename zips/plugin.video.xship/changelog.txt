@@ -1,3 +1,8 @@
+2026.10.13.158
+- VOE: HLS wird jetzt standardmaessig bevorzugt, sofern verfuegbar; MP4 bleibt als Alternative.
+- Neue Einstellung unter Wiedergabe: Automatisch / HLS bevorzugen / MP4 bevorzugen.
+- VOE-Direktaufloesung, Player, InputStream Adaptive und 320-MB-Puffer bleiben erhalten.
+
 2026.10.13.157
 - HLS-RAM-Puffer standardmaessig auf 320 MB voreingestellt, weiterhin 16 bis 512 MB einstellbar.
 - Pufferstandsmeldung weiterhin nur beim Druecken von Pause.
