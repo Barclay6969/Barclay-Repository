@@ -1,3 +1,10 @@
+2026.10.20.162
+- Neu: GEZ-KiNO als zusätzliche Filmquelle in xShip.
+- Filme aus öffentlich-rechtlichen Mediatheken wie ARD, ZDF und weiteren Sendern bequem über FilmeTime via xShip finden und abspielen, sofern im GEZ-KiNO-Katalog verfügbar.
+- Eigener GEZ-KiNO-Menüpunkt mit Filmsuche sowie Filtern nach Genre und Jahr.
+- Mediathek direkt aus xShip aktualisieren; automatische Aktualisierung beim Zugriff nach 24 Stunden.
+- Einzelne Filme sind je nach Standort durch Geo-Blocking eingeschränkt.
+
 2026.10.13.158
 - VOE: HLS wird jetzt standardmaessig bevorzugt, sofern verfuegbar; MP4 bleibt als Alternative.
 - Neue Einstellung unter Wiedergabe: Automatisch / HLS bevorzugen / MP4 bevorzugen.
