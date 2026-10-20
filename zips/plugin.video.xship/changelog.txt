@@ -1,3 +1,6 @@
+2026.10.20.164
+- GEZ-KiNO ergänzt: Fehlt ein Film im Katalog, sucht xShip zusätzlich direkt in MediathekViewWeb und bietet passende Mediathek-Streams zur Wiedergabe an.
+
 2026.10.20.162
 - Neu: GEZ-KiNO als zusätzliche Filmquelle in xShip.
 - Filme aus öffentlich-rechtlichen Mediatheken wie ARD, ZDF und weiteren Sendern bequem über FilmeTime via xShip finden und abspielen, sofern im GEZ-KiNO-Katalog verfügbar.

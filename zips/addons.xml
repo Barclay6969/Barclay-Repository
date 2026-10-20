@@ -239,7 +239,7 @@
 - Gemeinsame Kontodaten für Neuinstallationen vorbelegt.
 - Domain-Fallback im Startdienst auf serienstream.to angepasst.</news></extension>
 </addon>
-<addon id="plugin.video.xship" version="2026.10.20.162" name="xShip" provider-name="Kusi (Barclay)">
+<addon id="plugin.video.xship" version="2026.10.20.164" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />
@@ -271,7 +271,10 @@
       <screenshot>resources/media/screenshot-02.jpg</screenshot>
       <screenshot>resources/media/screenshot-04.jpg</screenshot>
     </assets>
-    <news>2026.10.20.162
+    <news>2026.10.20.164
+- GEZ-KiNO ergänzt: Fehlt ein Film im Katalog, sucht xShip zusätzlich direkt in MediathekViewWeb und bietet passende Mediathek-Streams zur Wiedergabe an.
+
+2026.10.20.162
 - Neu: GEZ-KiNO als zusätzliche Filmquelle in xShip.
 - Filme aus öffentlich-rechtlichen Mediatheken wie ARD, ZDF und weiteren Sendern bequem über FilmeTime via xShip finden und abspielen, sofern im GEZ-KiNO-Katalog verfügbar.
 - Eigener GEZ-KiNO-Menüpunkt mit Filmsuche sowie Filtern nach Genre und Jahr.
