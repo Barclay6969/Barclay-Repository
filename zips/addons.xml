@@ -596,6 +596,29 @@
 - Add option to play YouTube error notification video upon playback failure</news></extension>
 </addon>
 
+<addon id="skin.terror.lite" version="1.1.9" name="T[COLOR yellow]e[/COLOR]rror L[COLOR yellow]i[/COLOR]TE Omega (Modded by Kusi)" provider-name="Modded by Kusi">
+	<requires>
+		<import addon="xbmc.gui" version="5.17.0" />
+		<import addon="script.skinshortcuts" version="2.0.3" />
+		<import addon="service.library.data.provider" version="0.4.2" />
+		
+		<import addon="script.skin.info.service" version="2.0.0" />
+	</requires>
+	<extension point="xbmc.gui.skin" debugging="false">
+		<res width="1920" height="1080" aspect="16:9" default="true" folder="16x9" />
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Modded by Kusi</summary>
+		<description>Terror LiTE Omega for Kodi 21.2, modified by Kusi. Based on Terror LiTE and its previous contributors; retains the original copyright and license.</description>
+		<platform>all</platform>
+		<license>CC BY-NC-SA 4.0</license>
+		<assets>
+			<icon>icon.png</icon>
+			<fanart>fanart.jpg</fanart>
+		</assets>
+		<news>1.1.9: Repository branding updated to Modded by Kusi; visuals, skin ID, menus, widgets and functionality are unchanged. 1.1.8: Matched the film-style glass selector height to the complete dark main menu band. Width and styling unchanged. 1.1.7: Raised the glossy main menu selector slightly and increased its height so the selected label sits more fully embedded in the glass frame. 1.1.6: Matched the selected horizontal home-menu glass frame to the original film-list selector (listselect_fo.png / HighlightBarColor) without changing the existing menu or widgets. 1.1.5: Added subtle transparent blue space-glass focus overlay for the selected horizontal home menu item while preserving the working 1.1.4 Filmpalast base. 1.1.4: Added Filmpalast default menu entry and default two widget properties while preserving personal user settings; no private user paths bundled. 1.1.3: Enabled Skin Info Service 2.0.0 online monitor for Trakt and RT critics data; includes correct service RT property names and native fallback logic. Design, backgrounds, widgets, autoscroll and autocomplete preserved. 1.1.2: One-time defaults for autoscroll and autocomplete; added optional TMDb, Trakt and Rotten Tomatoes film-info rating fields with multiple Kodi/addon metadata fallbacks. Retains 1.1.1 menu backgrounds. 1.1.0: Kodi 21 Omega support; updated GUI ABI and dependencies; migrated favourites browser; added Omega video manager and native color picker; replaced removed seek condition. Visual resources unchanged.</news>
+	</extension>
+</addon>
 <addon id="service.kodi.autoupdate"
        name="Kodi AutoUpdate"
        version="1.0.1"
