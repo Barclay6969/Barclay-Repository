@@ -84,6 +84,28 @@ def latest_video_entries():
     return entries
 
 
+def latest_skin_entries():
+    """Publish the newest official Terror-Lite ZIP, when present."""
+    skin_id = "skin.terror.lite"
+    skin_dir = os.path.join(ZIPS_DIR, skin_id)
+    if not os.path.isdir(skin_dir):
+        return []
+
+    candidates = []
+    for fn in os.listdir(skin_dir):
+        if not re.fullmatch(r"skin\.terror\.lite-\d+(?:\.\d+)+\.zip", fn):
+            continue
+        zip_path = os.path.join(skin_dir, fn)
+        text, version = addon_xml_from_zip(zip_path, skin_id)
+        if text and version and fn == f"{skin_id}-{version}.zip":
+            candidates.append((version_key(version), text))
+
+    if not candidates:
+        return []
+    candidates.sort(key=lambda item: item[0])
+    return [re.sub(r"<\?xml[^?]*\?>\s*", "", candidates[-1][1])]
+
+
 def gather_entries():
     entries = []
 
@@ -96,6 +118,8 @@ def gather_entries():
 
     # Video section is intentionally restricted to the explicitly allowed video add-ons.
     entries.extend(latest_video_entries())
+    # Include the latest Terror-Lite skin without dropping any video/service entries.
+    entries.extend(latest_skin_entries())
     # Keep service add-ons in the catalogue when rebuilding.
     for service_dir in sorted(os.listdir(ADDONS_DIR)):
         if service_dir.startswith("service."):
