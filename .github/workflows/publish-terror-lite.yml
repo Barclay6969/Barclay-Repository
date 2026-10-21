@@ -1,0 +1,76 @@
+name: Publish Terror-Lite Omega skin
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'zips/skin.terror.lite/*.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Terror-Lite ZIP
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import xml.etree.ElementTree as ET
+          import re
+
+          root_dir = Path('zips/skin.terror.lite')
+          packages = sorted(root_dir.glob('skin.terror.lite-*.zip'))
+          if not packages:
+              raise SystemExit('Please upload skin.terror.lite-<version>.zip first.')
+          for package in packages:
+              if not re.fullmatch(r'skin\.terror\.lite-\d+(?:\.\d+)+\.zip', package.name):
+                  raise SystemExit(f'Unexpected ZIP filename: {package.name}')
+              with ZipFile(package) as archive:
+                  if archive.testzip() is not None:
+                      raise SystemExit(f'Corrupted ZIP: {package}')
+                  metadata = ET.fromstring(archive.read('skin.terror.lite/addon.xml'))
+                  if metadata.get('id') != 'skin.terror.lite':
+                      raise SystemExit(f'Wrong add-on ID in {package}')
+                  if package.name != f"skin.terror.lite-{metadata.get('version')}.zip":
+                      raise SystemExit(f'Filename/version mismatch in {package}')
+                  if not archive.namelist():
+                      raise SystemExit(f'Empty package: {package}')
+          print('Verified',len(packages),'skin ZIP(s)')
+          PY
+
+      - name: Rebuild Kodi repository catalogue
+        run: |
+          python3 tools/make_repo.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import xml.etree.ElementTree as ET
+          manifest = Path('zips/addons.xml')
+          digest = Path('zips/addons.xml.md5').read_text().strip()
+          if digest != hashlib.md5(manifest.read_bytes()).hexdigest():
+              raise SystemExit('Repository checksum mismatch')
+          addon = next((a for a in ET.parse(manifest).getroot() if a.get('id') == 'skin.terror.lite'), None)
+          if addon is None:
+              raise SystemExit('Terror-Lite missing from addons.xml')
+          print('Published Terror-Lite', addon.get('version'))
+          PY
+
+      - name: Commit updated index and checksum
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/addons.xml zips/addons.xml.md5
+          if git diff --cached --quiet; then
+            echo 'Repository index unchanged.'
+            exit 0
+          fi
+          git commit -m 'Publish Terror-Lite Omega skin in Kodi catalogue [skip ci]'
+          git push
