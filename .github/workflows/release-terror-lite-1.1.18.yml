@@ -1,0 +1,140 @@
+name: Release Terror Lite 1.1.18 Favorites Max
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-terror-lite-1.1.18.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download the exact successful 1.1.17 test build
+        uses: actions/download-artifact@v4
+        with:
+          name: TerrorLite-1.1.17-Favoriten-Test
+          run-id: 39799728441
+          repository: Barclay6969/Barclay-Repository
+          github-token: ${{ github.token }}
+          path: test-source
+      - name: Recreate and verify approved 1.1.18 ZIP
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from xml.etree import ElementTree as ET
+          import hashlib, re
+
+          src = Path('test-source/skin.terror.lite-1.1.17-FAVORITEN-TEST.zip')
+          dst = Path('zips/skin.terror.lite/skin.terror.lite-1.1.18.zip')
+          fav = 'skin.terror.lite/16x9/MyFavourites.xml'
+          addon = 'skin.terror.lite/addon.xml'
+          assert src.exists(), 'Missing 1.1.17 release input'
+          assert hashlib.sha256(src.read_bytes()).hexdigest() == '1427ed29e7df92069920404be3d42f6e167655a290f8edf9cd9d95e6c0b892e0', 'Test base hash mismatch'
+
+          with ZipFile(src) as zin:
+              xml = ET.fromstring(zin.read(fav))
+              group = xml.find('./controls/control[@type="group"]')
+              assert group is not None
+              def set_child(el, tag, val):
+                  ch = el.find(tag)
+                  assert ch is not None, 'Missing '+tag
+                  ch.text = str(val)
+
+              set_child(group,'left',50)
+              set_child(group,'top',70)
+              controls=group.findall('control')
+              assert len(controls)==6, 'Unexpected favorites control layout'
+              outer,poster,title,listbg,lst,sb=controls
+              set_child(outer,'width',1820)
+              set_child(outer,'height',930)
+              set_child(poster,'left',1160)
+              set_child(poster,'top',105)
+              set_child(poster,'width',610)
+              set_child(poster,'height',770)
+              set_child(title,'left',45)
+              set_child(title,'top',30)
+              set_child(title,'width',1730)
+              set_child(title,'height',55)
+              set_child(listbg,'left',45)
+              set_child(listbg,'top',105)
+              set_child(listbg,'width',1085)
+              set_child(listbg,'height',775)
+              set_child(lst,'left',45)
+              set_child(lst,'top',110)
+              set_child(lst,'width',1083)
+              set_child(lst,'height',765)
+              for layout in [lst.find('itemlayout'),lst.find('focusedlayout')]:
+                  assert layout is not None
+                  layout.set('height','68')
+                  layout.set('width','1095')
+                  for ctrl in layout.findall('control'):
+                      left=ctrl.find('left')
+                      width=ctrl.find('width')
+                      height=ctrl.find('height')
+                      if width is not None and width.text in ('938','950'):
+                          width.text='1083'
+                      if height is not None and height.text=='63':
+                          height.text='68'
+                      if left is not None and left.text=='938':
+                          left.text='1083'
+              set_child(sb,'left',1132)
+              set_child(sb,'top',110)
+              set_child(sb,'height',765)
+              new_fav=ET.tostring(xml,encoding='utf-8',xml_declaration=True)
+              source_addon=zin.read(addon)
+              new_addon,count=re.subn(rb'(<addon\s+[^>]*\bversion=")1\.1\.17(")',rb'\g<1>1.1.18\2',source_addon,count=1)
+              assert count==1, 'Version update failed'
+              if dst.exists():
+                  assert hashlib.sha256(dst.read_bytes()).hexdigest()=='8012aba544f08008d46415b2cf6de4893d111c7b8c900915dc879d0fabfccf25', 'Existing ZIP mismatch'
+              else:
+                  with ZipFile(dst,'w') as zout:
+                      for info in zin.infolist():
+                          data=zin.read(info.filename)
+                          if info.filename==fav: data=new_fav
+                          elif info.filename==addon: data=new_addon
+                          zout.writestr(info,data)
+
+          digest=hashlib.sha256(dst.read_bytes()).hexdigest()
+          assert digest=='8012aba544f08008d46415b2cf6de4893d111c7b8c900915dc879d0fabfccf25', 'Output differs from approved 1.1.18 test ZIP: '+digest
+          with ZipFile(dst) as z:
+              assert z.testzip() is None, 'ZIP CRC failure'
+              assert len(z.namelist())==1019, 'Unexpected ZIP file count'
+              a=ET.fromstring(z.read(addon))
+              assert a.get('id')=='skin.terror.lite' and a.get('version')=='1.1.18'
+          print('Approved skin ZIP verified:',dst,digest)
+          PY
+      - name: Rebuild Kodi repository index
+        run: |
+          python3 tools/make_repo.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          import hashlib
+          x=Path('zips/addons.xml').read_bytes()
+          assert hashlib.md5(x).hexdigest()==Path('zips/addons.xml.md5').read_text().strip(), 'Index MD5 mismatch'
+          root=ET.fromstring(x)
+          a=[v for v in root if v.get('id')=='skin.terror.lite']
+          assert len(a)==1 and a[0].get('version')=='1.1.18', 'Kodi index does not contain new version'
+          print('Kodi repository index advertises Terror Lite 1.1.18')
+          PY
+      - name: Commit skin update and refreshed repository metadata
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.18.zip zips/addons.xml zips/addons.xml.md5
+          if git diff --cached --quiet; then
+            echo 'Skin 1.1.18 already published.'
+          else
+            git commit -m 'Publish Terror-Lite 1.1.18 Favorites Max and Kodi update catalogue [skip ci]'
+            git push
+          fi
