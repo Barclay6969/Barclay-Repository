@@ -1,0 +1,32 @@
+name: Inspect Terror Lite Favorites dialog (test)
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/inspect-terror-favorites-test.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect favorite window in stable 1.1.16
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re, zipfile, pathlib
+          z=pathlib.Path('zips/skin.terror.lite/skin.terror.lite-1.1.16.zip')
+          with zipfile.ZipFile(z) as f:
+            names=f.namelist()
+            print('Total files:',len(names))
+            for p in names:
+              if re.search(r'(favour|favor|select|dialog|myfavo)',p,re.I) and p.lower().endswith('.xml'):
+                print('POSSIBLE:',p)
+            for p in names:
+              if re.search(r'(MyFavourites|DialogFavourites|DialogSelect|Includes_Dialog)',p,re.I) and p.lower().endswith('.xml'):
+                t=f.read(p).decode('utf-8-sig',errors='replace')
+                print('=======',p,'=======')
+                print(t[:19000])
+          PY
