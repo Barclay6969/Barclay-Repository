@@ -1,0 +1,61 @@
+name: Release Terror Lite 1.1.22 Widget Glass
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-terror-lite-1.1.22.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Barclay Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Pillow for reproducible focus graphic
+        run: python3 -m pip install --break-system-packages "pillow==12.3.0"
+
+      - name: Build reviewed 1.1.22 skin ZIP from stable 1.1.18
+        run: python3 tools/release_terror_lite_1_1_22.py
+
+      - name: Update and verify Kodi repository catalogue
+        run: |
+          python3 tools/make_repo.py
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from xml.etree import ElementTree as ET
+          import hashlib
+          bundle = Path('zips/skin.terror.lite/skin.terror.lite-1.1.22.zip')
+          assert bundle.is_file()
+          with ZipFile(bundle) as archive:
+              assert archive.testzip() is None, 'Invalid ZIP checksum'
+              xml=ET.fromstring(archive.read('skin.terror.lite/addon.xml'))
+              assert xml.get('id')=='skin.terror.lite'
+              assert xml.get('version')=='1.1.22'
+          manifest=Path('zips/addons.xml').read_bytes()
+          digest=Path('zips/addons.xml.md5').read_text().strip()
+          assert hashlib.md5(manifest).hexdigest()==digest,'Catalogue checksum mismatch'
+          catalogue=ET.fromstring(manifest)
+          entries=[addon for addon in catalogue if addon.get('id')=='skin.terror.lite']
+          assert len(entries)==1 and entries[0].get('version')=='1.1.22','New skin version absent in Kodi catalogue'
+          print('Release verified: skin.terror.lite 1.1.22 is in Kodi repository')
+          PY
+
+      - name: Publish ZIP and index to main
+        run: |
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.22.zip zips/addons.xml zips/addons.xml.md5
+          if git diff --cached --quiet; then
+            echo 'Release already published'
+          else
+            git commit -m 'Publish Terror-Lite 1.1.22 black-silver glass widget selector [skip ci]'
+            git push
+          fi
