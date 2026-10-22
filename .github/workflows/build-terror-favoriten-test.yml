@@ -1,0 +1,124 @@
+name: Build Terror Lite favorites enlargement test
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/build-terror-favoriten-test.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build test ZIP from the proven stable skin
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from xml.etree import ElementTree as ET
+          import hashlib
+          import re
+
+          src = Path('zips/skin.terror.lite/skin.terror.lite-1.1.16.zip')
+          dst = Path('dist/skin.terror.lite-1.1.17-FAVORITEN-TEST.zip')
+          dst.parent.mkdir(parents=True, exist_ok=True)
+          fav = 'skin.terror.lite/16x9/MyFavourites.xml'
+          addon = 'skin.terror.lite/addon.xml'
+
+          def replace_value(node, tag, before, after):
+              child = node.find(tag)
+              if child is None or (child.text or '').strip() != str(before):
+                  raise ValueError(f'Unexpected {tag}: expected {before}, found {child.text if child is not None else None}')
+              child.text = str(after)
+
+          def control(parent, type_name, id_name=None):
+              result = [x for x in parent.findall('control') if x.get('type') == type_name and (id_name is None or x.get('id') == id_name)]
+              if len(result) != 1:
+                  raise ValueError(f'Expected one {type_name} control {id_name}; got {len(result)}')
+              return result[0]
+
+          with ZipFile(src) as inp:
+              raw = inp.read(fav)
+              tree = ET.fromstring(raw)
+              group = control(tree.find('controls'), 'group')
+              replace_value(group, 'left', 396, 140)
+              replace_value(group, 'top', 270, 145)
+
+              imgs = [x for x in group.findall('control') if x.get('type') == 'image']
+              if len(imgs) != 3:
+                  raise ValueError(f'Expected 3 image controls in favourites, found {len(imgs)}')
+
+              # Outer dialog frame: 1128x540 -> 1640x790 (2.13x area).
+              replace_value(imgs[0], 'width', 1128, 1640)
+              replace_value(imgs[0], 'height', 540, 790)
+
+              # Right preview: retained texture, aspectratio, animation, and border.
+              for tag, old, new in [('left',676,1010),('top',86,115),('width',422,590),('height',422,610)]:
+                  replace_value(imgs[1], tag, old, new)
+
+              title = control(group, 'label', '1')
+              for tag, old, new in [('left',30,40),('top',32,35),('width',1068,1560),('height',40,50)]:
+                  replace_value(title, tag, old, new)
+
+              for tag, old, new in [('left',30,40),('top',86,105),('width',632,940),('height',422,640)]:
+                  replace_value(imgs[2], tag, old, new)
+
+              lst = control(group, 'list', '50')
+              for tag, old, new in [('left',30,40),('top',88,110),('width',630,938),('height',420,630)]:
+                  replace_value(lst, tag, old, new)
+
+              for layout_tag in ('itemlayout','focusedlayout'):
+                  layout = lst.find(layout_tag)
+                  if layout is None or layout.get('height') != '60' or layout.get('width') != '641':
+                      raise ValueError('Unexpected favourites list item layout')
+                  layout.set('height','63')
+                  layout.set('width','950')
+                  for child in layout.iter():
+                      if child.tag in ('width','left') and (child.text or '').strip() == '630':
+                          child.text='938'
+                      if child.tag=='height' and (child.text or '').strip()=='60':
+                          child.text='63'
+
+              bar = control(group, 'scrollbar', '60')
+              for tag, old, new in [('left',662,980),('top',88,110),('height',420,630)]:
+                  replace_value(bar, tag, old, new)
+
+              new_fav = ET.tostring(tree, encoding='utf-8', xml_declaration=True)
+              ET.fromstring(new_fav)
+              meta = inp.read(addon)
+              new_meta, changed = re.subn(rb'(<addon\s+[^>]*\bversion=")1\.1\.16(")',rb'\g<1>1.1.17\2',meta,count=1)
+              if changed != 1:
+                  raise ValueError('Could not update test version in addon.xml')
+              if ET.fromstring(new_meta).get('version') != '1.1.17':
+                  raise ValueError('Incorrect test add-on version')
+              edited = {fav:new_fav,addon:new_meta}
+              original_names = inp.namelist()
+              with ZipFile(dst, 'w') as out:
+                  for info in inp.infolist():
+                      data = edited.get(info.filename)
+                      if data is None:
+                          data = inp.read(info.filename)
+                      out.writestr(info, data)
+          with ZipFile(dst) as test:
+              assert test.testzip() is None, 'ZIP CRC check failed'
+              assert test.namelist() == original_names, 'ZIP member list changed unexpectedly'
+              assert ET.fromstring(test.read(addon)).get('version') == '1.1.17'
+              fav_check = ET.fromstring(test.read(fav))
+              assert fav_check.find('.//control[@type="list"][@id="50"]/height').text == '630'
+              assert len(test.namelist()) > 1000, 'Incomplete skin package'
+          print(f'Created {dst} ({dst.stat().st_size} bytes)')
+          print('Only addon.xml (test version) and 16x9/MyFavourites.xml changed; all other files preserved')
+          print('Window area multiplier:', round((1640*790)/(1128*540), 3))
+          print('SHA256:', hashlib.sha256(dst.read_bytes()).hexdigest())
+          PY
+      - name: Upload installable skin ZIP as a test artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TerrorLite-1.1.17-Favoriten-Test
+          path: dist/skin.terror.lite-1.1.17-FAVORITEN-TEST.zip
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
