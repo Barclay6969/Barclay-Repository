@@ -1,0 +1,9 @@
+Base: zips/skin.terror.lite/skin.terror.lite-1.1.22.zip
+Test: test-builds/skin.terror.lite-1.1.23-LOGOS-TEST.zip
+Original members: 1020
+Upgraded existing flag PNGs: 67
+Added PNGs: 6
+Preserved all IMDb and TMDb/Trakt rating lookups and all Filmpalast widgets.
+Only edited XML: skin.terror.lite/16x9/DialogVideoInfo.xml, skin.terror.lite/16x9/Includes_CommonValues.xml, skin.terror.lite/addon.xml
+ZIP SHA256: 1f0ec12796d56a3d66457d6080e591bb7d0a8bb55d8f2c651b43260121a03ca0
+ZIP bytes: 9140734
