@@ -1,0 +1,9 @@
+Source: test-builds/skin.terror.lite-1.1.25-ICON-PREMIUM-TEST.zip
+Test: test-builds/skin.terror.lite-1.1.26-MEDIA-FINISH-TEST.zip
+Skin version: 1.1.26
+Media images upgraded: 69
+Ratings, TMDB/IMDb/Trakt card geometry, FSK, Kodi item properties, media lookups, widgets, Filmpalast, themes and skin settings unchanged.
+ZIP files: 1026
+CRC + asset PNG verification: PASS
+SHA256: 5ad03e9a46c581c31e9c9200cd6d28e215a120cf7c6731ba4a3de80393369637
+Size: 11050692 bytes
