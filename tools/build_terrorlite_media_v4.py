@@ -11,6 +11,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 from xml.etree import ElementTree as ET
 import hashlib, math, re
+from copy import copy
 
 BASE=Path('test-builds/skin.terror.lite-1.1.25-ICON-PREMIUM-TEST.zip')
 OUT=Path('test-builds/skin.terror.lite-1.1.26-MEDIA-FINISH-TEST.zip')
@@ -328,7 +329,7 @@ def build():
             for zi in src.infolist():
                 data = newer if zi.filename==ADDON else edits.get(zi.filename)
                 if data is None:data=src.read(zi.filename)
-                dst.writestr(zi,data)
+                dst.writestr(copy(zi),data)
         with ZipFile(OUT) as result:
             assert result.testzip() is None,'Test ZIP corrupted'
             assert result.namelist()==original
