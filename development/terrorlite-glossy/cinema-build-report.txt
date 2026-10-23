@@ -1,0 +1,9 @@
+Base ZIP: test-builds/skin.terror.lite-1.1.23-LOGOS-TEST.zip
+Cinema mockup-inspired test ZIP: test-builds/skin.terror.lite-1.1.24-CINEMA-LOGOS-TEST.zip
+Restyled brand & format textures: 73
+Kodi dynamic rating values retained: 3
+IMDb/Trakt/TMDB lookups unchanged. Filmpalast and widgets unchanged.
+CRC: passed
+ZIP files: 1026
+SHA256: 6418d5db4c15b50c062ca3f1851dbb80fa86e5b30b9edd9305b30274d019c10d
+Size: 9074537 bytes
