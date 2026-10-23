@@ -1,0 +1,1956 @@
+ZIP MEMBERS COUNT: 1020
+BADGE / LOGO / MEDIA PATHS:
+skin.terror.lite/16x9/DialogVideoInfo.xml 59007
+skin.terror.lite/16x9/DialogVideoManager.xml 6035
+skin.terror.lite/16x9/MyVideoNav.xml 64617
+skin.terror.lite/16x9/VideoFullScreen.xml 1486
+skin.terror.lite/16x9/VideoOSD.xml 1917
+skin.terror.lite/16x9/VideoOSDBookmarks.xml 5590
+skin.terror.lite/16x9/custom_1115_VideoOSDSettings.xml 4399
+skin.terror.lite/README-IMDB-1.1.13.txt 870
+skin.terror.lite/README-RATINGS-1.1.12.txt 1070
+skin.terror.lite/README-RATINGS-TEST-1110.txt 709
+skin.terror.lite/README-RATINGS-TEST-1111.txt 555
+skin.terror.lite/backgrounds/widgets/systeminfo/fanart/video.jpg 145295
+skin.terror.lite/media/defaultaddonaudiodecoder.png 1015
+skin.terror.lite/media/defaultaddonaudiodsp.png 318
+skin.terror.lite/media/defaultaddonaudioencoder.png 894
+skin.terror.lite/media/defaultaddonmusicvideoinfo.png 829
+skin.terror.lite/media/defaultaddonvideo.png 474
+skin.terror.lite/media/defaultaudio.png 680
+skin.terror.lite/media/defaultmusicvideos.png 726
+skin.terror.lite/media/defaultmusicvideotitle.png 726
+skin.terror.lite/media/defaultrecentlyaddedmusicvideos.png 805
+skin.terror.lite/media/defaultvideo.png 533
+skin.terror.lite/media/defaultvideocover.png 881
+skin.terror.lite/media/defaultvideodeleted.png 864
+skin.terror.lite/media/defaultvideoplaylists.png 594
+skin.terror.lite/media/discart/1080p.png 11650
+skin.terror.lite/media/discart/2160p.png 11630
+skin.terror.lite/media/discart/4k.png 11630
+skin.terror.lite/media/discart/720p.png 11621
+skin.terror.lite/media/flags/default/aspectratio/1.33.png 1243
+skin.terror.lite/media/flags/default/aspectratio/1.37.png 1243
+skin.terror.lite/media/flags/default/aspectratio/1.66.png 1335
+skin.terror.lite/media/flags/default/aspectratio/1.78.png 1350
+skin.terror.lite/media/flags/default/aspectratio/1.85.png 1350
+skin.terror.lite/media/flags/default/aspectratio/2.20.png 1314
+skin.terror.lite/media/flags/default/aspectratio/2.35.png 1325
+skin.terror.lite/media/flags/default/aspectratio/2.40.png 1325
+skin.terror.lite/media/flags/default/aspectratio/2.55.png 1436
+skin.terror.lite/media/flags/default/aspectratio/2.76.png 1060
+skin.terror.lite/media/flags/default/audiochannels/0.png 1574
+skin.terror.lite/media/flags/default/audiochannels/1.png 1597
+skin.terror.lite/media/flags/default/audiochannels/10.png 1633
+skin.terror.lite/media/flags/default/audiochannels/2.png 1766
+skin.terror.lite/media/flags/default/audiochannels/3.png 1611
+skin.terror.lite/media/flags/default/audiochannels/4.png 1713
+skin.terror.lite/media/flags/default/audiochannels/5.png 1554
+skin.terror.lite/media/flags/default/audiochannels/6.png 1595
+skin.terror.lite/media/flags/default/audiochannels/7.png 1693
+skin.terror.lite/media/flags/default/audiochannels/8.png 1533
+skin.terror.lite/media/flags/default/audiocodec/0.png 537
+skin.terror.lite/media/flags/default/audiocodec/1.png 474
+skin.terror.lite/media/flags/default/audiocodec/10.png 551
+skin.terror.lite/media/flags/default/audiocodec/2.png 595
+skin.terror.lite/media/flags/default/audiocodec/3.png 499
+skin.terror.lite/media/flags/default/audiocodec/4.png 551
+skin.terror.lite/media/flags/default/audiocodec/5.png 439
+skin.terror.lite/media/flags/default/audiocodec/6.png 471
+skin.terror.lite/media/flags/default/audiocodec/7.png 543
+skin.terror.lite/media/flags/default/audiocodec/8.png 416
+skin.terror.lite/media/flags/default/audiocodec/aac.png 1542
+skin.terror.lite/media/flags/default/audiocodec/ac3.png 1314
+skin.terror.lite/media/flags/default/audiocodec/atmos.png 1617
+skin.terror.lite/media/flags/default/audiocodec/dca.png 2099
+skin.terror.lite/media/flags/default/audiocodec/dts.png 2099
+skin.terror.lite/media/flags/default/audiocodec/dtshd_hra.png 2387
+skin.terror.lite/media/flags/default/audiocodec/dtshd_ma.png 2363
+skin.terror.lite/media/flags/default/audiocodec/dtsma.png 2363
+skin.terror.lite/media/flags/default/audiocodec/dtsx.png 1195
+skin.terror.lite/media/flags/default/audiocodec/eac3.png 1598
+skin.terror.lite/media/flags/default/audiocodec/flac.png 1978
+skin.terror.lite/media/flags/default/audiocodec/mp2.png 2906
+skin.terror.lite/media/flags/default/audiocodec/mp3.png 1512
+skin.terror.lite/media/flags/default/audiocodec/mp3float.png 1512
+skin.terror.lite/media/flags/default/audiocodec/pcm.png 605
+skin.terror.lite/media/flags/default/audiocodec/pcm_bluray.png 605
+skin.terror.lite/media/flags/default/audiocodec/pcm_s16le.png 605
+skin.terror.lite/media/flags/default/audiocodec/pcm_s24le.png 605
+skin.terror.lite/media/flags/default/audiocodec/truehd.png 1581
+skin.terror.lite/media/flags/default/audiocodec/vorbis.png 1616
+skin.terror.lite/media/flags/default/audiocodec/wma.png 1620
+skin.terror.lite/media/flags/default/audiocodec/wmapro.png 1128
+skin.terror.lite/media/flags/default/cc.png 568
+skin.terror.lite/media/flags/default/mpaa/australia_g.png 1264
+skin.terror.lite/media/flags/default/mpaa/australia_m.png 1413
+skin.terror.lite/media/flags/default/mpaa/australia_ma.png 2194
+skin.terror.lite/media/flags/default/mpaa/australia_ma15+.png 2194
+skin.terror.lite/media/flags/default/mpaa/australia_pg.png 1242
+skin.terror.lite/media/flags/default/mpaa/australia_r.png 1773
+skin.terror.lite/media/flags/default/mpaa/australia_r18+.png 1773
+skin.terror.lite/media/flags/default/mpaa/bbfc_12_certificate_uk.png 2525
+skin.terror.lite/media/flags/default/mpaa/bbfc_12a_certificate_uk.png 2610
+skin.terror.lite/media/flags/default/mpaa/bbfc_15_certificate_uk.png 2489
+skin.terror.lite/media/flags/default/mpaa/bbfc_18_certificate_uk.png 2503
+skin.terror.lite/media/flags/default/mpaa/bbfc_pg_certificate_uk.png 2545
+skin.terror.lite/media/flags/default/mpaa/bbfc_u_certificate_uk.png 2459
+skin.terror.lite/media/flags/default/mpaa/csa10.png 243
+skin.terror.lite/media/flags/default/mpaa/csa12.png 255
+skin.terror.lite/media/flags/default/mpaa/csa16.png 254
+skin.terror.lite/media/flags/default/mpaa/csa18.png 262
+skin.terror.lite/media/flags/default/mpaa/csau.png 1015
+skin.terror.lite/media/flags/default/mpaa/fsk-0.png 2371
+skin.terror.lite/media/flags/default/mpaa/fsk-12.png 2547
+skin.terror.lite/media/flags/default/mpaa/fsk-16.png 2469
+skin.terror.lite/media/flags/default/mpaa/fsk-18.png 2554
+skin.terror.lite/media/flags/default/mpaa/fsk-6.png 2504
+skin.terror.lite/media/flags/default/mpaa/g.png 477
+skin.terror.lite/media/flags/default/mpaa/kr_certificate_12.png 2556
+skin.terror.lite/media/flags/default/mpaa/kr_certificate_15.png 2544
+skin.terror.lite/media/flags/default/mpaa/kr_certificate_18.png 2688
+skin.terror.lite/media/flags/default/mpaa/kr_certificate_all.png 3451
+skin.terror.lite/media/flags/default/mpaa/kr_certificate_r.png 3286
+skin.terror.lite/media/flags/default/mpaa/mpaa_brazil_10.png 906
+skin.terror.lite/media/flags/default/mpaa/mpaa_brazil_12.png 815
+skin.terror.lite/media/flags/default/mpaa/mpaa_brazil_14.png 740
+skin.terror.lite/media/flags/default/mpaa/mpaa_brazil_16.png 868
+skin.terror.lite/media/flags/default/mpaa/mpaa_brazil_18.png 889
+skin.terror.lite/media/flags/default/mpaa/mpaa_brazil_livre.png 519
+skin.terror.lite/media/flags/default/mpaa/nc-17.png 801
+skin.terror.lite/media/flags/default/mpaa/nl-12.png 1576
+skin.terror.lite/media/flags/default/mpaa/nl-16.png 1466
+skin.terror.lite/media/flags/default/mpaa/nl-18.png 2523
+skin.terror.lite/media/flags/default/mpaa/nl-6.png 902
+skin.terror.lite/media/flags/default/mpaa/nl-9.png 832
+skin.terror.lite/media/flags/default/mpaa/nl-al.png 837
+skin.terror.lite/media/flags/default/mpaa/nl-mg6.png 1391
+skin.terror.lite/media/flags/default/mpaa/nr.png 1343
+skin.terror.lite/media/flags/default/mpaa/pg-13.png 838
+skin.terror.lite/media/flags/default/mpaa/pg.png 654
+skin.terror.lite/media/flags/default/mpaa/r.png 463
+skin.terror.lite/media/flags/default/mpaa/rated g.png 477
+skin.terror.lite/media/flags/default/mpaa/rated nc-17.png 801
+skin.terror.lite/media/flags/default/mpaa/rated pg-13.png 838
+skin.terror.lite/media/flags/default/mpaa/rated pg.png 654
+skin.terror.lite/media/flags/default/mpaa/rated r.png 463
+skin.terror.lite/media/flags/default/mpaa/rated tv-14.png 581
+skin.terror.lite/media/flags/default/mpaa/rated tv-g.png 684
+skin.terror.lite/media/flags/default/mpaa/rated tv-ma.png 929
+skin.terror.lite/media/flags/default/mpaa/rated tv-pg.png 793
+skin.terror.lite/media/flags/default/mpaa/rated tv-y.png 415
+skin.terror.lite/media/flags/default/mpaa/rated tv-y7.png 518
+skin.terror.lite/media/flags/default/mpaa/rated x.png 1067
+skin.terror.lite/media/flags/default/mpaa/tv-14.png 581
+skin.terror.lite/media/flags/default/mpaa/tv-g.png 684
+skin.terror.lite/media/flags/default/mpaa/tv-ma.png 929
+skin.terror.lite/media/flags/default/mpaa/tv-pg.png 793
+skin.terror.lite/media/flags/default/mpaa/tv-y.png 415
+skin.terror.lite/media/flags/default/mpaa/tv-y7.png 518
+skin.terror.lite/media/flags/default/mpaa/x.png 1058
+skin.terror.lite/media/flags/default/resolution/1080.png 1716
+skin.terror.lite/media/flags/default/resolution/2160.png 2035
+skin.terror.lite/media/flags/default/resolution/288.png 1661
+skin.terror.lite/media/flags/default/resolution/480.png 1671
+skin.terror.lite/media/flags/default/resolution/4k.png 2035
+skin.terror.lite/media/flags/default/resolution/540.png 1653
+skin.terror.lite/media/flags/default/resolution/576.png 1649
+skin.terror.lite/media/flags/default/resolution/720.png 1634
+skin.terror.lite/media/flags/default/resolution/hd.png 876
+skin.terror.lite/media/flags/default/studios/default-studio.png 1128
+skin.terror.lite/media/flags/default/videocodec/asf.png 803
+skin.terror.lite/media/flags/default/videocodec/avc1.png 2402
+skin.terror.lite/media/flags/default/videocodec/avi.png 695
+skin.terror.lite/media/flags/default/videocodec/bluray.png 1724
+skin.terror.lite/media/flags/default/videocodec/bluray3d.png 3102
+skin.terror.lite/media/flags/default/videocodec/div3.png 805
+skin.terror.lite/media/flags/default/videocodec/divx.png 805
+skin.terror.lite/media/flags/default/videocodec/dvd.png 1606
+skin.terror.lite/media/flags/default/videocodec/dx50.png 805
+skin.terror.lite/media/flags/default/videocodec/flv.png 476
+skin.terror.lite/media/flags/default/videocodec/h264.png 1305
+skin.terror.lite/media/flags/default/videocodec/hddvd.png 1459
+skin.terror.lite/media/flags/default/videocodec/hdmv.png 1724
+skin.terror.lite/media/flags/default/videocodec/hdtv.png 1388
+skin.terror.lite/media/flags/default/videocodec/hev1.png 2118
+skin.terror.lite/media/flags/default/videocodec/hevc.png 2118
+skin.terror.lite/media/flags/default/videocodec/iso.png 582
+skin.terror.lite/media/flags/default/videocodec/m2ts.png 942
+skin.terror.lite/media/flags/default/videocodec/mkv.png 1858
+skin.terror.lite/media/flags/default/videocodec/mov.png 1459
+skin.terror.lite/media/flags/default/videocodec/mp4.png 758
+skin.terror.lite/media/flags/default/videocodec/mpeg1video.png 937
+skin.terror.lite/media/flags/default/videocodec/mpeg2video.png 984
+skin.terror.lite/media/flags/default/videocodec/sdtv.png 2991
+skin.terror.lite/media/flags/default/videocodec/tv.png 732
+skin.terror.lite/media/flags/default/videocodec/vc-1.png 655
+skin.terror.lite/media/flags/default/videocodec/vorbis.png 1600
+skin.terror.lite/media/flags/default/videocodec/web-dl.png 526
+skin.terror.lite/media/flags/default/videocodec/wmv.png 1138
+skin.terror.lite/media/flags/default/videocodec/wmv3.png 560
+skin.terror.lite/media/flags/default/videocodec/wvc1.png 560
+skin.terror.lite/media/flags/default/videocodec/xvid.png 1365
+skin.terror.lite/media/flags/rating/0.0.png 865
+skin.terror.lite/media/flags/rating/0.1.png 668
+skin.terror.lite/media/flags/rating/0.2.png 667
+skin.terror.lite/media/flags/rating/0.3.png 683
+skin.terror.lite/media/flags/rating/0.4.png 724
+skin.terror.lite/media/flags/rating/0.5.png 783
+skin.terror.lite/media/flags/rating/0.6.png 834
+skin.terror.lite/media/flags/rating/0.7.png 833
+skin.terror.lite/media/flags/rating/0.8.png 855
+skin.terror.lite/media/flags/rating/0.9.png 892
+skin.terror.lite/media/flags/rating/0.png 865
+skin.terror.lite/media/flags/rating/1.0.png 914
+skin.terror.lite/media/flags/rating/1.1.png 942
+skin.terror.lite/media/flags/rating/1.2.png 931
+skin.terror.lite/media/flags/rating/1.3.png 934
+skin.terror.lite/media/flags/rating/1.4.png 944
+skin.terror.lite/media/flags/rating/1.5.png 958
+skin.terror.lite/media/flags/rating/1.6.png 962
+skin.terror.lite/media/flags/rating/1.7.png 969
+skin.terror.lite/media/flags/rating/1.8.png 966
+skin.terror.lite/media/flags/rating/1.9.png 967
+skin.terror.lite/media/flags/rating/1.png 926
+skin.terror.lite/media/flags/rating/10.0.png 907
+skin.terror.lite/media/flags/rating/10.png 907
+skin.terror.lite/media/flags/rating/2.0.png 972
+skin.terror.lite/media/flags/rating/2.1.png 979
+skin.terror.lite/media/flags/rating/2.2.png 984
+skin.terror.lite/media/flags/rating/2.3.png 996
+skin.terror.lite/media/flags/rating/2.4.png 1011
+skin.terror.lite/media/flags/rating/2.5.png 1096
+skin.terror.lite/media/flags/rating/2.6.png 1137
+skin.terror.lite/media/flags/rating/2.7.png 1122
+skin.terror.lite/media/flags/rating/2.8.png 1049
+skin.terror.lite/media/flags/rating/2.9.png 1057
+skin.terror.lite/media/flags/rating/2.png 972
+skin.terror.lite/media/flags/rating/3.0.png 1050
+skin.terror.lite/media/flags/rating/3.1.png 1188
+skin.terror.lite/media/flags/rating/3.2.png 1171
+skin.terror.lite/media/flags/rating/3.3.png 1184
+skin.terror.lite/media/flags/rating/3.4.png 1186
+skin.terror.lite/media/flags/rating/3.5.png 1192
+skin.terror.lite/media/flags/rating/3.6.png 1206
+skin.terror.lite/media/flags/rating/3.7.png 1212
+skin.terror.lite/media/flags/rating/3.8.png 1204
+skin.terror.lite/media/flags/rating/3.9.png 1200
+skin.terror.lite/media/flags/rating/3.png 1050
+skin.terror.lite/media/flags/rating/4.0.png 946
+skin.terror.lite/media/flags/rating/4.1.png 950
+skin.terror.lite/media/flags/rating/4.2.png 953
+skin.terror.lite/media/flags/rating/4.3.png 959
+skin.terror.lite/media/flags/rating/4.4.png 968
+skin.terror.lite/media/flags/rating/4.5.png 1057
+skin.terror.lite/media/flags/rating/4.6.png 1092
+skin.terror.lite/media/flags/rating/4.7.png 1100
+skin.terror.lite/media/flags/rating/4.8.png 969
+skin.terror.lite/media/flags/rating/4.9.png 981
+skin.terror.lite/media/flags/rating/4.png 946
+skin.terror.lite/media/flags/rating/5.0.png 990
+skin.terror.lite/media/flags/rating/5.1.png 974
+skin.terror.lite/media/flags/rating/5.2.png 1168
+skin.terror.lite/media/flags/rating/5.3.png 1166
+skin.terror.lite/media/flags/rating/5.4.png 1183
+skin.terror.lite/media/flags/rating/5.5.png 1186
+skin.terror.lite/media/flags/rating/5.6.png 1184
+skin.terror.lite/media/flags/rating/5.7.png 1191
+skin.terror.lite/media/flags/rating/5.8.png 1190
+skin.terror.lite/media/flags/rating/5.9.png 1184
+skin.terror.lite/media/flags/rating/5.png 990
+skin.terror.lite/media/flags/rating/6.0.png 903
+skin.terror.lite/media/flags/rating/6.1.png 901
+skin.terror.lite/media/flags/rating/6.2.png 906
+skin.terror.lite/media/flags/rating/6.3.png 912
+skin.terror.lite/media/flags/rating/6.4.png 924
+skin.terror.lite/media/flags/rating/6.5.png 951
+skin.terror.lite/media/flags/rating/6.6.png 969
+skin.terror.lite/media/flags/rating/6.7.png 972
+skin.terror.lite/media/flags/rating/6.8.png 974
+skin.terror.lite/media/flags/rating/6.9.png 984
+skin.terror.lite/media/flags/rating/6.png 903
+skin.terror.lite/media/flags/rating/7.0.png 1010
+skin.terror.lite/media/flags/rating/7.1.png 1005
+skin.terror.lite/media/flags/rating/7.2.png 981
+skin.terror.lite/media/flags/rating/7.3.png 1118
+skin.terror.lite/media/flags/rating/7.4.png 1123
+skin.terror.lite/media/flags/rating/7.5.png 1113
+skin.terror.lite/media/flags/rating/7.6.png 1114
+skin.terror.lite/media/flags/rating/7.7.png 1127
+skin.terror.lite/media/flags/rating/7.8.png 1101
+skin.terror.lite/media/flags/rating/7.9.png 1101
+skin.terror.lite/media/flags/rating/7.png 1010
+skin.terror.lite/media/flags/rating/8.0.png 907
+skin.terror.lite/media/flags/rating/8.1.png 925
+skin.terror.lite/media/flags/rating/8.2.png 925
+skin.terror.lite/media/flags/rating/8.3.png 930
+skin.terror.lite/media/flags/rating/8.4.png 930
+skin.terror.lite/media/flags/rating/8.5.png 950
+skin.terror.lite/media/flags/rating/8.6.png 981
+skin.terror.lite/media/flags/rating/8.7.png 964
+skin.terror.lite/media/flags/rating/8.8.png 974
+skin.terror.lite/media/flags/rating/8.9.png 984
+skin.terror.lite/media/flags/rating/8.png 907
+skin.terror.lite/media/flags/rating/9.0.png 827
+skin.terror.lite/media/flags/rating/9.1.png 975
+skin.terror.lite/media/flags/rating/9.2.png 974
+skin.terror.lite/media/flags/rating/9.3.png 962
+skin.terror.lite/media/flags/rating/9.4.png 951
+skin.terror.lite/media/flags/rating/9.5.png 936
+skin.terror.lite/media/flags/rating/9.6.png 927
+skin.terror.lite/media/flags/rating/9.7.png 924
+skin.terror.lite/media/flags/rating/9.8.png 916
+skin.terror.lite/media/flags/rating/9.9.png 891
+skin.terror.lite/media/flags/rating/9.png 827
+skin.terror.lite/media/flags/rating/empty.png 823
+skin.terror.lite/media/flags/subtitles/default_icon_info.png 710
+skin.terror.lite/media/flags/subtitles/icon_close_caption.png 426
+skin.terror.lite/media/flags/subtitles/icon_sync.png 640
+skin.terror.lite/media/homewidgets/systeminfo/square/video.png 70188
+skin.terror.lite/media/imdb_bw.png 18978
+skin.terror.lite/media/logos/imdb.png 1602
+skin.terror.lite/media/logos/tmdb-logo.png 3595
+skin.terror.lite/media/logos/tmdb-logo2.png 2874
+skin.terror.lite/media/logos/trakt-logo.png 8502
+skin.terror.lite/media/osd/buttons/osdaudiofo.png 3612
+skin.terror.lite/media/osd/buttons/osdaudionf.png 2970
+skin.terror.lite/media/osd/buttons/osdstereoscopicfo.png 3283
+skin.terror.lite/media/osd/buttons/osdstereoscopicnf.png 3009
+skin.terror.lite/media/osd/buttons/osdvideofo.png 3228
+skin.terror.lite/media/osd/buttons/osdvideonf.png 3043
+skin.terror.lite/media/overlays/list/1080.png 394
+skin.terror.lite/media/overlays/list/720.png 394
+skin.terror.lite/media/rating0.png 865
+skin.terror.lite/resources/ratings_imdb.py 6456
+skin.terror.lite/shortcuts/musicvideos.DATA.xml 1066
+skin.terror.lite/shortcuts/videos.DATA.xml 1126
+RELEVANT XML OR SKIN SCRIPT CONTEXT:
+
+### skin.terror.lite/16x9/Defaults.xml (1 matching lines)
+    7: 		<aspectratio align="center">scale</aspectratio>
+
+### skin.terror.lite/16x9/DialogAddonInfo.xml (2 matching lines)
+   33: 					<aspectratio>keep</aspectratio>
+  228: 					<aspectratio align="left">keep</aspectratio>
+
+### skin.terror.lite/16x9/DialogAddonSettings.xml (1 matching lines)
+  102: 					<aspectratio>scale</aspectratio>
+
+### skin.terror.lite/16x9/DialogBookmarks.xml (4 matching lines)
+   37: 						<aspectratio align="center">scale</aspectratio>
+   69: 						<aspectratio>scale</aspectratio>
+   79: 						<aspectratio align="center">scale</aspectratio>
+  109: 						<aspectratio>scale</aspectratio>
+
+### skin.terror.lite/16x9/DialogBusy.xml (2 matching lines)
+   32: 						<aspectratio>keep</aspectratio>
+   40: 						<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/DialogMusicInfo.xml (11 matching lines)
+   18: 				<aspectratio aligny="top">keep</aspectratio>
+   26: 				<aspectratio align="center" aligny="center">keep</aspectratio>
+   40: 				<aspectratio scalediffuse="false" aligny="bottom">scale</aspectratio>
+   56: 					<aspectratio align="center">scale</aspectratio>
+  237: 							<include>MediaFlagValues</include>
+  256: 							<visible>!String.IsEmpty(ListItem.UserRating)</visible>
+  262: 								<aspectratio>keep</aspectratio>
+  271: 								<label>$INFO[ListItem.UserRating]</label>
+  769: 							<description>Set rating</description>
+  778: 							<usealttexture>!String.IsEmpty(ListItem.UserRating)</usealttexture>
+  964: 			<description>Set rating</description>
+
+### skin.terror.lite/16x9/DialogNotification.xml (2 matching lines)
+   27: 				<aspectratio>keep</aspectratio>
+   35: 				<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/DialogPVRChannelGuide.xml (1 matching lines)
+   19: 				<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/DialogPVRChannelManager.xml (1 matching lines)
+  256: 				<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/DialogPVRChannelsOSD.xml (5 matching lines)
+   36: 				<aspectratio>keep</aspectratio>
+   44: 				<aspectratio>keep</aspectratio>
+   98: 							<aspectratio>keep</aspectratio>
+  149: 							<aspectratio>keep</aspectratio>
+  174: 						<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/DialogPVRGroupManager.xml (2 matching lines)
+  107: 					<description>Channels list</description>
+  175: 					<description>Grouped Channels list</description>
+
+### skin.terror.lite/16x9/DialogPVRGuideSearch.xml (1 matching lines)
+  126: 				<description>Channels</description>
+
+### skin.terror.lite/16x9/DialogPVRInfo.xml (2 matching lines)
+   17: 				<aspectratio>keep</aspectratio>
+   24: 				<aspectratio scalediffuse="false" aligny="bottom">center</aspectratio>
+
+### skin.terror.lite/16x9/DialogPlayerProcessInfo.xml (1 matching lines)
+   92: 					<label2>$INFO[Player.Process(audiochannels)]</label2>
+
+### skin.terror.lite/16x9/DialogSeekBar.xml (6 matching lines)
+    3: 	<visible>String.IsEmpty(Window(Home).Property(Enable.ScreenshotMode)) + !Window.IsActive(visualisation) + !Player.HasGame + !Player.FrameAdvance + !Window.IsActive(pvrosdchannels) + ![Player.Paused + Window.IsActive(1134) + !Skin.HasSetting(Disable.Netflix.Pause)]</visible>
+   25: 					<animation effect="slide" end="0,90" time="240" tween="quadratic" condition="!Skin.HasSetting(VideoOSDOnTop) + [Window.IsVisible(SliderDialog) | Window.IsVisible(pvrchannelguide) | Window.IsVisible(PVROSDTeletext) | Window.IsVisible(PVROSDChannels) | Window.IsVisible(OSDVideoSettings) | Window.IsVisible(OSDAudioSettings) | Window.IsVisible(OSDSubtitleSettings) | Window.IsV
+  116: 					<aspectratio aligny="bottom" align="center">keep</aspectratio>
+  173: 				<aspectratio>keep</aspectratio>
+  192: 				<aspectratio>keep</aspectratio>
+  200: 			<visible>!Window.IsVisible(pvrchannelguide) + !Window.IsVisible(pvrosdchannels)</visible>
+
+### skin.terror.lite/16x9/DialogSubtitles.xml (9 matching lines)
+   32: 					<aspectratio align="right">keep</aspectratio>
+  116: 						<aspectratio>keep</aspectratio>
+  127: 						<aspectratio>keep</aspectratio>
+  175: 						<aspectratio>keep</aspectratio>
+  176: 						<texture>$INFO[ListItem.ActualIcon,flags/rating/,.png]</texture>
+  199: 						<aspectratio>keep</aspectratio>
+  209: 						<aspectratio>keep</aspectratio>
+  252: 						<aspectratio>keep</aspectratio>
+  253: 						<texture>$INFO[ListItem.ActualIcon,flags/rating/,.png]</texture>
+
+### skin.terror.lite/16x9/DialogVideoInfo.xml (62 matching lines)
+    3: 	<!-- IMDb direct bridge: reads only TMDb Helper's existing MDBList / OMDb settings. -->
+    4: 	<onload>ClearProperty(TerrorLite.IMDb.Rating,12003)</onload>
+    5: 	<onload>ClearProperty(TerrorLite.IMDb.Source,12003)</onload>
+    6: 	<onload condition="System.HasAddon(plugin.video.themoviedb.helper)">RunScript(special://skin/resources/ratings_imdb.py,imdb=$INFO[ListItem.UniqueID(imdb)],imdb2=$INFO[ListItem.Property(IMDb_ID)],imdb3=$INFO[ListItem.IMDBNumber],tmdb=$INFO[ListItem.UniqueID(tmdb)],tmdb2=$INFO[ListItem.Property(TMDb_ID)],year=$INFO[ListItem.Year])</onload>
+    7: 	<onunload>ClearProperty(TerrorLite.IMDb.Rating,12003)</onunload>
+    8: 	<onunload>ClearProperty(TerrorLite.IMDb.Source,12003)</onunload>
+   14: 		<!-- Optional SiLVO/Embuary local-library IMDb fallback, only when a real DBID exists. -->
+   17: 			<content limit="1">$VAR[TerrorOmegaEmbuaryIMDbPathVar]</content>
+   20: 		<!-- SiLVO detail lookup: load actual TMDb Helper movie ratings for this information dialog. -->
+   53: 				<aspectratio>scale</aspectratio>
+   74: 						<aspectratio align="center">scale</aspectratio>
+  217: 					<!-- Runtime/Ratings Bar -->
+  278: 							<include>MediaFlagValues</include>
+  279: 							<texture fallback="flags/default/mpaa/NR.png">$VAR[MediaFlagsPathVar]/mpaa/$VAR[RatingFlagVar]</texture>
+  281: 						<!-- Main Rating -->
+  283: 							<!-- Show the generic rating only when no labeled TMDb badge can be shown.
+  284: 			     Uses exactly the same conditions as the TMDb card: impossible to duplicate. -->
+  285: 			<visible>!String.IsEmpty(ListItem.Rating) + ![[String.IsEqual(ListItem.DBTYPE,movie) | Container.Content(movies) | !String.IsEmpty(ListItem.Property(TMDb_ID)) | !String.IsEmpty(ListItem.UniqueID(tmdb)) | String.Contains(ListItem.FolderPath,plugin.video.themoviedb.helper)] + [!String.IsEmpty(ListItem.Rating(themoviedb)) | !String.IsEmpty(ListItem.Rating(tmdb)) | !String.IsEmp
+  291: 								<label>$INFO[ListItem.Rating]</label>
+  300: 								<label>[LOWERCASE]$VAR[RatingAndVotesVar][/LOWERCASE]</label>
+  306: 						<!-- Omega 1.1.2: Native Kodi and TMDb Helper rating badges -->
+  308: 							<description>TMDB Bewertung</description>
+  311: 							<visible>[String.IsEqual(ListItem.DBTYPE,movie) | Container.Content(movies) | !String.IsEmpty(ListItem.Property(TMDb_ID)) | !String.IsEmpty(ListItem.UniqueID(tmdb)) | String.Contains(ListItem.FolderPath,plugin.video.themoviedb.helper)] + [!String.IsEmpty(ListItem.Rating(themoviedb)) | !String.IsEmpty(ListItem.Rating(tmdb)) | !String.IsEmpty(ListItem.Property(TMDb_Rating)
+  319: 								<label>$VAR[TerrorOmegaTMDbRatingVar]</label>
+  328: 								<label>TMDB</label>
+  331: 						<!-- 1.1.10 TEST: IMDb from Kodi, TMDb Helper details, or the available online service. -->
+  333: 							<description>IMDb Bewertung</description>
+  336: 							<visible>[String.IsEqual(ListItem.DBTYPE,movie) | Container.Content(movies) | !String.IsEmpty(ListItem.Property(TMDb_ID)) | !String.IsEmpty(ListItem.UniqueID(tmdb)) | String.Contains(ListItem.FolderPath,plugin.video.themoviedb.helper)] + [!String.IsEmpty(Window(12003).Property(TerrorLite.IMDb.Rating)) | [!String.IsEmpty(ListItem.Rating(imdb)) + !String.IsEqual(ListItem.R
+  344: 								<label>$VAR[TerrorOmegaIMDbRatingVar]</label>
+  353: 								<label>IMDB</label>
+  357: 							<description>Trakt Bewertung</description>
+  360: 							<visible>[String.IsEqual(ListItem.DBTYPE,movie) | Container.Content(movies) | !String.IsEmpty(ListItem.Property(TMDb_ID)) | !String.IsEmpty(ListItem.UniqueID(tmdb)) | String.Contains(ListItem.FolderPath,plugin.video.themoviedb.helper)] + [!String.IsEmpty(ListItem.Rating(trakt)) | !String.IsEmpty(ListItem.Property(Trakt_Rating)) | !String.IsEmpty(ListItem.Property(Rating.
+  368: 								<label>$VAR[TerrorOmegaTraktRatingVar]</label>
+  377: 								<label>TRAKT</label>
+  384: 							<visible>[String.IsEqual(ListItem.DBTYPE,movie) | Container.Content(movies) | !String.IsEmpty(ListItem.Property(TMDb_ID)) | !String.IsEmpty(ListItem.UniqueID(tmdb)) | String.Contains(ListItem.FolderPath,plugin.video.themoviedb.helper)] + [!String.IsEmpty(ListItem.Property(Rating.tomatoes.Percent)) | !String.IsEmpty(ListItem.Property(Rating.Tomatoes.Percent)) | !String.Is
+  392: 								<label>$VAR[TerrorOmegaRTRatingVar]</label>
+  822: 						<description>Set rating</description>
+  830: 						<usealttexture>!String.IsEmpty(ListItem.UserRating)</usealttexture>
+  925: 							<aspectratio>keep</aspectratio>
+  929: 						<!-- Mediaflags -->
+  955: 									<include>MediaFlagValues</include>
+  956: 									<texture>$VAR[MediaFlagsPathVar]/resolution/$INFO[ListItem.VideoResolution,,.png]</texture>
+  957: 									<visible>!String.IsEmpty(ListItem.VideoResolution)</visible>
+  961: 									<include>MediaFlagValues</include>
+  962: 									<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[SourceFlagVar]</texture>
+  963: 									<visible>!String.IsEmpty(ListItem.VideoCodec)</visible>
+  967: 									<include>MediaFlagValues</include>
+  968: 									<texture>$VAR[MediaFlagsPathVar]/aspectratio/$INFO[ListItem.VideoAspect,,.png]</texture>
+  973: 									<include>MediaFlagValues</include>
+  974: 									<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[AudioCodecFlagVar]</texture>
+  975: 									<visible>!String.IsEmpty(ListItem.AudioCodec)</visible>
+  978: 									<include>MediaFlagValues</include>
+  979: 									<texture>$VAR[MediaFlagsPathVar]/audiochannels/$INFO[ListItem.AudioChannels,,.png]</texture>
+  980: 									<visible>!String.IsEmpty(ListItem.AudioChannels)</visible>
+  992: 										<include>MediaFlagValues</include>
+  999: 										<include>MediaFlagValues</include>
+ 1007: 										<include>MediaFlagValues</include>
+ 1015: 									<include>MediaFlagValues</include>
+ 1016: 									<texture>$VAR[MediaFlagsPathVar]/cc.png</texture>
+ 1029: 										<include>MediaFlagValues</include>
+ 1036: 										<include>MediaFlagValues</include>
+ 1043: 										<include>MediaFlagValues</include>
+
+### skin.terror.lite/16x9/DialogVideoManager.xml (1 matching lines)
+   12:       <control type="image"><left>34</left><top>122</top><width>300</width><height>445</height><aspectratio>keep</aspectratio><texture background="true" fallback="DefaultVideoCover.png">$INFO[Container(50).ListItem.Art(poster)]</texture><bordertexture border="5">dialogs/default/inner.png</bordertexture><bordersize>2</bordersize></control>
+
+### skin.terror.lite/16x9/EventLog.xml (4 matching lines)
+   46: 								<aspectratio>keep</aspectratio>
+   56: 								<aspectratio>keep</aspectratio>
+  101: 								<aspectratio>keep</aspectratio>
+  110: 								<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/FileBrowser.xml (4 matching lines)
+  114: 							<aspectratio>keep</aspectratio>
+  151: 								<aspectratio>keep</aspectratio>
+  194: 					<aspectratio>keep</aspectratio>
+  205: 					<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/Includes.xml (67 matching lines)
+  116: 			<visible>!Window.IsActive(tvchannels) + !Window.IsActive(eventlog)</visible>
+  203: 					<visible>Window.IsActive(tvchannels) | Window.IsActive(tvguide)</visible>
+  238: 					<description>Channels</description>
+  243: 					<onclick condition="String.IsEmpty(Window.Property(IsRadio))">ActivateWindow(TVChannels)</onclick>
+  244: 					<onclick condition="!String.IsEmpty(Window.Property(IsRadio))">ActivateWindow(RadioChannels)</onclick>
+  245: 					<visible>!Window.IsActive(tvchannels)</visible>
+  811: 				<param name="content">plugin://script.extendedinfo?info=similarmovies&amp;&amp;imdb_id=$INFO[ListItem.IMDBNumber]&amp;&amp;dbid=$INFO[ListItem.DBID]</param>
+  879: 					<aspectratio aligny="top">scale</aspectratio>
+  921: 						<aspectratio aligny="top">scale</aspectratio>
+  974: 					<aspectratio aligny="top">scale</aspectratio>
+ 1016: 						<aspectratio aligny="top">scale</aspectratio>
+ 1219: 				<onclick>StereoMode</onclick>
+ 1379: 				<onclick>ActivateWindow(PVROSDChannels)</onclick>
+ 1398: 				<onclick>ToggleStereoMode</onclick>
+ 1602: 						<aspectratio align="right">keep</aspectratio>
+ 1860: 							<aspectratio scalediffuse="false" aligny="center">scale</aspectratio>
+ 1956: 					<aspectratio align="left" aligny="bottom">stretch</aspectratio>
+ 2035: 						<label>$INFO[ListItem.Rating,$LOCALIZE[31146]: [COLOR grey],[/COLOR]]$INFO[ListItem.Top250,[COLOR grey] / $LOCALIZE[13409] # ,[/COLOR]]$INFO[ListItem.Year,   $LOCALIZE[345]: [COLOR grey],[/COLOR]]$INFO[ListItem.Duration(mins),   $LOCALIZE[2050]: [COLOR grey], $LOCALIZE[12391][/COLOR]]$INFO[Window(Home).Property(Set.Movies.Runtime),   $LOCALIZE[2050]: [COLOR grey], $LOCALI
+ 2045: 						<label>$INFO[ListItem.RatingAndVotes,$LOCALIZE[31146]: [COLOR grey],[/COLOR] ]$INFO[ListItem.Duration(mins),$LOCALIZE[2050]: [COLOR grey], $LOCALIZE[12391][/COLOR]]</label>
+ 2116: 						<include>MediaFlagValues</include>
+ 2117: 						<texture>$VAR[MediaFlagsPathVar]/resolution/$INFO[ListItem.VideoResolution,,.png]</texture>
+ 2118: 						<visible>!String.IsEmpty(ListItem.VideoResolution)</visible>
+ 2123: 						<include>MediaFlagValues</include>
+ 2124: 						<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[SourceFlagVar]</texture>
+ 2125: 						<visible>!String.IsEmpty(ListItem.VideoCodec)</visible>
+ 2130: 						<include>MediaFlagValues</include>
+ 2131: 						<texture>$VAR[MediaFlagsPathVar]/aspectratio/$INFO[ListItem.VideoAspect,,.png]</texture>
+ 2137: 						<include>MediaFlagValues</include>
+ 2138: 						<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[AudioCodecFlagVar]</texture>
+ 2139: 						<visible>!String.IsEmpty(ListItem.AudioCodec)</visible>
+ 2144: 						<include>MediaFlagValues</include>
+ 2145: 						<texture>$VAR[MediaFlagsPathVar]/audiochannels/$INFO[ListItem.AudioChannels,,.png]</texture>
+ 2146: 						<visible>!String.IsEmpty(ListItem.AudioChannels)</visible>
+ 2151: 						<include>MediaFlagValues</include>
+ 2152: 						<texture>$VAR[MediaFlagsPathVar]/cc.png</texture>
+ 2181: 						<include>MediaFlagValues</include>
+ 2182: 						<texture fallback="flags/default/mpaa/NR.png">$VAR[MediaFlagsPathVar]/mpaa/$VAR[RatingFlagVar]</texture>
+ 2745: 			<!-- Media Flag Bar Background -->
+ 2752: 			<!-- Media Flags -->
+ 2758: 				<visible>![Skin.HasSetting(VideoOSDOnTop) + Window.IsVisible(videoosd)] | [Window.IsVisible(SliderDialog) | Window.IsVisible(pvrchannelguide) | Window.IsVisible(PVROSDTeletext) | Window.IsVisible(PVROSDChannels) | Window.IsVisible(OSDVideoSettings) | Window.IsVisible(OSDAudioSettings) | Window.IsVisible(OSDSubtitleSettings) | Window.IsVisible(VideoBookmarks) | Window.IsVisi
+ 2776: 					<include>MediaFlagValues</include>
+ 2777: 					<texture>$VAR[MediaFlagsPathVar]/mpaa/$VAR[VideoRatingFlagVar]</texture>
+ 2778: 					<visible>!String.IsEmpty(VideoPlayer.MPAA)</visible>
+ 2782: 					<include>MediaFlagValues</include>
+ 2783: 					<texture>$VAR[MediaFlagsPathVar]/resolution/$INFO[VideoPlayer.VideoResolution,,.png]</texture>
+ 2787: 					<include>MediaFlagValues</include>
+ 2788: 					<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[VideoSourceFlagVar]</texture>
+ 2792: 					<include>MediaFlagValues</include>
+ 2793: 					<texture>$VAR[MediaFlagsPathVar]/aspectratio/$INFO[VideoPlayer.VideoAspect,,.png]</texture>
+ 2797: 					<include>MediaFlagValues</include>
+ 2798: 					<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[PlayerAudioCodecFlagVar]</texture>
+ 2802: 					<include>MediaFlagValues</include>
+ 2803: 					<texture>$VAR[MediaFlagsPathVar]/audiochannels/$INFO[VideoPlayer.AudioChannels,,.png]</texture>
+ 2809: 			<animation effect="slide" end="0,90" time="240" tween="quadratic" condition="[Window.IsVisible(SliderDialog) | Window.IsVisible(pvrchannelguide) | Window.IsVisible(PVROSDTeletext) | Window.IsVisible(PVROSDChannels) | Window.IsVisible(OSDVideoSettings) | Window.IsVisible(OSDAudioSettings) | Window.IsVisible(OSDSubtitleSettings) | Window.IsVisible(VideoBookmarks) | Window.IsVi
+ 2823: 			<animation effect="slide" end="0,90" time="240" tween="quadratic" condition="[Window.IsVisible(SliderDialog) | Window.IsVisible(pvrchannelguide) | Window.IsVisible(PVROSDTeletext) | Window.IsVisible(PVROSDChannels) | Window.IsVisible(OSDVideoSettings) | Window.IsVisible(OSDAudioSettings) | Window.IsVisible(OSDSubtitleSettings) | Window.IsVisible(VideoBookmarks) | Window.IsVi
+ 2837: 						<aspectratio aligny="top">keep</aspectratio>
+ 2855: 					<aspectratio aligny="top">stretch</aspectratio>
+ 2867: 						<aspectratio>keep</aspectratio>
+ 2942: 										<visible>!String.IsEmpty(VideoPlayer.Rating)</visible>
+ 2950: 											<label>$INFO[VideoPlayer.Rating]</label>
+ 2959: 											<label>[LOWERCASE]$VAR[RatingAndVotesVar][/LOWERCASE]</label>
+ 2965: 										<visible>!String.IsEmpty(VideoPlayer.UserRating)</visible>
+ 2971: 											<aspectratio>keep</aspectratio>
+ 2980: 											<label>$INFO[VideoPlayer.UserRating]</label>
+ 2990: 											<aspectratio>keep</aspectratio>
+ 2991: 											<texture>logos/imdb.png</texture>
+ 3116: 					<aspectratio aligny="top">keep</aspectratio>
+
+### skin.terror.lite/16x9/Includes_Backgrounds.xml (32 matching lines)
+   18: 				<visible>!Window.IsVisible(TVChannels) + !Window.IsVisible(RadioChannels) + !SlideShow.IsActive</visible>
+   26: 				<visible>[Player.HasVideo + !Skin.HasSetting(Disable.ShowBackgroundVideo) + !Window.IsVisible(TVChannels) + !Window.IsVisible(RadioChannels) + !SlideShow.IsActive]</visible>
+   94: 			<aspectratio>scale</aspectratio>
+  103: 			<aspectratio>scale</aspectratio>
+  117: 				<include condition="Window.IsActive(tvchannels) | Window.IsActive(tvguide) | Window.IsActive(tvrecordings) | Window.IsActive(tvsearch) | Window.IsActive(tvtimers)">LiveTVFallback</include>
+  169: 				<aspectratio>scale</aspectratio>
+  176: 				<aspectratio>scale</aspectratio>
+  190: 				<aspectratio>scale</aspectratio>
+  197: 				<aspectratio>scale</aspectratio>
+  214: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  224: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  234: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  244: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  254: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  264: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  274: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  284: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  296: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  306: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  316: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  326: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  336: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  346: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  356: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  366: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  378: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  388: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  398: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  408: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  418: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  428: 					<aspectratio scalediffuse="false">keep</aspectratio>
+  438: 					<aspectratio scalediffuse="false">keep</aspectratio>
+
+### skin.terror.lite/16x9/Includes_CommonValues.xml (9 matching lines)
+  144: 	<!-- Media Flags -->
+  145: 	<include name="MediaFlagValues">
+  148: 		<aspectratio>keep</aspectratio>
+  171: 				<aspectratio aligny="top">keep</aspectratio>
+  244: 				<aspectratio aligny="top">keep</aspectratio>
+  329: 					<aspectratio aligny="top">scale</aspectratio>
+  349: 					<aspectratio aligny="center">scale</aspectratio>
+  381: 						<aspectratio aligny="top">scale</aspectratio>
+  390: 						<aspectratio aligny="center">scale</aspectratio>
+
+### skin.terror.lite/16x9/Includes_Home.xml (9 matching lines)
+  148: 						<aspectratio>keep</aspectratio>
+  195: 						<aspectratio>keep</aspectratio>
+  480: 						<aspectratio>keep</aspectratio>
+  943: 					<aspectratio>keep</aspectratio>
+ 1115: 						<aspectratio align="left">keep</aspectratio>
+ 1126: 						<aspectratio align="center">scale</aspectratio>
+ 1185: 						<aspectratio>keep</aspectratio>
+ 1543: 					<aspectratio>keep</aspectratio>
+ 1602: 					<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/Includes_LiveBG.xml (13 matching lines)
+    9: 		<aspectratio scalediffuse="false">stretch</aspectratio>
+   18: 		<aspectratio scalediffuse="false">scale</aspectratio>
+   36: 			<aspectratio align="center" aligny="top">scale</aspectratio>
+  398: 		<value condition="!String.IsEmpty(Container(9031).ListItem(0).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(0).VideoResolution]p.png</value>
+  408: 		<value condition="!String.IsEmpty(Container(9031).ListItem(1).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(1).VideoResolution]p.png</value>
+  418: 		<value condition="!String.IsEmpty(Container(9031).ListItem(2).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(2).VideoResolution]p.png</value>
+  428: 		<value condition="!String.IsEmpty(Container(9031).ListItem(9).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(9).VideoResolution]p.png</value>
+  438: 		<value condition="!String.IsEmpty(Container(9031).ListItem(7).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(7).VideoResolution]p.png</value>
+  448: 		<value condition="!String.IsEmpty(Container(9031).ListItem(3).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(3).VideoResolution]p.png</value>
+  458: 		<value condition="!String.IsEmpty(Container(9031).ListItem(8).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(8).VideoResolution]p.png</value>
+  468: 		<value condition="!String.IsEmpty(Container(9031).ListItem(4).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(4).VideoResolution]p.png</value>
+  478: 		<value condition="!String.IsEmpty(Container(9031).ListItem(5).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(5).VideoResolution]p.png</value>
+  488: 		<value condition="!String.IsEmpty(Container(9031).ListItem(6).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(6).VideoResolution]p.png</value>
+
+### skin.terror.lite/16x9/Includes_LiveTV.xml (47 matching lines)
+   40: 						<aspectratio>keep</aspectratio>
+   73: 					<!-- Media Flags -->
+   82: 							<aspectratio align="center" aligny="center">keep</aspectratio>
+   83: 							<texture>$VAR[MediaFlagsPathVar]/aspectratio/$INFO[VideoPlayer.VideoAspect,,.png]</texture>
+   89: 							<aspectratio align="center" aligny="center">keep</aspectratio>
+   90: 							<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[PlayerAudioCodecFlagVar]</texture>
+   96: 							<aspectratio align="center" aligny="center">keep</aspectratio>
+   97: 							<texture>$VAR[MediaFlagsPathVar]/audiochannels/$INFO[VideoPlayer.AudioChannels,,.png]</texture>
+  103: 							<aspectratio align="center" aligny="center">keep</aspectratio>
+  104: 							<texture>$VAR[MediaFlagsPathVar]/resolution/$INFO[VideoPlayer.VideoResolution,,.png]</texture>
+  110: 							<aspectratio align="center" aligny="center">keep</aspectratio>
+  111: 							<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[VideoSourceFlagVar]</texture>
+  684: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),1) + String.IsEmpty(ListItem.Icon) | !String.IsEqual(Skin.String(LiveTV.EpgViewChannels),1)</visible>
+  691: 						<aspectratio align="left">keep</aspectratio>
+  693: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),2) + !String.IsEmpty(ListItem.Icon)</visible>
+  700: 						<aspectratio align="left">keep</aspectratio>
+  702: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),1) + !String.IsEmpty(ListItem.Icon)</visible>
+  727: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),1) + String.IsEmpty(ListItem.Icon) | !String.IsEqual(Skin.String(LiveTV.EpgViewChannels),1)</visible>
+  734: 						<aspectratio align="left">keep</aspectratio>
+  736: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),2) + !String.IsEmpty(ListItem.Icon)</visible>
+  743: 						<aspectratio align="left">keep</aspectratio>
+  745: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),1) + !String.IsEmpty(ListItem.Icon)</visible>
+  752: 						<aspectratio>stretch</aspectratio>
+  758: 						<aspectratio>stretch</aspectratio>
+  765: 						<aspectratio>stretch</aspectratio>
+  836: 					<aspectratio>keep</aspectratio>
+  946: 						<texture colordiffuse="33FFFFFF">new_pvr/epg-channels.png</texture>
+  960: 						<aspectratio align="left">keep</aspectratio>
+  962: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),2) + !String.IsEmpty(ListItem.Icon)</visible>
+  972: 						<visible>String.IsEmpty(Skin.String(LiveTV.EpgViewChannels))</visible>
+  982: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),2)</visible>
+  989: 						<aspectratio align="center">keep</aspectratio>
+  991: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),1) + !String.IsEmpty(ListItem.Icon)</visible>
+ 1013: 						<aspectratio align="left">keep</aspectratio>
+ 1015: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),2) + !String.IsEmpty(ListItem.Icon)</visible>
+ 1024: 						<visible>String.IsEmpty(Skin.String(LiveTV.EpgViewChannels))</visible>
+ 1033: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),2)</visible>
+ 1040: 						<aspectratio align="center">keep</aspectratio>
+ 1042: 						<visible>String.IsEqual(Skin.String(LiveTV.EpgViewChannels),1) + !String.IsEmpty(ListItem.Icon)</visible>
+ 1049: 						<aspectratio>stretch</aspectratio>
+ 1055: 						<aspectratio>stretch</aspectratio>
+ 1062: 						<aspectratio>stretch</aspectratio>
+ 1172: 		<value condition="String.IsEmpty(Skin.String(LiveTV.EpgViewChannels))">Skin.SetString(LiveTV.EpgViewChannels,1)</value>
+ 1173: 		<value condition="String.IsEqual(Skin.String(LiveTV.EpgViewChannels),1)">Skin.SetString(LiveTV.EpgViewChannels,2)</value>
+ 1174: 		<value condition="String.IsEqual(Skin.String(LiveTV.EpgViewChannels),2)">Skin.Reset(LiveTV.EpgViewChannels)</value>
+ 1177: 		<value condition="String.IsEqual(Skin.String(LiveTV.EpgViewChannels),1)">$LOCALIZE[31358]</value>
+ 1178: 		<value condition="String.IsEqual(Skin.String(LiveTV.EpgViewChannels),2)">$LOCALIZE[31359]</value>
+
+### skin.terror.lite/16x9/Includes_Select.xml (1 matching lines)
+   80: 					<aspectratio aligny="top">keep</aspectratio>
+
+### skin.terror.lite/16x9/Includes_ViewSettings.xml (8 matching lines)
+  477: 			<onclick>Skin.ToggleSetting(lowlistimdblogo)</onclick>
+  478: 			<selected>Skin.HasSetting(lowlistimdblogo)</selected>
+  653: 			<onclick>Skin.ToggleSetting(Disable.RightList.Mediaflags)</onclick>
+  654: 			<selected>!Skin.HasSetting(Disable.RightList.Mediaflags)</selected>
+  660: 			<onclick>Skin.ToggleSetting(Disable.RightList.EpisodeMediaflags)</onclick>
+  661: 			<selected>!Skin.HasSetting(Disable.RightList.EpisodeMediaflags)</selected>
+  667: 			<onclick>Skin.ToggleSetting(Disable.RightList.TVMediaflags)</onclick>
+  668: 			<selected>!Skin.HasSetting(Disable.RightList.TVMediaflags)</selected>
+
+### skin.terror.lite/16x9/Includes_Widgets.xml (44 matching lines)
+  153: 			<aspectratio aligny="$PARAM[Align]">$PARAM[Aspect]</aspectratio>
+  155: 			<aspectratio>keep</aspectratio>
+  179: 				<aspectratio aligny="$PARAM[Aligny]">$PARAM[Aspect]</aspectratio>
+  200: 				<aspectratio aligny="$PARAM[Aligny]">$PARAM[Aspect]</aspectratio>
+  209: 				<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  218: 				<aspectratio>$PARAM[Aspect]</aspectratio>
+  227: 				<aspectratio>$PARAM[Aspect]</aspectratio>
+  248: 				<aspectratio aligny="$PARAM[Aligny]">$PARAM[Aspect]</aspectratio>
+  284: 					<aspectratio>stretch</aspectratio>
+  292: 					<aspectratio aligny="top">scale</aspectratio>
+  301: 					<aspectratio>keep</aspectratio>
+  336: 					<aspectratio>stretch</aspectratio>
+  344: 					<aspectratio aligny="top">scale</aspectratio>
+  353: 					<aspectratio>keep</aspectratio>
+  528: 						<aspectratio aligny="$PARAM[Aligny]">$PARAM[Aspect]</aspectratio>
+  556: 					<aspectratio aligny="$PARAM[caseAligny]">$PARAM[caseAspect]</aspectratio>
+  572: 						<aspectratio aligny="$PARAM[Aligny]">$PARAM[Aspect]</aspectratio>
+  600: 					<aspectratio aligny="$PARAM[caseAligny]">$PARAM[caseAspect]</aspectratio>
+  616: 						<aspectratio aligny="$PARAM[Aligny]">$PARAM[Aspect]</aspectratio>
+  626: 							<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  633: 							<aspectratio>$PARAM[Aspect]</aspectratio>
+  640: 							<aspectratio>$PARAM[Aspect]</aspectratio>
+  684: 						<aspectratio aligny="$PARAM[Aligny]">$PARAM[Aspect]</aspectratio>
+  694: 							<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  701: 							<aspectratio>$PARAM[Aspect]</aspectratio>
+  708: 							<aspectratio>$PARAM[Aspect]</aspectratio>
+  756: 						<aspectratio aligny="center">keep</aspectratio>
+  758: 						<aspectratio>keep</aspectratio>
+  769: 							<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  776: 							<aspectratio>$PARAM[Aspect]</aspectratio>
+  783: 							<aspectratio>$PARAM[Aspect]</aspectratio>
+  841: 						<aspectratio aligny="center">keep</aspectratio>
+  843: 						<aspectratio>keep</aspectratio>
+  854: 							<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  861: 							<aspectratio>$PARAM[Aspect]</aspectratio>
+  868: 							<aspectratio>$PARAM[Aspect]</aspectratio>
+  931: 					<aspectratio aligny="$PARAM[Aligny]">$PARAM[Aspect]</aspectratio>
+  987: 					<aspectratio aligny="$PARAM[Aligny]">$PARAM[Aspect]</aspectratio>
+ 1050: 					<aspectratio>$PARAM[Aspect]</aspectratio>
+ 1058: 					<aspectratio aligny="top">scale</aspectratio>
+ 1067: 					<aspectratio>keep</aspectratio>
+ 1123: 					<aspectratio>$PARAM[Aspect]</aspectratio>
+ 1131: 					<aspectratio aligny="top">scale</aspectratio>
+ 1140: 					<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/LoginScreen.xml (2 matching lines)
+  107: 				<aspectratio align="right">keep</aspectratio>
+  132: 				<aspectratio align="left">keep</aspectratio>
+
+### skin.terror.lite/16x9/MusicOSD.xml (1 matching lines)
+   34: 					<onclick>SetRating</onclick>
+
+### skin.terror.lite/16x9/MusicVisualisation.xml (20 matching lines)
+   88: 				<aspectratio>scale</aspectratio>
+  114: 						<aspectratio>scale</aspectratio>
+  125: 						<aspectratio>scale</aspectratio>
+  233: 					<aspectratio>keep</aspectratio>
+  279: 					<aspectratio align="left">keep</aspectratio>
+  290: 					<aspectratio align="center">scale</aspectratio>
+  317: 						<aspectratio aligny="bottom" align="center">keep</aspectratio>
+  365: 						<texture fallback="rating0.png">$INFO[MusicPlayer.UserRating,flags/rating/,.png]</texture>
+  366: 						<aspectratio align="left" aligny="bottom">keep</aspectratio>
+  414: 							<aspectratio aligny="bottom" align="center">keep</aspectratio>
+  471: 							<texture fallback="rating0.png">$INFO[MusicPlayer.UserRating,flags/rating/,.png]</texture>
+  472: 							<aspectratio align="right" aligny="bottom">keep</aspectratio>
+  584: 							<aspectratio aligny="bottom" align="center">keep</aspectratio>
+  605: 							<texture fallback="rating0.png">$INFO[MusicPlayer.UserRating,flags/rating/,.png]</texture>
+  606: 							<aspectratio align="left" aligny="bottom">keep</aspectratio>
+  631: 							<aspectratio aligny="bottom" align="center">keep</aspectratio>
+  684: 							<texture fallback="rating0.png">$INFO[MusicPlayer.UserRating,flags/rating/,.png]</texture>
+  685: 							<aspectratio align="left" aligny="bottom">keep</aspectratio>
+  704: 							<aspectratio align="left">keep</aspectratio>
+  742: 							<aspectratio align="right">scale</aspectratio>
+
+### skin.terror.lite/16x9/MyFavourites.xml (1 matching lines)
+   27: 				<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/MyMusicNav.xml (6 matching lines)
+  269: 						<include>MediaFlagValues</include>
+  270: 						<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+  307: 						<include>MediaFlagValues</include>
+  308: 						<texture>$VAR[MediaFlagsPathVar]/audiocodec/$INFO[ListItem.FileExtension,,.png]</texture>
+  312: 						<include>MediaFlagValues</include>
+  313: 						<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+
+### skin.terror.lite/16x9/MyPVRChannels.xml (11 matching lines)
+   84: 						<aspectratio>keep</aspectratio>
+  161: 						<aspectratio>keep</aspectratio>
+  327: 						<aspectratio>stretch</aspectratio>
+  353: 						<aspectratio align="right">keep</aspectratio>
+  399: 							<aspectratio>stretch</aspectratio>
+  405: 							<aspectratio>stretch</aspectratio>
+  413: 							<aspectratio align="right">keep</aspectratio>
+  499: 						<aspectratio>keep</aspectratio>
+  626: 								<aspectratio>keep</aspectratio>
+  680: 								<aspectratio>keep</aspectratio>
+  755: 									<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/MyPVRRecordings.xml (5 matching lines)
+   50: 						<aspectratio>keep</aspectratio>
+   66: 						<aspectratio>keep</aspectratio>
+   83: 						<aspectratio>keep</aspectratio>
+   99: 						<aspectratio>keep</aspectratio>
+  116: 							<aspectratio align="left" aligny="center">keep</aspectratio>
+
+### skin.terror.lite/16x9/MyPVRSearch.xml (4 matching lines)
+   44: 						<aspectratio>keep</aspectratio>
+  124: 						<aspectratio>keep</aspectratio>
+  206: 					<aspectratio aligny="bottom">keep</aspectratio>
+  216: 					<aspectratio aligny="top">keep</aspectratio>
+
+### skin.terror.lite/16x9/MyPVRTimers.xml (4 matching lines)
+   43: 						<aspectratio>keep</aspectratio>
+  112: 						<aspectratio>keep</aspectratio>
+  183: 					<aspectratio aligny="bottom">keep</aspectratio>
+  193: 					<aspectratio aligny="top">keep</aspectratio>
+
+### skin.terror.lite/16x9/MyPrograms.xml (2 matching lines)
+  101: 						<include>MediaFlagValues</include>
+  102: 						<texture fallback="rating0.png">$INFO[ListItem.StarRating]</texture>
+
+### skin.terror.lite/16x9/MyVideoNav.xml (50 matching lines)
+  236: 									<aspectratio>keep</aspectratio>
+  238: 									<visible>!String.IsEmpty(ListItem.VideoResolution)</visible>
+  329: 								<include>MediaFlagValues</include>
+  330: 								<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[AudioCodecFlagVar]</texture>
+  334: 								<include>MediaFlagValues</include>
+  335: 								<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[SourceFlagVar]</texture>
+  336: 								<visible>!String.IsEmpty(ListItem.VideoCodec)</visible>
+  425: 				<!-- MEDIAFLAGS -->
+  449: 							<include>MediaFlagValues</include>
+  450: 							<texture fallback="flags/default/mpaa/NR.png">$VAR[MediaFlagsPathVar]/mpaa/$VAR[RatingFlagVar]</texture>
+  464: 									<aspectratio>keep</aspectratio>
+  472: 									<aspectratio>keep</aspectratio>
+  481: 									<aspectratio>keep</aspectratio>
+  500: 									<aspectratio>keep</aspectratio>
+  508: 									<aspectratio>keep</aspectratio>
+  517: 									<aspectratio>keep</aspectratio>
+  530: 								<include>MediaFlagValues</include>
+  531: 								<texture>$VAR[MediaFlagsPathVar]/resolution/$INFO[ListItem.VideoResolution,,.png]</texture>
+  535: 								<include>MediaFlagValues</include>
+  536: 								<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[SourceFlagVar]</texture>
+  540: 								<include>MediaFlagValues</include>
+  541: 								<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[AudioCodecFlagVar]</texture>
+  545: 								<include>MediaFlagValues</include>
+  546: 								<texture>$VAR[MediaFlagsPathVar]/audiochannels/$INFO[ListItem.AudioChannels,,.png]</texture>
+  565: 								<visible>[Container.Content(movies) + Control.IsVisible(506) + !Skin.HasSetting(Disable.RightList.Mediaflags)] | [Container.Content(episodes) + Control.IsVisible(506) + !Skin.HasSetting(Disable.RightList.EpisodeMediaflags)] | [[Container.Content(movies) | Container.Content(episodes)] + Control.IsVisible(591)] | [[Container.Content(movies) | Container.Content(episodes)] 
+  588: 									<include>MediaFlagValues</include>
+  589: 									<texture fallback="flags/default/mpaa/NR.png">$VAR[MediaFlagsPathVar]/mpaa/$VAR[RatingFlagVar]</texture>
+  593: 									<include>MediaFlagValues</include>
+  594: 									<texture>$VAR[MediaFlagsPathVar]/resolution/$INFO[ListItem.VideoResolution].png</texture>
+  598: 									<include>MediaFlagValues</include>
+  599: 									<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[SourceFlagVar]</texture>
+  603: 									<include>MediaFlagValues</include>
+  604: 									<texture>$VAR[MediaFlagsPathVar]/aspectratio/$INFO[ListItem.VideoAspect,,.png]</texture>
+  608: 									<include>MediaFlagValues</include>
+  609: 									<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[AudioCodecFlagVar]</texture>
+  613: 									<include>MediaFlagValues</include>
+  614: 									<texture>$VAR[MediaFlagsPathVar]/audiochannels/$INFO[ListItem.AudioChannels,,.png]</texture>
+  627: 										<aspectratio>keep</aspectratio>
+  635: 										<aspectratio>keep</aspectratio>
+  644: 										<aspectratio>keep</aspectratio>
+  656: 										<include>MediaFlagValues</include>
+  657: 										<texture>$VAR[MediaFlagsPathVar]/cc.png</texture>
+  669: 											<aspectratio>keep</aspectratio>
+  677: 											<aspectratio>keep</aspectratio>
+  685: 											<aspectratio>keep</aspectratio>
+  699: 								<visible>![Control.IsVisible(506) + [Container.Content(tvshows) | Container.Content(seasons)]] | [Control.IsVisible(506) + [Container.Content(tvshows) | Container.Content(seasons)] + !Skin.HasSetting(Disable.RightList.TVMediaflags)]</visible>
+  722: 										<include>MediaFlagValues</include>
+  723: 										<texture fallback="flags/default/mpaa/NR.png">$VAR[MediaFlagsPathVar]/mpaa/$VAR[RatingFlagVar]</texture>
+  817: 											<include>MediaFlagValues</include>
+  818: 											<texture fallback="flags/default/mpaa/NR.png">$VAR[MediaFlagsPathVar]/mpaa/$VAR[RatingFlagVar]</texture>
+
+### skin.terror.lite/16x9/MyWeather.xml (27 matching lines)
+  133: 						<aspectratio align="center" aligny="center">keep</aspectratio>
+  146: 						<aspectratio>keep</aspectratio>
+  262: 								<aspectratio aligny="top">keep</aspectratio>
+  308: 								<aspectratio aligny="top">keep</aspectratio>
+  415: 								<aspectratio>keep</aspectratio>
+  478: 								<aspectratio>keep</aspectratio>
+  683: 								<aspectratio>keep</aspectratio>
+  713: 								<aspectratio>keep</aspectratio>
+  794: 								<aspectratio>keep</aspectratio>
+  861: 								<aspectratio>keep</aspectratio>
+  979: 								<aspectratio>keep</aspectratio>
+ 1048: 								<aspectratio>keep</aspectratio>
+ 1544: 						<aspectratio>scale</aspectratio>
+ 1550: 						<aspectratio>scale</aspectratio>
+ 1568: 						<aspectratio align="right" aligny="bottom">keep</aspectratio>
+ 1582: 						<aspectratio>scale</aspectratio>
+ 1588: 						<aspectratio>scale</aspectratio>
+ 1606: 						<aspectratio align="right" aligny="bottom">keep</aspectratio>
+ 1620: 						<aspectratio>scale</aspectratio>
+ 1626: 						<aspectratio>scale</aspectratio>
+ 1644: 						<aspectratio align="right" aligny="bottom">keep</aspectratio>
+ 1658: 						<aspectratio>scale</aspectratio>
+ 1664: 						<aspectratio>scale</aspectratio>
+ 1682: 						<aspectratio align="right" aligny="bottom">keep</aspectratio>
+ 1696: 						<aspectratio>scale</aspectratio>
+ 1702: 						<aspectratio>scale</aspectratio>
+ 1720: 						<aspectratio align="right" aligny="bottom">keep</aspectratio>
+
+### skin.terror.lite/16x9/Settings.xml (8 matching lines)
+   28: 						<aspectratio>scale</aspectratio>
+   35: 						<aspectratio>scale</aspectratio>
+   57: 							<aspectratio>scale</aspectratio>
+   64: 							<aspectratio>scale</aspectratio>
+   85: 						<aspectratio>scale</aspectratio>
+   92: 						<aspectratio>scale</aspectratio>
+  114: 							<aspectratio>scale</aspectratio>
+  121: 							<aspectratio>scale</aspectratio>
+
+### skin.terror.lite/16x9/SettingsScreenCalibration.xml (1 matching lines)
+   56: 				<description>pixel aspect ratio</description>
+
+### skin.terror.lite/16x9/SkinSettings.xml (3 matching lines)
+   28: 			<visible>!Window.IsVisible(TVChannels) + !Window.IsVisible(RadioChannels) + !SlideShow.IsActive</visible>
+  453: 							<onclick>Skin.ToggleSetting(Enable.HideRatings)</onclick>
+  454: 							<selected>Skin.HasSetting(Enable.HideRatings)</selected>
+
+### skin.terror.lite/16x9/Variables.xml (217 matching lines)
+Showing first 120 of 217
+  143: 		<value condition="Window.IsActive(tvchannels) | Window.IsActive(tvguide) | Window.IsActive(tvrecordings) | Window.IsActive(tvsearch) | Window.IsActive(tvtimers)">SetProperty(Nox.Temp,LiveTV.Fallback,Home)</value>
+  155: 		<value condition="Window.IsActive(tvchannels) | Window.IsActive(tvguide) | Window.IsActive(tvrecordings) | Window.IsActive(tvsearch) | Window.IsActive(tvtimers)">$LOCALIZE[31502]</value>
+  217: 		<value condition="Container.Content(tvshows) | Container.Content(seasons) | Container.Content(episodes) | Window.IsActive(tvchannels) | Window.IsActive(TVGuide) | Window.IsActive(TVRecordings) | Window.IsActive(TVTimers) | Window.IsActive(TVSearch) | Window.IsActive(script-NextAired-TVGuide.xml) | Window.IsActive(script-NextAired-TVGuide2.xml) | [Container.Content(genres) + S
+  229: 		<value condition="Container.Content(tvshows) | Container.Content(seasons) | Container.Content(episodes) | Container.Content(movies) | Container.Content(genres) | Window.IsActive(music) | Window.IsActive(games) | Window.IsActive(programs) | Window.IsActive(tvchannels) | Window.IsActive(TVRecordings) | Window.IsActive(TVTimers) | Window.IsActive(TVSearch)" />
+  239: 		<value condition="Window.IsActive(RadioChannels) | Window.IsActive(RadioGuide) | Window.IsActive(RadioRecordings) | Window.IsActive(RadioSearch)">$LOCALIZE[19183]: </value>
+  263: 		<value condition="String.IsEqual(Container(9000).ListItem.Property(InfoLine),$LOCALIZE[31058])">$INFO[Pvr.BackendChannels,[COLOR grey]$LOCALIZE[19019]:[/COLOR] ]$INFO[Pvr.BackendRecordings,[COLOR grey]  |  $LOCALIZE[19163]:[/COLOR] ]</value>
+  292: 		<value condition="Skin.HasSetting(Enable.HideRatings) + String.IsEqual(ListItem.Label2,ListItem.Rating) + !String.IsEqual(Container.SortMethod,$LOCALIZE[563])">$INFO[ListItem.Year]</value>
+  333: 	<variable name="RatingAndVotesVar">
+  401: 		<value>$INFO[ListItem.VideoCodec,,.png]</value>
+  412: 		<value>$INFO[VideoPlayer.VideoCodec,,.png]</value>
+  414: 	<variable name="AudioCodecFlagVar">
+  415: 		<value condition="String.Contains(ListItem.Filename,atmos) | String.Contains(ListItem.Filename,dolby atmos) | String.Contains(ListItem.Filename,dolby-atmos) | String.Contains(ListItem.Filename,dolby.atmos)">atmos.png</value>
+  416: 		<value condition="String.Contains(ListItem.Filename,dtsx) | String.Contains(ListItem.Filename,dts-x)">dtsx.png</value>
+  417: 		<value>$INFO[ListItem.AudioCodec,,.png]</value>
+  419: 	<variable name="PlayerAudioCodecFlagVar">
+  420: 		<value condition="String.Contains(Player.Filename,atmos) | String.Contains(Player.Filename,dolby atmos) | String.Contains(Player.Filename,dolby-atmos) | String.Contains(Player.Filename,dolby.atmos)">atmos.png</value>
+  421: 		<value condition="String.Contains(Player.Filename,dtsx) | String.Contains(Player.Filename,dts-x)">dtsx.png</value>
+  422: 		<value>$INFO[VideoPlayer.AudioCodec,,.png]</value>
+  616: 		<value condition="[Container.Content(movies) | Container.Content(episodes) | Container.Content(sets)]">[COLOR $VAR[ThemeLabelColor]]$LOCALIZE[563]:[/COLOR][CR]$INFO[ListItem.RatingAndVotes]$INFO[ListItem.Top250, / $LOCALIZE[13409] #]</value>
+  651: 		<value condition="[Container.Content(tvshows) | Container.Content(seasons)] + !Skin.HasSetting(Enable.HourMinuteDuration)">[COLOR grey]$INFO[ListItem.Year]$INFO[ListItem.RatingAndVotes, • ]$INFO[ListItem.Duration(mins),, $LOCALIZE[12391]][/COLOR]</value>
+  652: 		<value condition="[Container.Content(tvshows) | Container.Content(seasons)] + Skin.HasSetting(Enable.HourMinuteDuration)">[COLOR grey]$INFO[ListItem.Year]$INFO[ListItem.RatingAndVotes, • ]$VAR[ItemDurationVar, • ][/COLOR]</value>
+  656: 		<value condition="ListItem.IsResumable + !Skin.HasSetting(Enable.HourMinuteDuration)">[COLOR grey]$INFO[ListItem.Year,, • ]$INFO[ListItem.RatingAndVotes,, • ]$INFO[ListItem.Duration(mins),, $LOCALIZE[12391]]$INFO[ListItem.EndTimeResume, • $LOCALIZE[31393]: ][/COLOR]</value>
+  657: 		<value condition="ListItem.IsResumable + Skin.HasSetting(Enable.HourMinuteDuration)">[COLOR grey]$INFO[ListItem.Year,, • ]$INFO[ListItem.RatingAndVotes,, • ]$VAR[ItemDurationVar]$INFO[ListItem.EndTimeResume, • $LOCALIZE[31393]: ][/COLOR]</value>
+  658: 		<value condition="!Skin.HasSetting(Enable.HourMinuteDuration)">[COLOR grey]$INFO[ListItem.Year,, • ]$INFO[ListItem.RatingAndVotes,, • ]$INFO[ListItem.Duration(mins),, $LOCALIZE[12391]]$INFO[ListItem.Endtime, • $LOCALIZE[31393]: ][/COLOR]</value>
+  659: 		<value condition="Skin.HasSetting(Enable.HourMinuteDuration)">[COLOR grey]$INFO[ListItem.Year,, • ]$INFO[ListItem.RatingAndVotes,, • ]$VAR[ItemDurationVar]$INFO[ListItem.Endtime, • $LOCALIZE[31393]: ][/COLOR]</value>
+  674: 		<value condition="!Skin.HasSetting(Enable.HourMinuteDuration) + [Container.Content(movies) + !Skin.HasSetting(rightlistalternate)]">[COLOR white]$INFO[ListItem.RatingAndVotes,, • ]$INFO[ListItem.Duration(mins),, $LOCALIZE[12391]]$INFO[ListItem.EndTimeResume, • $LOCALIZE[31393]: ,][/COLOR]</value>
+  675: 		<value condition="Skin.HasSetting(Enable.HourMinuteDuration) + [Container.Content(movies) + !Skin.HasSetting(rightlistalternate)]">[COLOR white]$INFO[ListItem.RatingAndVotes,, • ]$VAR[ItemDurationVar]$INFO[ListItem.EndTimeResume, • $LOCALIZE[31393]: ,][/COLOR]</value>
+  676: 		<value condition="!Skin.HasSetting(Enable.HourMinuteDuration) + [Container.Content(movies) + Skin.HasSetting(rightlistalternate)]">[COLOR white]$INFO[ListItem.Year,, • ]$INFO[ListItem.RatingAndVotes,, • ]$INFO[ListItem.Duration(mins),, $LOCALIZE[12391]]$INFO[ListItem.EndTimeResume, • $LOCALIZE[31393]: ,][/COLOR]</value>
+  677: 		<value condition="Skin.HasSetting(Enable.HourMinuteDuration) + [Container.Content(movies) + Skin.HasSetting(rightlistalternate)]">[COLOR white]$INFO[ListItem.Year,, • ]$INFO[ListItem.RatingAndVotes,, • ]$VAR[ItemDurationVar]$INFO[ListItem.EndTimeResume, • $LOCALIZE[31393]: ,][/COLOR]</value>
+  678: 		<value condition="[Container.Content(tvshows) + !Skin.HasSetting(rightlistalternatetv)]">$INFO[ListItem.RatingAndVotes]</value>
+  679: 		<value condition="[Container.Content(tvshows) + Skin.HasSetting(rightlistalternatetv)]">$INFO[ListItem.Year]$INFO[ListItem.RatingAndVotes, • ,]</value>
+  680: 		<value condition="Container.Content(episodes) + !Skin.HasSetting(Enable.HourMinuteDuration)">$INFO[ListItem.RatingAndVotes,, • ]$INFO[ListItem.Duration(mins),, $LOCALIZE[12391]]$INFO[ListItem.EndTimeResume, •  $LOCALIZE[31393]: ]</value>
+  681: 		<value condition="Container.Content(episodes) + Skin.HasSetting(Enable.HourMinuteDuration)">$INFO[ListItem.RatingAndVotes,, • ]$VAR[ItemDurationVar]$INFO[ListItem.EndTimeResume, •  $LOCALIZE[31393]: ]</value>
+  892: 	<variable name="RatingFlagVar">
+  893: 		<value condition="String.IsEmpty(ListItem.MPAA) | String.Contains(ListItem.MPAA,NR) | String.IsEqual(ListItem.MPAA,Rated) | String.IsEqual(ListItem.MPAA,Rated ) | String.IsEqual(ListItem.MPAA,Not Rated)">NR.png</value>
+  894: 		<value condition="String.Contains(ListItem.MPAA,US:R) | String.Contains(ListItem.MPAA,USA:R) | String.IsEqual(ListItem.MPAA,Rated R) | String.IsEqual(ListItem.MPAA,R)">R.png</value>
+  895: 		<value condition="String.Contains(ListItem.MPAA,US:NC-17) | String.Contains(ListItem.MPAA,USA:NC-17) | String.IsEqual(ListItem.MPAA,Rated NC-17) | String.IsEqual(ListItem.MPAA,NC-17)">NC-17.png</value>
+  896: 		<value condition="String.Contains(ListItem.MPAA,US:PG-13) | String.Contains(ListItem.MPAA,USA:PG-13) | String.IsEqual(ListItem.MPAA,Rated PG-13) | String.IsEqual(ListItem.MPAA,PG-13)">PG-13.png</value>
+  897: 		<value condition="String.Contains(ListItem.MPAA,US:PG) | String.Contains(ListItem.MPAA,USA:PG) | String.IsEqual(ListItem.MPAA,Rated PG) | String.IsEqual(ListItem.MPAA,PG)">PG.png</value>
+  898: 		<value condition="String.Contains(ListItem.MPAA,US:G) | String.Contains(ListItem.MPAA,USA:G) | String.IsEqual(ListItem.MPAA,Rated G) | String.IsEqual(ListItem.MPAA,G) | String.IsEqual(ListItem.MPAA,Rated Approved) | String.IsEqual(ListItem.MPAA,Approved) | String.IsEqual(ListItem.MPAA,Rated Passed) | String.IsEqual(ListItem.MPAA,Passed)">G.png</value>
+  899: 		<value condition="String.Contains(ListItem.MPAA,UK:U)">BBFC_U_Certificate_UK.png</value>
+  900: 		<value condition="String.Contains(ListItem.MPAA,UK:PG)">BBFC_PG_Certificate_UK.png</value>
+  901: 		<value condition="String.Contains(ListItem.MPAA,UK:12A)">BBFC_12A_Certificate_UK.png</value>
+  902: 		<value condition="String.Contains(ListItem.MPAA,UK:12)">BBFC_12_Certificate_UK.png</value>
+  903: 		<value condition="String.Contains(ListItem.MPAA,UK:15)">BBFC_15_Certificate_UK.png</value>
+  904: 		<value condition="String.Contains(ListItem.MPAA,UK:18)">BBFC_18_Certificate_UK.png</value>
+  905: 		<value condition="String.Contains(ListItem.MPAA,Germany:16) | String.Contains(ListItem.MPAA,ab 16) | String.IsEqual(ListItem.MPAA,16) | String.Contains(ListItem.MPAA,FSK 16) | String.Contains(ListItem.MPAA,Rated 16)">FSK-16.png</value>
+  906: 		<value condition="String.Contains(ListItem.MPAA,Germany:0) | String.Contains(ListItem.MPAA,ab 0) | String.IsEqual(ListItem.MPAA,0) | String.Contains(ListItem.MPAA,FSK 0) | String.Contains(ListItem.MPAA,Rated 0)">FSK-0.png</value>
+  907: 		<value condition="String.Contains(ListItem.MPAA,Germany:6) | String.Contains(ListItem.MPAA,ab 6) | String.IsEqual(ListItem.MPAA,6) | String.Contains(ListItem.MPAA,FSK 6) | String.Contains(ListItem.MPAA,Rated 6)">FSK-6.png</value>
+  908: 		<value condition="String.Contains(ListItem.MPAA,Germany:12) | String.Contains(ListItem.MPAA,ab 12) | String.IsEqual(ListItem.MPAA,12) | String.Contains(ListItem.MPAA,FSK 12) | String.Contains(ListItem.MPAA,Rated 12)">FSK-12.png</value>
+  909: 		<value condition="String.Contains(ListItem.MPAA,Germany:18) | String.Contains(ListItem.MPAA,ab 18) | String.IsEqual(ListItem.MPAA,18) | String.Contains(ListItem.MPAA,FSK 18) | String.Contains(ListItem.MPAA,Rated 18)">FSK-18.png</value>
+  910: 		<value condition="String.Contains(ListItem.MPAA,Germany) |String.Contains(ListItem.MPAA,FSK) | String.Contains(ListItem.MPAA,o.A) | String.Contains(ListItem.MPAA,Rated 0)">FSK-0.png</value>
+  911: 		<value condition="String.Contains(ListItem.MPAA,besorolás alatt)">HU_BA.png</value>
+  912: 		<value condition="String.Contains(ListItem.MPAA,korhatárra való tekintett nélkül megtekintetheto)">HU_KN.png</value>
+  913: 		<value condition="String.Contains(ListItem.MPAA,12 éven aluliak számára a megtekintése nagykorú felügyelete mellett ajánlott)">HU_12.png</value>
+  914: 		<value condition="String.Contains(ListItem.MPAA,16 éven aluliak számára nem ajánlott)">HU_16.png</value>
+  915: 		<value condition="String.Contains(ListItem.MPAA,18 éven aluliak számára nem ajánlott)">HU_18.png</value>
+  916: 		<value condition="String.Contains(ListItem.MPAA,France:U) | String.Contains(ListItem.MPAA,Tout public) | String.Contains(ListItem.MPAA,partir de 3 ans) | String.Contains(ListItem.MPAA,partir de 6 ans)">csaU.png</value>
+  917: 		<value condition="String.Contains(ListItem.MPAA,France:-10) | String.Contains(ListItem.MPAA,Interdit aux moins de 10 ans) | String.Contains(ListItem.MPAA,des propos ou des images peuvent heurter)">csa10.png</value>
+  918: 		<value condition="String.Contains(ListItem.MPAA,France:-12) | String.Contains(ListItem.MPAA,Interdit aux moins de 12 ans)">csa12.png</value>
+  919: 		<value condition="String.Contains(ListItem.MPAA,France:-16) | String.Contains(ListItem.MPAA,Interdit aux moins de 16 ans)">csa16.png</value>
+  920: 		<value condition="String.Contains(ListItem.MPAA,France:-18) | String.Contains(ListItem.MPAA,Interdit aux moins de 18 ans)">csa18.png</value>
+  921: 		<value condition="String.Contains(ListItem.MPAA,전체)">KR_Certificate_All.png</value>
+  922: 		<value condition="String.Contains(ListItem.MPAA,12세)">KR_Certificate_12.png</value>
+  923: 		<value condition="String.Contains(ListItem.MPAA,15세)">KR_Certificate_15.png</value>
+  924: 		<value condition="String.Contains(ListItem.MPAA,불가)">KR_Certificate_18.png</value>
+  925: 		<value condition="String.Contains(ListItem.MPAA,제한)">KR_Certificate_R.png</value>
+  926: 		<value condition="String.Contains(ListItem.MPAA,Brazil:Livre) | String.Contains(ListItem.MPAA,Livre)">MPAA_Brazil_Livre.png</value>
+  927: 		<value condition="String.Contains(ListItem.MPAA,Brazil:10) | String.Contains(ListItem.MPAA,10 anos)">MPAA_Brazil_10.png</value>
+  928: 		<value condition="String.Contains(ListItem.MPAA,Brazil:12) | String.Contains(ListItem.MPAA,12 anos)">MPAA_Brazil_12.png</value>
+  929: 		<value condition="String.Contains(ListItem.MPAA,Brazil:14) | String.Contains(ListItem.MPAA,14 anos)">MPAA_Brazil_14.png</value>
+  930: 		<value condition="String.Contains(ListItem.MPAA,Brazil:16) | String.Contains(ListItem.MPAA,16 anos)">MPAA_Brazil_16.png</value>
+  931: 		<value condition="String.Contains(ListItem.MPAA,Brazil:18) | String.Contains(ListItem.MPAA,18 anos)">MPAA_Brazil_18.png</value>
+  932: 		<value condition="String.Contains(ListItem.MPAA,Australia:R) | String.Contains(ListItem.MPAA,Australia:R18)">australia_R.png</value>
+  933: 		<value condition="String.Contains(ListItem.MPAA,Australia:MA) | String.Contains(ListItem.MPAA,Australia:MA15)">australia_MA.png</value>
+  934: 		<value condition="String.Contains(ListItem.MPAA,Australia:M)">australia_M.png</value>
+  935: 		<value condition="String.Contains(ListItem.MPAA,Australia:PG)">australia_PG.png</value>
+  936: 		<value condition="String.Contains(ListItem.MPAA,Australia:G)">australia_G.png</value>
+  937: 		<value condition="String.Contains(ListItem.MPAA,NL-AL)">NL-AL.png</value>
+  938: 		<value condition="String.Contains(ListItem.MPAA,NL-6)">NL-6.png</value>
+  939: 		<value condition="String.Contains(ListItem.MPAA,NL-9)">NL-9.png</value>
+  940: 		<value condition="String.Contains(ListItem.MPAA,NL-12)">NL-12.png</value>
+  941: 		<value condition="String.Contains(ListItem.MPAA,NL-16)">NL-16.png</value>
+  942: 		<value condition="String.Contains(ListItem.MPAA,NL-18)">NL-18.png</value>
+  943: 		<value>$INFO[ListItem.MPAA,,.png]</value>
+  945: 	<variable name="VideoRatingFlagVar">
+  946: 		<value condition="String.IsEmpty(VideoPlayer.MPAA) | String.Contains(VideoPlayer.MPAA,NR) | String.IsEqual(VideoPlayer.MPAA,Rated) | String.IsEqual(VideoPlayer.MPAA,Rated ) | String.IsEqual(VideoPlayer.MPAA,Not Rated)">NR.png</value>
+  947: 		<value condition="String.Contains(VideoPlayer.MPAA,US:R) | String.Contains(VideoPlayer.MPAA,USA:R) | String.IsEqual(VideoPlayer.MPAA,Rated R) | String.IsEqual(VideoPlayer.MPAA,R)">R.png</value>
+  948: 		<value condition="String.Contains(VideoPlayer.MPAA,US:NC-17) | String.Contains(VideoPlayer.MPAA,USA:NC-17) | String.IsEqual(VideoPlayer.MPAA,Rated NC-17) | String.IsEqual(VideoPlayer.MPAA,NC-17)">NC-17.png</value>
+  949: 		<value condition="String.Contains(VideoPlayer.MPAA,US:PG-13) | String.Contains(VideoPlayer.MPAA,USA:PG-13) | String.IsEqual(VideoPlayer.MPAA,Rated PG-13) | String.IsEqual(VideoPlayer.MPAA,PG-13)">PG-13.png</value>
+  950: 		<value condition="String.Contains(VideoPlayer.MPAA,US:PG) | String.Contains(VideoPlayer.MPAA,USA:PG) | String.IsEqual(VideoPlayer.MPAA,Rated PG) | String.IsEqual(VideoPlayer.MPAA,PG)">PG.png</value>
+  951: 		<value condition="String.Contains(VideoPlayer.MPAA,US:G) | String.Contains(VideoPlayer.MPAA,USA:G) | String.IsEqual(VideoPlayer.MPAA,Rated G) | String.IsEqual(VideoPlayer.MPAA,G) | String.IsEqual(VideoPlayer.MPAA,Rated Approved) | String.IsEqual(VideoPlayer.MPAA,Approved) | String.IsEqual(VideoPlayer.MPAA,Rated Passed) | String.IsEqual(VideoPlayer.MPAA,Passed)">G.png</value>
+  952: 		<value condition="String.Contains(VideoPlayer.MPAA,UK:U)">BBFC_U_Certificate_UK.png</value>
+  953: 		<value condition="String.Contains(VideoPlayer.MPAA,UK:PG)">BBFC_PG_Certificate_UK.png</value>
+  954: 		<value condition="String.Contains(VideoPlayer.MPAA,UK:12A)">BBFC_12A_Certificate_UK.png</value>
+  955: 		<value condition="String.Contains(VideoPlayer.MPAA,UK:12)">BBFC_12_Certificate_UK.png</value>
+  956: 		<value condition="String.Contains(VideoPlayer.MPAA,UK:15)">BBFC_15_Certificate_UK.png</value>
+  957: 		<value condition="String.Contains(VideoPlayer.MPAA,UK:18)">BBFC_18_Certificate_UK.png</value>
+  958: 		<value condition="String.Contains(VideoPlayer.MPAA,Germany:16) | String.Contains(VideoPlayer.MPAA,ab 16) | String.IsEqual(VideoPlayer.MPAA,16) | String.Contains(VideoPlayer.MPAA,FSK 16) | String.Contains(VideoPlayer.MPAA,Rated 16)">FSK-16.png</value>
+  959: 		<value condition="String.Contains(VideoPlayer.MPAA,Germany:0) | String.Contains(VideoPlayer.MPAA,ab 0) | String.IsEqual(VideoPlayer.MPAA,0) | String.Contains(VideoPlayer.MPAA,FSK 0) | String.Contains(VideoPlayer.MPAA,Rated 0)">FSK-0.png</value>
+  960: 		<value condition="String.Contains(VideoPlayer.MPAA,Germany:6) | String.Contains(VideoPlayer.MPAA,ab 6) | String.IsEqual(VideoPlayer.MPAA,6) | String.Contains(VideoPlayer.MPAA,FSK 6) | String.Contains(VideoPlayer.MPAA,Rated 6)">FSK-6.png</value>
+  961: 		<value condition="String.Contains(VideoPlayer.MPAA,Germany:12) | String.Contains(VideoPlayer.MPAA,ab 12) | String.IsEqual(VideoPlayer.MPAA,12) | String.Contains(VideoPlayer.MPAA,FSK 12) | String.Contains(VideoPlayer.MPAA,Rated 12)">FSK-12.png</value>
+  962: 		<value condition="String.Contains(VideoPlayer.MPAA,Germany:18) | String.Contains(VideoPlayer.MPAA,ab 18) | String.IsEqual(VideoPlayer.MPAA,18) | String.Contains(VideoPlayer.MPAA,FSK 18) | String.Contains(VideoPlayer.MPAA,Rated 18)">FSK-18.png</value>
+  963: 		<value condition="String.Contains(VideoPlayer.MPAA,Germany) |String.Contains(VideoPlayer.MPAA,FSK) | String.Contains(VideoPlayer.MPAA,o.A) | String.Contains(VideoPlayer.MPAA,Rated 0)">FSK-0</value>
+  964: 		<value condition="String.Contains(VideoPlayer.MPAA,besorolás alatt)">HU_BA.png</value>
+  965: 		<value condition="String.Contains(VideoPlayer.MPAA,korhatárra való tekintett nélkül megtekintetheto)">HU_KN.png</value>
+  966: 		<value condition="String.Contains(VideoPlayer.MPAA,12 éven aluliak számára a megtekintése nagykorú felügyelete mellett ajánlott)">HU_12.png</value>
+  967: 		<value condition="String.Contains(VideoPlayer.MPAA,16 éven aluliak számára nem ajánlott)">HU_16.png</value>
+  968: 		<value condition="String.Contains(VideoPlayer.MPAA,18 éven aluliak számára nem ajánlott)">HU_18.png</value>
+  969: 		<value condition="String.Contains(VideoPlayer.MPAA,France:U) | String.Contains(VideoPlayer.MPAA,Tout public) | String.Contains(VideoPlayer.MPAA,partir de 3 ans) | String.Contains(VideoPlayer.MPAA,partir de 6 ans)">csaU.png</value>
+  970: 		<value condition="String.Contains(VideoPlayer.MPAA,France:-10) | String.Contains(VideoPlayer.MPAA,Interdit aux moins de 10 ans) | String.Contains(VideoPlayer.MPAA,des propos ou des images peuvent heurter)">csa10.png</value>
+  971: 		<value condition="String.Contains(VideoPlayer.MPAA,France:-12) | String.Contains(VideoPlayer.MPAA,Interdit aux moins de 12 ans)">csa12.png</value>
+  972: 		<value condition="String.Contains(VideoPlayer.MPAA,France:-16) | String.Contains(VideoPlayer.MPAA,Interdit aux moins de 16 ans)">csa16.png</value>
+  973: 		<value condition="String.Contains(VideoPlayer.MPAA,France:-18) | String.Contains(VideoPlayer.MPAA,Interdit aux moins de 18 ans)">csa18.png</value>
+  974: 		<value condition="String.Contains(VideoPlayer.MPAA,전체)">KR_Certificate_All.png</value>
+  975: 		<value condition="String.Contains(VideoPlayer.MPAA,12세)">KR_Certificate_12.png</value>
+  976: 		<value condition="String.Contains(VideoPlayer.MPAA,15세)">KR_Certificate_15.png</value>
+  977: 		<value condition="String.Contains(VideoPlayer.MPAA,불가)">KR_Certificate_18.png</value>
+  978: 		<value condition="String.Contains(VideoPlayer.MPAA,제한)">KR_Certificate_R.png</value>
+  979: 		<value condition="String.Contains(VideoPlayer.MPAA,Brazil:Livre) | String.Contains(VideoPlayer.MPAA,Livre)">MPAA_Brazil_Livre.png</value>
+
+### skin.terror.lite/16x9/Variables_Widgets.xml (7 matching lines)
+  144: 		<value condition="!String.IsEmpty(Container.ListItem.VideoResolution)">$INFO[Container.ListItem.VideoResolution]p.png</value>
+  145: 		<value condition="!String.IsEmpty(Container.ListItem.Property(VideoResolution))">$INFO[Container.ListItem.Property(VideoResolution)]p.png</value>
+  146: 		<value condition="String.IsEmpty(Container.ListItem.Property(VideoResolution)) + String.IsEmpty(Container.ListItem.TVShowTitle) + [!String.IsEmpty(Container.ListItem.Trailer) | String.Contains(Container.ListItem.FolderPath,extendedinfo)]">trailers.png</value>
+  208: 		<value condition="!String.IsEmpty(Container.ListItem.Premiered)">$INFO[Container.ListItem.Premiered]$INFO[Container.ListItem.RatingAndVotes,  •  $LOCALIZE[563]: ]$INFO[Container.ListItem.Duration,  •  $LOCALIZE[2050]: ]</value>
+  210: 		<value condition="!String.IsEmpty(Container.ListItem.RatingAndVotes) + !String.IsEmpty(Container.ListItem.Property(Runtime))">$INFO[Container.ListItem.RatingAndVotes,$LOCALIZE[563]: ]$INFO[Container.ListItem.Property(Runtime),  •  $LOCALIZE[2050]: ]</value>
+  211: 		<value condition="!String.IsEmpty(Container.ListItem.RatingAndVotes) + !String.IsEmpty(Container.ListItem.Duration)">$INFO[Container.ListItem.RatingAndVotes,$LOCALIZE[563]: ]$INFO[Container.ListItem.Duration,  •  $LOCALIZE[2050]: ]</value>
+  224: 		<value condition="!String.IsEmpty(Container.ListItem.Property(isSystemInfo))">$LOCALIZE[482]: $INFO[System.BuildVersion][CR][UPPERCASE]$LOCALIZE[13287][/UPPERCASE] $INFO[System.ScreenResolution][CR][UPPERCASE]$LOCALIZE[150]:[/UPPERCASE] $INFO[Network.IPAddress]</value>
+
+### skin.terror.lite/16x9/VideoOSD.xml (1 matching lines)
+   12: 			<visible>![Window.IsVisible(SliderDialog) | Window.IsVisible(pvrchannelguide) | Window.IsVisible(PVROSDTeletext) | Window.IsVisible(PVROSDChannels) | Window.IsVisible(OSDVideoSettings) | Window.IsVisible(OSDAudioSettings) | Window.IsVisible(OSDSubtitleSettings) | Window.IsVisible(VideoBookmarks) | Window.IsVisible(SubtitleSearch) | Window.IsVisible(1115)]</visible>
+
+### skin.terror.lite/16x9/VideoOSDBookmarks.xml (4 matching lines)
+   37: 						<aspectratio align="center">scale</aspectratio>
+   69: 						<aspectratio>scale</aspectratio>
+   79: 						<aspectratio align="center">scale</aspectratio>
+  109: 						<aspectratio>scale</aspectratio>
+
+### skin.terror.lite/16x9/View_499_SmallIcons.xml (4 matching lines)
+   36: 						<aspectratio>stretch</aspectratio>
+   48: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+   62: 						<aspectratio>stretch</aspectratio>
+   73: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+
+### skin.terror.lite/16x9/View_500_Icons.xml (22 matching lines)
+   46: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+   74: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+   89: 						<aspectratio>scale</aspectratio>
+  104: 							<aspectratio>scale</aspectratio>
+  115: 						<aspectratio>scale</aspectratio>
+  125: 						<aspectratio>scale</aspectratio>
+  139: 						<aspectratio>scale</aspectratio>
+  148: 						<aspectratio>stretch</aspectratio>
+  159: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+  189: 							<aspectratio>scale</aspectratio>
+  198: 							<aspectratio>stretch</aspectratio>
+  209: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  277: 						<aspectratio>scale</aspectratio>
+  312: 							<aspectratio>scale</aspectratio>
+  323: 						<aspectratio>scale</aspectratio>
+  333: 						<aspectratio>scale</aspectratio>
+  383: 						<aspectratio>scale</aspectratio>
+  393: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+  402: 						<aspectratio>scale</aspectratio>
+  416: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+  474: 						<aspectratio>scale</aspectratio>
+  509: 						<aspectratio>scale</aspectratio>
+
+### skin.terror.lite/16x9/View_501_LowList.xml (56 matching lines)
+   21: 				<!-- IMDb Logo -->
+   28: 					<visible>Skin.HasSetting(lowlistimdblogo)</visible>
+   32: 						<aspectratio>keep</aspectratio>
+   33: 						<texture>logos/imdb.png</texture>
+   52: 					<aspectratio aligny="bottom">keep</aspectratio>
+   71: 					<aspectratio align="right">keep</aspectratio>
+   82: 					<aspectratio aligny="bottom">stretch</aspectratio>
+   95: 					<aspectratio scalediffuse="false">stretch</aspectratio>
+  541: 						<include>MediaFlagValues</include>
+  542: 						<texture>$VAR[MediaFlagsPathVar]/resolution/$INFO[ListItem.VideoResolution,,.png]</texture>
+  543: 						<visible>!String.IsEmpty(ListItem.VideoResolution)</visible>
+  548: 						<include>MediaFlagValues</include>
+  549: 						<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[SourceFlagVar]</texture>
+  550: 						<visible>!String.IsEmpty(ListItem.VideoCodec)</visible>
+  555: 						<include>MediaFlagValues</include>
+  556: 						<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[AudioCodecFlagVar]</texture>
+  557: 						<visible>!String.IsEmpty(ListItem.AudioCodec)</visible>
+  562: 						<include>MediaFlagValues</include>
+  563: 						<texture>$VAR[MediaFlagsPathVar]/audiochannels/$INFO[ListItem.AudioChannels,,.png]</texture>
+  564: 						<visible>!String.IsEmpty(ListItem.AudioChannels) + !Container.Content(seasons)</visible>
+  649: 						<include>MediaFlagValues</include>
+  650: 						<texture fallback="flags/default/mpaa/NR.png">$VAR[MediaFlagsPathVar]/mpaa/$VAR[RatingFlagVar]</texture>
+  688: 						<aspectratio>keep</aspectratio>
+  718: 						<label>$INFO[ListItem.Rating]</label>
+  719: 						<visible>[!ListItem.IsCollection] + [!Skin.HasSetting(Enable.HideRatings) | String.IsEqual(Container.SortMethod,$LOCALIZE[563])]</visible>
+  726: 						<aspectratio>keep</aspectratio>
+  752: 						<aspectratio>keep</aspectratio>
+  780: 						<label>$INFO[ListItem.Rating]</label>
+  781: 						<visible>[!ListItem.IsCollection] + [!Skin.HasSetting(Enable.HideRatings) | String.IsEqual(Container.SortMethod,$LOCALIZE[563])]</visible>
+  789: 						<aspectratio>keep</aspectratio>
+  818: 						<label>$INFO[ListItem.Rating]</label>
+  819: 						<visible>!Skin.HasSetting(Enable.HideRatings) | String.IsEqual(Container.SortMethod,$LOCALIZE[563])</visible>
+  826: 						<aspectratio>keep</aspectratio>
+  883: 						<label>$INFO[ListItem.Rating]</label>
+  884: 						<visible>!Skin.HasSetting(Enable.HideRatings) | String.IsEqual(Container.SortMethod,$LOCALIZE[563])</visible>
+  892: 						<aspectratio>keep</aspectratio>
+  940: 						<aspectratio>keep</aspectratio>
+  996: 						<aspectratio>keep</aspectratio>
+ 1037: 						<label>$INFO[ListItem.Rating]</label>
+ 1038: 						<visible>!Skin.HasSetting(Enable.HideRatings) | String.IsEqual(Container.SortMethod,$LOCALIZE[563])</visible>
+ 1045: 						<aspectratio>keep</aspectratio>
+ 1071: 						<label>$INFO[ListItem.Rating]</label>
+ 1072: 						<visible>!Skin.HasSetting(Enable.HideRatings) | String.IsEqual(Container.SortMethod,$LOCALIZE[563])</visible>
+ 1080: 						<aspectratio>keep</aspectratio>
+ 1127: 				<aspectratio aligny="bottom">keep</aspectratio>
+ 1145: 					<aspectratio>keep</aspectratio>
+ 1152: 					<aspectratio aligny="bottom">keep</aspectratio>
+ 1294: 						<aspectratio>keep</aspectratio>
+ 1295: 						<texture colordiffuse="$VAR[ThemeLabelColor]" fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+ 1340: 						<aspectratio>keep</aspectratio>
+ 1341: 						<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+ 1379: 						<aspectratio>keep</aspectratio>
+ 1380: 						<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+ 1425: 						<aspectratio>keep</aspectratio>
+ 1427: 						<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+ 1511: 					<aspectratio aligny="bottom">stretch</aspectratio>
+
+### skin.terror.lite/16x9/View_502_Episode.xml (4 matching lines)
+   13: 				<aspectratio aligny="bottom">keep</aspectratio>
+   67: 						<aspectratio>keep</aspectratio>
+   80: 							<aspectratio>scale</aspectratio>
+  161: 						<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/View_503_Wall.xml (12 matching lines)
+   38: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+   81: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  114: 							<aspectratio scalediffuse="false">scale</aspectratio>
+  125: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  143: 							<aspectratio scalediffuse="false">scale</aspectratio>
+  164: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  233: 					<aspectratio>keep</aspectratio>
+  235: 					<texture fallback="flags/rating/0.0.png">$INFO[ListItem.Rating,flags/rating/,.png]</texture>
+  236: 					<visible>!ListItem.IsParentFolder + String.IsEmpty(ListItem.UserRating)</visible>
+  243: 					<aspectratio>keep</aspectratio>
+  245: 					<texture>$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+  246: 					<visible>!ListItem.IsParentFolder + !String.IsEmpty(ListItem.UserRating)</visible>
+
+### skin.terror.lite/16x9/View_504_Gallery.xml (8 matching lines)
+   33: 				<aspectratio>keep</aspectratio>
+  122: 							<aspectratio align="center" aligny="center">scale</aspectratio>
+  130: 							<aspectratio align="center" aligny="center">keep</aspectratio>
+  157: 							<aspectratio>keep</aspectratio>
+  165: 							<aspectratio align="center" aligny="center">scale</aspectratio>
+  176: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  183: 							<aspectratio align="center">keep</aspectratio>
+  191: 							<aspectratio align="center" aligny="center">keep</aspectratio>
+
+### skin.terror.lite/16x9/View_505_Panel.xml (6 matching lines)
+   39: 						<aspectratio>keep</aspectratio>
+   76: 						<aspectratio>keep</aspectratio>
+  120: 				<aspectratio align="center" aligny="center">scale</aspectratio>
+  128: 				<aspectratio align="center" aligny="bottom">keep</aspectratio>
+  135: 				<aspectratio align="center" aligny="center">scale</aspectratio>
+  142: 				<aspectratio align="center" aligny="top">keep</aspectratio>
+
+### skin.terror.lite/16x9/View_506_RightList.xml (13 matching lines)
+   13: 				<aspectratio aligny="bottom">keep</aspectratio>
+   30: 						<aspectratio align="right">keep</aspectratio>
+   36: 						<aspectratio align="right">keep</aspectratio>
+   45: 					<aspectratio aligny="bottom">stretch</aspectratio>
+   75: 						<texture colordiffuse="grey">logos/imdb.png</texture>
+  296: 				<aspectratio aligny="bottom">keep</aspectratio>
+  309: 						<aspectratio align="right">keep</aspectratio>
+  532: 					<animation effect="slide" end="-155" time="0" condition="!String.IsEmpty(ListItem.UserRating) + Window.IsActive(music)">Conditional</animation>
+  539: 					<aspectratio>keep</aspectratio>
+  541: 					<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+  543: 					<visible>!ListItem.IsParentFolder + !String.IsEmpty(ListItem.UserRating) + Window.IsActive(music)</visible>
+  565: 				<aspectratio>keep</aspectratio>
+  629: 				<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/View_507_BigList.xml (19 matching lines)
+   80: 							<label>$LOCALIZE[20360]: [COLOR white]$INFO[ListItem.Property(TotalEpisodes)] $INFO[ListItem.Property(UnWatchedEpisodes), ($LOCALIZE[16101]: ,)] • $INFO[ListItem.RatingAndVotes][/COLOR]</label>
+   90: 							<label>$INFO[ListItem.Premiered,(,) • ]$INFO[ListItem.RatingAndVotes,, • ]$INFO[ListItem.Duration(mins),, $LOCALIZE[12391]]</label>
+  144: 							<aspectratio>keep</aspectratio>
+  145: 							<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+  152: 							<aspectratio>keep</aspectratio>
+  162: 							<aspectratio>keep</aspectratio>
+  164: 							<visible>!String.IsEmpty(ListItem.VideoResolution) + Skin.HasSetting(noindicatorbiglist)</visible>
+  230: 								<label>$LOCALIZE[20360]: [COLOR white]$INFO[ListItem.Property(TotalEpisodes)] $INFO[ListItem.Property(UnWatchedEpisodes), ($LOCALIZE[16101]: ,)] • $INFO[ListItem.RatingAndVotes][/COLOR]</label>
+  240: 								<label>$INFO[ListItem.Premiered,(,) • ]$INFO[ListItem.RatingAndVotes,, • ]$INFO[ListItem.Duration(mins),, $LOCALIZE[12391]]</label>
+  295: 								<aspectratio>keep</aspectratio>
+  296: 								<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+  303: 								<aspectratio>keep</aspectratio>
+  312: 								<aspectratio>keep</aspectratio>
+  314: 								<visible>!String.IsEmpty(ListItem.VideoResolution) + Skin.HasSetting(noindicatorbiglist)</visible>
+  344: 				<aspectratio>scale</aspectratio>
+  352: 				<aspectratio>scale</aspectratio>
+  359: 				<aspectratio>scale</aspectratio>
+  367: 				<aspectratio align="right" aligny="top">keep</aspectratio>
+  374: 				<aspectratio align="center" aligny="bottom">keep</aspectratio>
+
+### skin.terror.lite/16x9/View_508_SongList.xml (5 matching lines)
+   52: 							<aspectratio>scale</aspectratio>
+  102: 							<aspectratio>keep</aspectratio>
+  103: 							<texture colordiffuse="$VAR[ThemeLabelColor]" fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+  109: 							<include>MediaFlagValues</include>
+  110: 							<texture colordiffuse="grey">$VAR[MediaFlagsPathVar]/audiocodec/$INFO[ListItem.FileExtension,,.png]</texture>
+
+### skin.terror.lite/16x9/View_509_MyFlix.xml (17 matching lines)
+   33: 						<aspectratio aligny="bottom">keep</aspectratio>
+   69: 							<texture colordiffuse="grey">logos/imdb.png</texture>
+  102: 								<label>$INFO[ListItem.Year,, • ]$INFO[ListItem.RatingAndVotes,, • ]$INFO[ListItem.Duration(mins),,m]$INFO[ListItem.Endtime, • $LOCALIZE[19127]: ,]</label>
+  110: 								<label>$INFO[ListItem.Year,, • ]$INFO[ListItem.RatingAndVotes,, • ]$VAR[ItemDurationVar]$INFO[ListItem.Endtime, • $LOCALIZE[31393]: ,]</label>
+  305: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+  326: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+  338: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+  359: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+  384: 					<aspectratio>keep</aspectratio>
+  393: 					<aspectratio>keep</aspectratio>
+  402: 					<aspectratio>keep</aspectratio>
+  411: 					<aspectratio>keep</aspectratio>
+  420: 					<aspectratio>keep</aspectratio>
+  429: 					<aspectratio>keep</aspectratio>
+  438: 					<aspectratio>keep</aspectratio>
+  447: 					<aspectratio>keep</aspectratio>
+  496: 			<aspectratio align="center" aligny="top">keep</aspectratio>
+
+### skin.terror.lite/16x9/View_50_List.xml (127 matching lines)
+Showing first 120 of 127
+   41: 							<aspectratio>keep</aspectratio>
+   68: 							<aspectratio>keep</aspectratio>
+   71: 							<visible>String.IsEqual(ListItem.Label2,ListItem.Rating) | String.IsEqual(ListItem.Label2,ListItem.Year)</visible>
+   80: 							<label>$INFO[ListItem.Rating]</label>
+   81: 							<visible>[String.IsEqual(ListItem.Label2,ListItem.Rating) + !Skin.HasSetting(Enable.HideRatings)] | String.IsEqual(Container.SortMethod,$LOCALIZE[563])</visible>
+   92: 							<visible>[!String.IsEqual(ListItem.Label2,ListItem.Rating) | Skin.HasSetting(Enable.HideRatings)] + !String.IsEqual(Container.SortMethod,$LOCALIZE[563])</visible>
+  100: 							<aspectratio>keep</aspectratio>
+  117: 							<aspectratio>keep</aspectratio>
+  141: 							<aspectratio>keep</aspectratio>
+  143: 							<visible>String.IsEqual(ListItem.Label2,ListItem.Rating) | String.IsEqual(ListItem.Label2,ListItem.Year)</visible>
+  151: 							<label>$INFO[ListItem.Rating]</label>
+  152: 							<visible>[String.IsEqual(ListItem.Label2,ListItem.Rating) + !Skin.HasSetting(Enable.HideRatings)] | String.IsEqual(Container.SortMethod,$LOCALIZE[563])</visible>
+  162: 							<visible>[!String.IsEqual(ListItem.Label2,ListItem.Rating) | Skin.HasSetting(Enable.HideRatings)] + !String.IsEqual(Container.SortMethod,$LOCALIZE[563])</visible>
+  170: 							<aspectratio>keep</aspectratio>
+  180: 							<aspectratio>keep</aspectratio>
+  190: 							<aspectratio>keep</aspectratio>
+  217: 							<aspectratio>keep</aspectratio>
+  220: 							<visible>String.IsEqual(ListItem.Label2,ListItem.Rating)</visible>
+  230: 							<visible>String.IsEqual(ListItem.Label2,ListItem.Rating)</visible>
+  240: 							<visible>!String.IsEqual(ListItem.Label2,ListItem.Rating)</visible>
+  247: 							<aspectratio>keep</aspectratio>
+  264: 							<aspectratio>keep</aspectratio>
+  273: 							<aspectratio>keep</aspectratio>
+  298: 							<aspectratio>keep</aspectratio>
+  300: 							<visible>String.IsEqual(ListItem.Label2,ListItem.Rating)</visible>
+  309: 							<visible>String.IsEqual(ListItem.Label2,ListItem.Rating)</visible>
+  318: 							<visible>!String.IsEqual(ListItem.Label2,ListItem.Rating)</visible>
+  325: 							<aspectratio>keep</aspectratio>
+  335: 							<aspectratio>keep</aspectratio>
+  370: 							<aspectratio>keep</aspectratio>
+  408: 							<aspectratio>keep</aspectratio>
+  439: 							<aspectratio>keep</aspectratio>
+  469: 							<aspectratio>keep</aspectratio>
+  478: 							<aspectratio>keep</aspectratio>
+  504: 							<aspectratio>keep</aspectratio>
+  542: 							<aspectratio>keep</aspectratio>
+  551: 							<aspectratio>keep</aspectratio>
+  574: 							<aspectratio>keep</aspectratio>
+  604: 							<aspectratio>keep</aspectratio>
+  614: 							<aspectratio>keep</aspectratio>
+  659: 							<aspectratio>keep</aspectratio>
+  668: 							<aspectratio>keep</aspectratio>
+  729: 							<aspectratio>keep</aspectratio>
+  769: 							<aspectratio>keep</aspectratio>
+  779: 							<aspectratio>keep</aspectratio>
+  789: 							<aspectratio>keep</aspectratio>
+  815: 							<aspectratio>keep</aspectratio>
+  832: 							<aspectratio>keep</aspectratio>
+  841: 							<aspectratio>keep</aspectratio>
+  865: 							<aspectratio>keep</aspectratio>
+  898: 					<aspectratio aligny="bottom">keep</aspectratio>
+  908: 					<aspectratio aligny="bottom">stretch</aspectratio>
+  921: 					<aspectratio aligny="bottom">stretch</aspectratio>
+  931: 					<aspectratio aligny="top">keep</aspectratio>
+  946: 					<aspectratio aligny="bottom">keep</aspectratio>
+  956: 					<aspectratio aligny="top">keep</aspectratio>
+  978: 					<aspectratio>scale</aspectratio>
+ 1019: 						<include>MediaFlagValues</include>
+ 1020: 						<texture>$VAR[MediaFlagsPathVar]/resolution/$INFO[ListItem.VideoResolution,,.png]</texture>
+ 1021: 						<visible>!String.IsEmpty(ListItem.VideoResolution)</visible>
+ 1026: 						<include>MediaFlagValues</include>
+ 1027: 						<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[AudioCodecFlagVar]</texture>
+ 1028: 						<visible>!String.IsEmpty(ListItem.AudioCodec)</visible>
+ 1033: 						<include>MediaFlagValues</include>
+ 1034: 						<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[SourceFlagVar]</texture>
+ 1035: 						<visible>!String.IsEmpty(ListItem.VideoCodec)</visible>
+ 1144: 						<aspectratio>keep</aspectratio>
+ 1151: 						<aspectratio>keep</aspectratio>
+ 1192: 							<aspectratio>keep</aspectratio>
+ 1202: 							<aspectratio>keep</aspectratio>
+ 1250: 							<aspectratio>keep</aspectratio>
+ 1252: 							<texture>flags/rating/0.png</texture>
+ 1253: 							<visible>!ListItem.IsParentFolder + ![ListItem.IsPlaying | ListItem.IsSelected] + String.IsEmpty(ListItem.UserRating)</visible>
+ 1260: 							<aspectratio>keep</aspectratio>
+ 1262: 							<texture fallback="flags/rating/0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+ 1263: 							<visible>!ListItem.IsParentFolder + ![ListItem.IsPlaying | ListItem.IsSelected] + !String.IsEmpty(ListItem.UserRating)</visible>
+ 1270: 							<aspectratio>keep</aspectratio>
+ 1272: 							<texture fallback="flags/rating/0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+ 1289: 							<aspectratio>keep</aspectratio>
+ 1298: 							<aspectratio>keep</aspectratio>
+ 1342: 							<aspectratio>keep</aspectratio>
+ 1343: 							<colordiffuse>$VAR[StarRatingDiffuseVar]</colordiffuse>
+ 1344: 							<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+ 1354: 							<aspectratio>keep</aspectratio>
+ 1364: 							<aspectratio>keep</aspectratio>
+ 1409: 							<aspectratio>keep</aspectratio>
+ 1418: 							<aspectratio>keep</aspectratio>
+ 1453: 							<aspectratio>keep</aspectratio>
+ 1463: 							<aspectratio>keep</aspectratio>
+ 1498: 							<aspectratio>keep</aspectratio>
+ 1507: 							<aspectratio>keep</aspectratio>
+ 1551: 					<aspectratio aligny="bottom">keep</aspectratio>
+ 1561: 					<aspectratio aligny="top">keep</aspectratio>
+ 1575: 					<aspectratio aligny="bottom">keep</aspectratio>
+ 1585: 					<aspectratio aligny="top">keep</aspectratio>
+ 1627: 							<aspectratio>keep</aspectratio>
+ 1637: 							<aspectratio>keep</aspectratio>
+ 1682: 							<aspectratio>keep</aspectratio>
+ 1691: 							<aspectratio>keep</aspectratio>
+ 1744: 					<aspectratio aligny="bottom">keep</aspectratio>
+ 1754: 					<aspectratio aligny="top">keep</aspectratio>
+ 1796: 							<aspectratio>keep</aspectratio>
+ 1806: 							<aspectratio>keep</aspectratio>
+ 1851: 							<aspectratio>keep</aspectratio>
+ 1860: 							<aspectratio>keep</aspectratio>
+ 1895: 							<aspectratio>keep</aspectratio>
+ 1905: 							<aspectratio>keep</aspectratio>
+ 1940: 							<aspectratio>keep</aspectratio>
+ 1949: 							<aspectratio>keep</aspectratio>
+ 1992: 					<aspectratio aligny="bottom">keep</aspectratio>
+ 2002: 					<aspectratio aligny="top">keep</aspectratio>
+ 2052: 							<aspectratio>keep</aspectratio>
+ 2055: 							<visible>String.IsEqual(ListItem.Label2,ListItem.Rating)</visible>
+ 2071: 							<aspectratio>keep</aspectratio>
+ 2117: 							<aspectratio>keep</aspectratio>
+ 2119: 							<visible>String.IsEqual(ListItem.Label2,ListItem.Rating)</visible>
+ 2134: 							<aspectratio>keep</aspectratio>
+ 2226: 					<aspectratio aligny="bottom">keep</aspectratio>
+ 2236: 					<aspectratio aligny="top">keep</aspectratio>
+ 2278: 							<aspectratio align="right">keep</aspectratio>
+
+### skin.terror.lite/16x9/View_51_InfoWall.xml (42 matching lines)
+   24: 					<aspectratio>scale</aspectratio>
+   45: 					<aspectratio>keep</aspectratio>
+  124: 							<aspectratio>scale</aspectratio>
+  136: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  155: 								<aspectratio>scale</aspectratio>
+  166: 								<aspectratio align="center" aligny="top">keep</aspectratio>
+  181: 							<aspectratio>scale</aspectratio>
+  191: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  210: 								<aspectratio>scale</aspectratio>
+  221: 								<aspectratio align="center" aligny="top">keep</aspectratio>
+  237: 								<aspectratio align="center" aligny="center">scale</aspectratio>
+  246: 									<aspectratio>scale</aspectratio>
+  255: 									<aspectratio>keep</aspectratio>
+  270: 								<aspectratio align="center" aligny="top">keep</aspectratio>
+  286: 									<aspectratio align="center" aligny="center">scale</aspectratio>
+  297: 									<aspectratio>scale</aspectratio>
+  307: 									<aspectratio>keep</aspectratio>
+  317: 								<aspectratio align="center" aligny="top">keep</aspectratio>
+  327: 								<aspectratio align="center" aligny="center">scale</aspectratio>
+  336: 									<aspectratio>scale</aspectratio>
+  345: 									<aspectratio>keep</aspectratio>
+  360: 								<aspectratio align="center" aligny="top">keep</aspectratio>
+  376: 									<aspectratio align="center" aligny="center">scale</aspectratio>
+  387: 									<aspectratio>scale</aspectratio>
+  397: 									<aspectratio>keep</aspectratio>
+  407: 								<aspectratio align="center" aligny="top">keep</aspectratio>
+  464: 						<aspectratio>scale</aspectratio>
+  480: 							<aspectratio>scale</aspectratio>
+  491: 						<aspectratio>scale</aspectratio>
+  522: 							<aspectratio>scale</aspectratio>
+  552: 						<aspectratio>scale</aspectratio>
+  563: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+  577: 							<aspectratio>scale</aspectratio>
+  587: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  616: 					<aspectratio>scale</aspectratio>
+  637: 					<aspectratio>keep</aspectratio>
+  724: 						<aspectratio>scale</aspectratio>
+  735: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+  749: 							<aspectratio>scale</aspectratio>
+  759: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  786: 					<aspectratio>scale</aspectratio>
+  807: 					<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/View_52_Landscape.xml (7 matching lines)
+  208: 		<aspectratio scalediffuse="false" aligny="center">scale</aspectratio>
+  217: 		<aspectratio scalediffuse="false" aligny="center">scale</aspectratio>
+  224: 		<aspectratio align="center" aligny="top">keep</aspectratio>
+  249: 			<aspectratio scalediffuse="false" aligny="top" align="left">scale</aspectratio>
+  266: 			<aspectratio scalediffuse="false" aligny="top" align="left">scale</aspectratio>
+  306: 			<aspectratio scalediffuse="false" aligny="top" align="right">scale</aspectratio>
+  328: 			<aspectratio scalediffuse="false" aligny="top" align="right">scale</aspectratio>
+
+### skin.terror.lite/16x9/View_53_ShowCase.xml (63 matching lines)
+  250: 								<aspectratio scalediffuse="false" aligny="top" align="left">scale</aspectratio>
+  539: 		<aspectratio scalediffuse="false">scale</aspectratio>
+  561: 		<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+  569: 		<aspectratio scalediffuse="false" aligny="top">stretch</aspectratio>
+  916: 		<value condition="!String.IsEmpty(ListItem(-7).VideoResolution)">$INFO[ListItem(-7).VideoResolution]p.png</value>
+  926: 		<value condition="!String.IsEmpty(ListItem(-6).VideoResolution)">$INFO[ListItem(-6).VideoResolution]p.png</value>
+  936: 		<value condition="!String.IsEmpty(ListItem(-5).VideoResolution)">$INFO[ListItem(-5).VideoResolution]p.png</value>
+  946: 		<value condition="!String.IsEmpty(ListItem(-4).VideoResolution)">$INFO[ListItem(-4).VideoResolution]p.png</value>
+  956: 		<value condition="!String.IsEmpty(ListItem(-3).VideoResolution)">$INFO[ListItem(-3).VideoResolution]p.png</value>
+  966: 		<value condition="!String.IsEmpty(ListItem(-2).VideoResolution)">$INFO[ListItem(-2).VideoResolution]p.png</value>
+  976: 		<value condition="!String.IsEmpty(ListItem(-1).VideoResolution)">$INFO[ListItem(-1).VideoResolution]p.png</value>
+  986: 		<value condition="!String.IsEmpty(ListItem(1).VideoResolution)">$INFO[ListItem(1).VideoResolution]p.png</value>
+  996: 		<value condition="!String.IsEmpty(ListItem(2).VideoResolution)">$INFO[ListItem(2).VideoResolution]p.png</value>
+ 1006: 		<value condition="!String.IsEmpty(ListItem(3).VideoResolution)">$INFO[ListItem(3).VideoResolution]p.png</value>
+ 1016: 		<value condition="!String.IsEmpty(ListItem(4).VideoResolution)">$INFO[ListItem(4).VideoResolution]p.png</value>
+ 1026: 		<value condition="!String.IsEmpty(ListItem(5).VideoResolution)">$INFO[ListItem(5).VideoResolution]p.png</value>
+ 1036: 		<value condition="!String.IsEmpty(ListItem(6).VideoResolution)">$INFO[ListItem(6).VideoResolution]p.png</value>
+ 1046: 		<value condition="!String.IsEmpty(ListItem(7).VideoResolution)">$INFO[ListItem(7).VideoResolution]p.png</value>
+ 1097: 			<aspectratio>keep</aspectratio>
+ 1133: 			<aspectratio>keep</aspectratio>
+ 1142: 			<aspectratio>keep</aspectratio>
+ 1151: 			<aspectratio>keep</aspectratio>
+ 1160: 			<aspectratio>keep</aspectratio>
+ 1169: 			<aspectratio>keep</aspectratio>
+ 1178: 			<aspectratio>keep</aspectratio>
+ 1187: 			<aspectratio>keep</aspectratio>
+ 1196: 			<aspectratio>keep</aspectratio>
+ 1214: 					<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1222: 					<aspectratio>keep</aspectratio>
+ 1232: 						<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1245: 					<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1254: 					<aspectratio>keep</aspectratio>
+ 1264: 						<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1277: 					<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1286: 					<aspectratio>keep</aspectratio>
+ 1296: 						<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1309: 					<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1318: 					<aspectratio scalediffuse="false" align="center" aligny="top">scale</aspectratio>
+ 1339: 					<aspectratio scalediffuse="false" align="right" aligny="top">scale</aspectratio>
+ 1347: 					<aspectratio>keep</aspectratio>
+ 1357: 						<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1370: 					<aspectratio scalediffuse="false" align="right" aligny="top">scale</aspectratio>
+ 1379: 					<aspectratio>keep</aspectratio>
+ 1389: 						<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1402: 					<aspectratio scalediffuse="false" align="right" aligny="top">scale</aspectratio>
+ 1411: 					<aspectratio>keep</aspectratio>
+ 1421: 						<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1434: 					<aspectratio scalediffuse="false" align="right" aligny="top">scale</aspectratio>
+ 1444: 				<aspectratio scalediffuse="false" align="center" aligny="top">scale</aspectratio>
+ 1459: 					<aspectratio scalediffuse="false" align="left" aligny="top">scale</aspectratio>
+ 1467: 					<aspectratio>keep</aspectratio>
+ 1477: 						<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1490: 					<aspectratio scalediffuse="false" align="left" aligny="top">scale</aspectratio>
+ 1499: 					<aspectratio>keep</aspectratio>
+ 1509: 						<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1522: 					<aspectratio scalediffuse="false" align="left" aligny="top">scale</aspectratio>
+ 1531: 					<aspectratio>keep</aspectratio>
+ 1541: 						<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+ 1554: 					<aspectratio scalediffuse="false" align="left" aligny="top">scale</aspectratio>
+ 1573: 						<aspectratio>keep</aspectratio>
+ 1582: 						<aspectratio>keep</aspectratio>
+ 1618: 						<aspectratio scalediffuse="false" align="left" aligny="top">scale</aspectratio>
+ 1635: 					<aspectratio scalediffuse="false" align="center" aligny="top">scale</aspectratio>
+
+### skin.terror.lite/16x9/View_54_ShowCase.xml (13 matching lines)
+  284: 		<aspectratio scalediffuse="false">scale</aspectratio>
+  296: 		<aspectratio scalediffuse="false" aligny="top">scale</aspectratio>
+  336: 				<aspectratio scalediffuse="false" aligny="top" align="left">scale</aspectratio>
+  351: 				<aspectratio scalediffuse="false" aligny="top" align="left">scale</aspectratio>
+  366: 				<aspectratio scalediffuse="false" aligny="top" align="left">scale</aspectratio>
+  381: 				<aspectratio scalediffuse="false" aligny="top" align="left">scale</aspectratio>
+  399: 				<aspectratio scalediffuse="false" aligny="top" align="left">scale</aspectratio>
+  441: 				<aspectratio scalediffuse="false" aligny="top" align="right">scale</aspectratio>
+  460: 				<aspectratio scalediffuse="false" aligny="top" align="right">scale</aspectratio>
+  479: 				<aspectratio scalediffuse="false" aligny="top" align="right">scale</aspectratio>
+  498: 				<aspectratio scalediffuse="false" aligny="top" align="right">scale</aspectratio>
+  517: 				<aspectratio scalediffuse="false" aligny="top" align="right">scale</aspectratio>
+  812: 					<aspectratio align="right">keep</aspectratio>
+
+### skin.terror.lite/16x9/View_55_TriPanel.xml (38 matching lines)
+  136: 					<aspectratio aligny="bottom" align="right">scale</aspectratio>
+  146: 					<aspectratio aligny="top" align="right">scale</aspectratio>
+  203: 							<aspectratio>keep</aspectratio>
+  235: 							<visible>!Skin.HasSetting(Enable.HideRatings) | [String.IsEqual(ListItem.Label2, ListItem.Rating) + String.IsEqual(Container.SortMethod,$LOCALIZE[563])]</visible>
+  242: 							<aspectratio>keep</aspectratio>
+  268: 							<aspectratio>keep</aspectratio>
+  299: 							<visible>!Skin.HasSetting(Enable.HideRatings) | [String.IsEqual(ListItem.Label2, ListItem.Rating) + String.IsEqual(Container.SortMethod,$LOCALIZE[563])]</visible>
+  307: 							<aspectratio>keep</aspectratio>
+  336: 							<label>$INFO[ListItem.Rating]</label>
+  337: 							<visible>!Skin.HasSetting(Enable.HideRatings)</visible>
+  344: 							<aspectratio>keep</aspectratio>
+  400: 							<label>$INFO[ListItem.Rating]</label>
+  401: 							<visible>!Skin.HasSetting(Enable.HideRatings)</visible>
+  413: 							<aspectratio>keep</aspectratio>
+  449: 							<label>$INFO[ListItem.Rating]</label>
+  450: 							<visible>!Skin.HasSetting(Enable.HideRatings)</visible>
+  457: 							<aspectratio>keep</aspectratio>
+  483: 							<label>$INFO[ListItem.Rating]</label>
+  484: 							<visible>!Skin.HasSetting(Enable.HideRatings)</visible>
+  492: 							<aspectratio>keep</aspectratio>
+  519: 							<aspectratio>keep</aspectratio>
+  574: 							<aspectratio>keep</aspectratio>
+  669: 							<include>MediaFlagValues</include>
+  670: 							<texture>$VAR[MediaFlagsPathVar]/audiocodec/$INFO[ListItem.FileExtension,,.png]</texture>
+  677: 							<include>MediaFlagValues</include>
+  678: 							<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+  679: 							<visible>!String.IsEmpty(ListItem.StarRating)</visible>
+  718: 						<include>MediaFlagValues</include>
+  719: 						<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+  720: 						<visible>!String.IsEmpty(ListItem.StarRating)</visible>
+  760: 					<aspectratio aligny="bottom" align="right">scale</aspectratio>
+  771: 					<aspectratio aligny="top" align="right">scale</aspectratio>
+ 1017: 					<aspectratio aligny="bottom" align="right">scale</aspectratio>
+ 1028: 					<aspectratio aligny="top" align="right">scale</aspectratio>
+ 1090: 							<label>$INFO[ListItem.Rating]</label>
+ 1091: 							<visible>!Skin.HasSetting(Enable.HideRatings)</visible>
+ 1124: 							<label>$INFO[ListItem.Rating]</label>
+ 1125: 							<visible>!Skin.HasSetting(Enable.HideRatings)</visible>
+
+### skin.terror.lite/16x9/View_56_Posters.xml (58 matching lines)
+   33: 								<aspectratio>scale</aspectratio>
+   51: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+   80: 								<aspectratio>scale</aspectratio>
+   98: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  127: 								<aspectratio>scale</aspectratio>
+  145: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  174: 								<aspectratio>scale</aspectratio>
+  192: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  221: 								<aspectratio>scale</aspectratio>
+  239: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  268: 								<aspectratio>scale</aspectratio>
+  286: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  315: 								<aspectratio>scale</aspectratio>
+  333: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  362: 								<aspectratio>scale</aspectratio>
+  380: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  409: 								<aspectratio>scale</aspectratio>
+  427: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  465: 								<aspectratio>scale</aspectratio>
+  483: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  520: 								<aspectratio>scale</aspectratio>
+  538: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  567: 								<aspectratio>scale</aspectratio>
+  585: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  614: 								<aspectratio>scale</aspectratio>
+  632: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  661: 								<aspectratio>scale</aspectratio>
+  679: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  708: 								<aspectratio>scale</aspectratio>
+  726: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  755: 								<aspectratio>scale</aspectratio>
+  773: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  802: 								<aspectratio>scale</aspectratio>
+  820: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  849: 								<aspectratio>scale</aspectratio>
+  867: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  896: 								<aspectratio>scale</aspectratio>
+  914: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  945: 								<aspectratio>scale</aspectratio>
+  956: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  994: 								<aspectratio>scale</aspectratio>
+ 1012: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+ 1039: 								<aspectratio>scale</aspectratio>
+ 1057: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+ 1084: 								<aspectratio>scale</aspectratio>
+ 1102: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+ 1129: 								<aspectratio>scale</aspectratio>
+ 1147: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+ 1174: 								<aspectratio>scale</aspectratio>
+ 1192: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+ 1219: 								<aspectratio>scale</aspectratio>
+ 1237: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+ 1264: 								<aspectratio>scale</aspectratio>
+ 1282: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+ 1309: 								<aspectratio>scale</aspectratio>
+ 1327: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+ 1354: 								<aspectratio>scale</aspectratio>
+ 1372: 								<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+
+### skin.terror.lite/16x9/View_57_Shift.xml (7 matching lines)
+   46: 			<aspectratio align="center" aligny="top">keep</aspectratio>
+   89: 			<aspectratio align="center" aligny="top">keep</aspectratio>
+  105: 			<aspectratio scalediffuse="false">scale</aspectratio>
+  115: 			<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  126: 			<aspectratio align="center" aligny="top">keep</aspectratio>
+  171: 							<aspectratio aligny="bottom">keep</aspectratio>
+  241: 							<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/View_58_BannerWall.xml (9 matching lines)
+   38: 						<aspectratio>scale</aspectratio>
+   49: 							<aspectratio>scale</aspectratio>
+   58: 							<aspectratio>keep</aspectratio>
+   69: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+   88: 							<aspectratio>scale</aspectratio>
+   99: 								<aspectratio>scale</aspectratio>
+  108: 								<aspectratio>keep</aspectratio>
+  119: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  153: 					<aspectratio>scale</aspectratio>
+
+### skin.terror.lite/16x9/View_591_BigFan.xml (2 matching lines)
+   60: 				<aspectratio align="center" aligny="top">keep</aspectratio>
+   86: 					<label>$INFO[ListItem.Year,, • ]$INFO[ListItem.RatingAndVotes,, • ]$INFO[ListItem.Duration(mins),, $LOCALIZE[12391]]$INFO[ListItem.Endtime, • $LOCALIZE[31393]: ,]</label>
+
+### skin.terror.lite/16x9/View_59_Logo.xml (6 matching lines)
+   13: 					<aspectratio aligny="bottom">keep</aspectratio>
+   20: 					<aspectratio aligny="top">keep</aspectratio>
+   31: 					<aspectratio aligny="bottom">keep</aspectratio>
+   38: 					<aspectratio aligny="top">keep</aspectratio>
+  200: 						<label>$INFO[ListItem.RatingAndVotes]</label>
+  201: 						<visible>Container.Content(tvshows) + !String.IsEmpty(ListItem.RatingAndVotes)</visible>
+
+### skin.terror.lite/16x9/View_601_BannerPlex.xml (8 matching lines)
+   35: 						<aspectratio>scale</aspectratio>
+   47: 							<aspectratio>scale</aspectratio>
+   57: 							<aspectratio>keep</aspectratio>
+   68: 						<aspectratio align="center" aligny="top">keep</aspectratio>
+   87: 							<aspectratio>scale</aspectratio>
+   98: 								<aspectratio>scale</aspectratio>
+  107: 								<aspectratio>keep</aspectratio>
+  118: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+
+### skin.terror.lite/16x9/View_602_FanartList.xml (50 matching lines)
+   80: 					<include>MediaFlagValues</include>
+   81: 					<texture>$VAR[MediaFlagsPathVar]/resolution/$INFO[ListItem.VideoResolution,,.png]</texture>
+   82: 					<visible>!String.IsEmpty(ListItem.VideoResolution)</visible>
+   87: 					<include>MediaFlagValues</include>
+   88: 					<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[SourceFlagVar]</texture>
+   89: 					<visible>!String.IsEmpty(ListItem.VideoCodec)</visible>
+   94: 					<include>MediaFlagValues</include>
+   95: 					<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[AudioCodecFlagVar]</texture>
+   96: 					<visible>!String.IsEmpty(ListItem.AudioCodec)</visible>
+  101: 					<include>MediaFlagValues</include>
+  102: 					<texture>$VAR[MediaFlagsPathVar]/audiochannels/$INFO[ListItem.AudioChannels,,.png]</texture>
+  103: 					<visible>!String.IsEmpty(ListItem.AudioChannels)</visible>
+  187: 					<include>MediaFlagValues</include>
+  188: 					<texture fallback="flags/default/mpaa/NR.png">$VAR[MediaFlagsPathVar]/mpaa/$VAR[RatingFlagVar]</texture>
+  199: 					<aspectratio>scale</aspectratio>
+  207: 					<aspectratio>scale</aspectratio>
+  259: 							<aspectratio>keep</aspectratio>
+  277: 							<aspectratio>keep</aspectratio>
+  279: 							<visible>Skin.HasSetting(noindicatorfanartlist) + !Skin.HasSetting(Enable.HideRatings)</visible>
+  289: 							<label>$INFO[ListItem.Rating]</label>
+  290: 							<visible>!Skin.HasSetting(Enable.HideRatings) + !ListItem.IsCollection</visible>
+  297: 							<aspectratio>keep</aspectratio>
+  299: 							<visible>Skin.HasSetting(noindicatorfanartlist) + Skin.HasSetting(Enable.HideRatings)</visible>
+  307: 							<aspectratio>keep</aspectratio>
+  332: 							<aspectratio>keep</aspectratio>
+  349: 							<aspectratio>keep</aspectratio>
+  351: 							<visible>Skin.HasSetting(noindicatorfanartlist) + !Skin.HasSetting(Enable.HideRatings)</visible>
+  360: 							<label>$INFO[ListItem.Rating]</label>
+  361: 							<visible>!Skin.HasSetting(Enable.HideRatings) + !ListItem.IsCollection</visible>
+  369: 							<aspectratio>keep</aspectratio>
+  371: 							<visible>Skin.HasSetting(noindicatorfanartlist) + Skin.HasSetting(Enable.HideRatings)</visible>
+  379: 							<aspectratio>keep</aspectratio>
+  397: 							<aspectratio>keep</aspectratio>
+  422: 							<aspectratio>keep</aspectratio>
+  451: 							<label>$INFO[ListItem.Rating]</label>
+  452: 							<visible>!Skin.HasSetting(Enable.HideRatings)</visible>
+  459: 							<aspectratio>keep</aspectratio>
+  525: 							<label>$INFO[ListItem.Rating]</label>
+  527: 							<visible>!Skin.HasSetting(Enable.HideRatings)</visible>
+  534: 							<aspectratio>keep</aspectratio>
+  582: 							<aspectratio>keep</aspectratio>
+  594: 							<label>$INFO[ListItem.Rating]</label>
+  595: 							<visible>!Skin.HasSetting(Enable.HideRatings)</visible>
+  602: 							<aspectratio>keep</aspectratio>
+  627: 							<aspectratio>keep</aspectratio>
+  638: 							<label>$INFO[ListItem.Rating]</label>
+  640: 							<visible>!Skin.HasSetting(Enable.HideRatings)</visible>
+  647: 							<aspectratio>keep</aspectratio>
+  674: 							<aspectratio>keep</aspectratio>
+  739: 							<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/View_603_Music_JukeBox.xml (6 matching lines)
+  131: 								<aspectratio>keep</aspectratio>
+  133: 								<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+  177: 								<aspectratio>keep</aspectratio>
+  179: 								<texture fallback="rating0.png">$INFO[ListItem.UserRating,flags/rating/,.png]</texture>
+  207: 					<aspectratio aligny="bottom">keep</aspectratio>
+  217: 					<aspectratio aligny="bottom">keep</aspectratio>
+
+### skin.terror.lite/16x9/View_609_Fullscreen_Wall.xml (12 matching lines)
+   39: 							<aspectratio scalediffuse="false">scale</aspectratio>
+   52: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+   68: 							<aspectratio scalediffuse="false">scale</aspectratio>
+   79: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  106: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  132: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  159: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  171: 								<aspectratio>keep</aspectratio>
+  199: 							<aspectratio align="center" aligny="top">keep</aspectratio>
+  210: 								<aspectratio>keep</aspectratio>
+  228: 							<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+  263: 							<aspectratio aligny="top" scalediffuse="false">scale</aspectratio>
+
+### skin.terror.lite/16x9/custom_1117_AddonStatus.xml (7 matching lines)
+  278: 						<label>$INFO[System.AddonTitle(script.trakt)]</label>
+  279: 						<label2>$INFO[System.AddonVersion(script.trakt),v, [COLOR FF00991F]$LOCALIZE[31331][/COLOR]$LOCALIZE[31450]]</label2>
+  280: 						<onclick>Addon.OpenSettings(script.trakt)</onclick>
+  281: 						<visible>System.HasAddon(script.trakt)</visible>
+  285: 						<label>script.trakt</label>
+  287: 						<onclick>InstallAddon(script.trakt)</onclick>
+  288: 						<visible>!System.HasAddon(script.trakt)</visible>
+
+### skin.terror.lite/16x9/custom_1119_ExtrasDialog.xml (6 matching lines)
+   21: 				<description>Trakt Rate button</description>
+   29: 				<onclick>RunScript(script.trakt,action=rate)</onclick>
+   32: 				<visible>System.HasAddon(script.trakt) + [Container.Content(movies) | Container.Content(tvshows) | Container.Content(seasons) | Container.Content(episodes)]</visible>
+  109: 				<description>Rating Update button</description>
+  116: 				<onclick>RunScript(script.ratingupdate,Single=Movie)</onclick>
+  119: 				<visible>System.HasAddon(script.ratingupdate)</visible>
+
+### skin.terror.lite/16x9/custom_1130_Views.xml (1 matching lines)
+  199: 							<visible>![Window.IsActive(tvchannels) | Window.IsActive(tvrecordings) | Window.IsActive(tvguide) | Window.IsActive(tvtimers) | Window.IsActive(tvsearch) | Window.IsActive(musicplaylist) | Window.IsActive(radiochannels) | Window.IsActive(radiorecordings) | Window.IsActive(radioguide) | Window.IsActive(radiotimers) | Window.IsActive(radiosearch) | [Window.IsActive(picture
+
+### skin.terror.lite/16x9/custom_1131_ViewSettings.xml (1 matching lines)
+   58: 				<!-- Mediaflags -->
+
+### skin.terror.lite/16x9/custom_1133_Apps.xml (6 matching lines)
+   43: 							<aspectratio>keep</aspectratio>
+   88: 							<aspectratio>keep</aspectratio>
+  229: 							<aspectratio>keep</aspectratio>
+  239: 							<aspectratio>keep</aspectratio>
+  284: 							<aspectratio>keep</aspectratio>
+  293: 							<aspectratio>keep</aspectratio>
+
+### skin.terror.lite/16x9/custom_1134_PausedOverlay.xml (10 matching lines)
+   24: 				<aspectratio aligny="bottom" align="center">keep</aspectratio>
+   32: 				<aspectratio aligny="bottom" align="center">stretch</aspectratio>
+   85: 						<aspectratio>keep</aspectratio>
+   87: 						<texture fallback="flags/rating/0.0.png">$INFO[VideoPlayer.Rating,flags/rating/,.png]</texture>
+   88: 						<visible>String.IsEmpty(VideoPlayer.UserRating)</visible>
+   95: 						<aspectratio>keep</aspectratio>
+   97: 						<texture>$INFO[VideoPlayer.UserRating,flags/rating/,.png]</texture>
+   98: 						<visible>!String.IsEmpty(VideoPlayer.UserRating)</visible>
+  105: 						<texture colordiffuse="grey">IMDb_bw.png</texture>
+  134: 					<label>$INFO[VideoPlayer.Year]$INFO[VideoPlayer.MPAA,  •  ]  •  $VAR[PlayerDurationVar]</label>
+
+### skin.terror.lite/16x9/script-globalsearch.xml (36 matching lines)
+  107: 							<aspectratio>scale</aspectratio>
+  123: 								<aspectratio>scale</aspectratio>
+  134: 								<aspectratio>scale</aspectratio>
+  150: 									<aspectratio>scale</aspectratio>
+  161: 							<aspectratio>scale</aspectratio>
+  177: 								<aspectratio>scale</aspectratio>
+  223: 							<include>MediaFlagValues</include>
+  224: 							<texture>$VAR[MediaFlagsPathVar]/mpaa/$VAR[RatingFlagVar]</texture>
+  225: 							<visible>!String.IsEmpty(ListItem.MPAA)</visible>
+  229: 							<include>MediaFlagValues</include>
+  230: 							<texture>$VAR[MediaFlagsPathVar]/resolution/$INFO[ListItem.VideoResolution,,.png]</texture>
+  231: 							<visible>!String.IsEmpty(ListItem.VideoResolution)</visible>
+  235: 							<include>MediaFlagValues</include>
+  236: 							<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[SourceFlagVar]</texture>
+  237: 							<visible>!String.IsEmpty(ListItem.VideoCodec)</visible>
+  241: 							<include>MediaFlagValues</include>
+  242: 							<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[AudioCodecFlagVar]</texture>
+  243: 							<visible>!String.IsEmpty(ListItem.AudioCodec)</visible>
+  247: 							<include>MediaFlagValues</include>
+  248: 							<texture>$VAR[MediaFlagsPathVar]/audiochannels/$INFO[ListItem.AudioChannels,,.png]</texture>
+  249: 							<visible>!String.IsEmpty(ListItem.AudioChannels)</visible>
+  262: 							<include>MediaFlagValues</include>
+  263: 							<texture>$VAR[MediaFlagsPathVar]/mpaa/$VAR[RatingFlagVar]</texture>
+  264: 							<visible>!String.IsEmpty(ListItem.MPAA)</visible>
+  277: 							<include>MediaFlagValues</include>
+  278: 							<texture>$VAR[MediaFlagsPathVar]/resolution/$INFO[ListItem.VideoResolution,,.png]</texture>
+  279: 							<visible>!String.IsEmpty(ListItem.VideoResolution)</visible>
+  283: 							<include>MediaFlagValues</include>
+  284: 							<texture>$VAR[MediaFlagsPathVar]/videocodec/$VAR[SourceFlagVar]</texture>
+  285: 							<visible>!String.IsEmpty(ListItem.VideoCodec)</visible>
+  289: 							<include>MediaFlagValues</include>
+  290: 							<texture>$VAR[MediaFlagsPathVar]/audiocodec/$VAR[AudioCodecFlagVar]</texture>
+  291: 							<visible>!String.IsEmpty(ListItem.AudioCodec)</visible>
+  295: 							<include>MediaFlagValues</include>
+  296: 							<texture>$VAR[MediaFlagsPathVar]/audiochannels/$INFO[ListItem.AudioChannels,,.png]</texture>
+  297: 							<visible>!String.IsEmpty(ListItem.AudioChannels)</visible>
+
+### skin.terror.lite/16x9/script-nextup-notification-NextUpInfo.xml (3 matching lines)
+   17: 				<aspectratio aligny="bottom">keep</aspectratio>
+   26: 				<aspectratio aligny="bottom">keep</aspectratio>
+   90: 				<description>rating</description>
+
+### skin.terror.lite/16x9/script-nextup-notification-StillWatchingInfo.xml (3 matching lines)
+   17: 				<aspectratio aligny="bottom">keep</aspectratio>
+   26: 				<aspectratio aligny="bottom">scale</aspectratio>
+   90: 				<description>rating</description>
+
+### skin.terror.lite/16x9/script-skinshortcuts-includes.xml (6 matching lines)
+   64: 			<onclick condition="System.HasPVRAddon">ActivateWindow(TVChannels)</onclick>
+   65: 			<property name="path">ActivateWindow(TVChannels)</property>
+  479: 			<onclick condition="System.HasPVRAddon">ActivateWindow(RadioChannels)</onclick>
+  480: 			<property name="path">ActivateWindow(RadioChannels)</property>
+  492: 			<onclick condition="System.HasPVRAddon">ActivateWindow(TVChannels)</onclick>
+  493: 			<property name="path">ActivateWindow(TVChannels)</property>
+
+### skin.terror.lite/README-FILMPALAST-OMEGA-114.txt (1 matching lines)
+   16:   grosse Balken, Autoscroll/Autocomplete sowie TMDb/Trakt/RT bleiben
+
+### skin.terror.lite/README-IMDB-1.1.13.txt (10 matching lines)
+    1: Terror LiTE Omega 1.1.13 – IMDb source fallback (Kodi 21.2)
+    3: Based on the user-tested 1.1.12. Only IMDb fallback and addon version updated.
+    5: IMDb source priority:
+    6: 1. Kodi current item (ListItem.Rating(imdb))
+    7: 2. TMDb Helper current item IMDb_Rating or Rating.imdb
+    8: 3. TMDb Helper details via hidden container 9143 (including native Rating(imdb))
+    9: 4. Skin Info Service direct-ID online listing (container 9144 Rating.imdb)
+   10: 5. Original SiLVO Embuary Helper local-library list 9142 (Rating(imdb))
+   12: Unconfigured providers cannot invent IMDb scores. For plugin movies, the
+   14: or TMDb Helper with a valid OMDb API key. Keep API keys only in local add-on
+
+### skin.terror.lite/README-RATINGS-1.1.12.txt (6 matching lines)
+    1: Terror LiTE Omega 1.1.12 | SiLVO ratings source correction
+    9: IMDb: first native item rating, then TMDb Helper, then Skin Info Service.
+   10: Trakt: first native item rating, then TMDb Helper, then Skin Info Service.
+   12: TMDb: native named rating, helper, Skin Info Service; only one badge per movie.
+   17: Provider availability: TMDb Helper and Skin Info Service must have configured
+   18: network access/API keys where required (OMDb or MDBList for IMDb/RT, Trakt).
+
+### skin.terror.lite/README-RATINGS-TEST-1110.txt (5 matching lines)
+    1: Terror LiTE Omega 1.1.10 – Ratings-Test, NOT for repository release.
+    3: Adds IMDb rating label and TMDb Helper hidden details list (ID 9143) inside movie info dialog.
+    4: Added fallbacks for Trakt/RT/TMDb and restarts the Skin Info Service if stopped.
+    5: For IMDb/RT to appear, TMDb Helper must have an appropriate configured OMDb key,
+    6: or an alternative metadata provider must supply the ratings. Trakt can require
+
+### skin.terror.lite/README-RATINGS-TEST-1111.txt (6 matching lines)
+    1: Terror LiTE Omega 1.1.11 - controlled ratings test build.
+    3: 1. Hide the old, unlabelled default movie rating when it duplicates TMDb.
+    4: 2. Restore SiLVO pattern for hidden TMDb Helper list 9143 (no fixed content URL).
+    5: 3. Keep IMDb/Trakt/Rotten Tomatoes badges contingent on real metadata.
+    6: No API keys included. OMDb or MDBList credentials may be needed in TMDb Helper.
+    7: If additional ratings remain invisible, collect kodi.log and check TMDb Helper settings.
+
+### skin.terror.lite/addon.xml (1 matching lines)
+   22: 		<news>1.1.16 TEST: Combined verified Filmpalast shortcut auto-migration and background/two widgets from 1.1.12 with confirmed IMDb, Trakt and TMDb ratings from 1.1.15. Home starts Skin Info Service and runs FilmPalast migration before shortcut menu building. Other menu settings preserved. 1.1.13: IMDb-only enhancement: SiLVO Embuary helper fallback for library films, addition
+
+### skin.terror.lite/extras/Custom_Overlay_Debug.xml (4 matching lines)
+  145: 				<label>MyPVRChannels.xml</label>
+  146: 				<visible>Window.IsVisible(MyPVRChannels.xml)</visible>
+  456: 				<label>DialogPVRChannelsOSD.xml</label>
+  457: 				<visible>Window.IsVisible(DialogPVRChannelsOSD.xml)</visible>
+
+### skin.terror.lite/resources/lib/filmpalast_migrate.py (1 matching lines)
+   11: FILMPALAST = [['mainmenu', 'plugin.video.filmpalast.ex', 'background', 'https://bladedesign.ch/dir/repo/INFINITY/Kodi4black.png'], ['mainmenu', 'plugin.video.filmpalast.ex', 'backgroundName', 'https://bladedesign.ch/dir/repo/INFINITY/Kodi4black.png'], ['mainmenu', 'plugin.video.filmpalast.ex', 'widget', 'Addon'], ['mainmenu', 'plugin.video.filmpalast.ex', 'widgetName', 'FilmPal
+
+### skin.terror.lite/resources/ratings_imdb.py (52 matching lines)
+    2: """Terror-Lite Omega IMDb bridge, v1.1.15.
+   18: RATING_PROP = 'TerrorLite.IMDb.Rating'
+   19: SOURCE_PROP = 'TerrorLite.IMDb.Source'
+   20: PREFIX = '[TerrorLite IMDb] '
+   51: def normalise_rating(value):
+   72: def mdblist_rating(key, tmdb, imdb):
+   73:     if not key or not (tmdb or imdb):
+   75:     if tmdb:
+   76:         path = '/tmdb/movie/' + quote(tmdb, safe='')
+   78:         path = '/imdb/movie/' + quote(imdb, safe='')
+   82:     for item in payload.get('ratings', []):
+   83:         if isinstance(item, dict) and str(item.get('source', '')).lower() == 'imdb':
+   84:             score = normalise_rating(item.get('value'))
+   90: def omdb_rating(key, imdb, title, year):
+   91:     if not key or not (imdb or (title and year)):
+   94:     if imdb:
+   95:         query['i'] = imdb
+  101:     if imdb and payload.get('imdbID') and payload['imdbID'].lower() != imdb.lower():
+  103:     if not imdb and year and str(payload.get('Year', ''))[:4] != year:
+  105:     return normalise_rating(payload.get('imdbRating'))
+  109:     imdb = first_valid((
+  110:         args.get('imdb'), args.get('imdb2'), args.get('imdb3'),
+  111:         getinfo('ListItem.UniqueID(imdb)'),
+  112:         getinfo('ListItem.Property(IMDb_ID)'),
+  113:         getinfo('ListItem.IMDBNumber'),
+  114:         getinfo('Container(9143).ListItem.UniqueID(imdb)'),
+  115:         getinfo('Container(9143).ListItem.Property(IMDb_ID)'),
+  116:         getinfo('Container(9143).ListItem.IMDBNumber')),
+  118:     tmdb = first_valid((
+  119:         args.get('tmdb'), args.get('tmdb2'),
+  120:         getinfo('ListItem.UniqueID(tmdb)'),
+  121:         getinfo('ListItem.Property(TMDb_ID)'),
+  122:         getinfo('Container(9143).ListItem.UniqueID(tmdb)'),
+  123:         getinfo('Container(9143).ListItem.Property(TMDb_ID)')),
+  128:     return imdb, tmdb, title, year
+  139:         log('Cannot read TMDb Helper settings ({})'.format(type(exc).__name__))
+  144:         log('No IMDb source configured: neither MDBList nor OMDb key in TMDb Helper')
+  147:     imdb, tmdb, title, year = ids(args)
+  148:     # Hidden TMDb Helper container 9143 fills asynchronously. Poll briefly
+  150:     if not (tmdb or imdb or (title and year)):
+  155:             imdb, tmdb, title, year = ids(args)
+  156:             if tmdb or imdb or (title and year):
+  158:     if not (tmdb or imdb or (title and year)):
+  159:         log('No usable movie ID or title/year passed to IMDb bridge')
+  163:     marker = '{}|{}|{}'.format(tmdb, imdb, year)
+  164:     window.setProperty('TerrorLite.IMDb.Request', marker)
+  166:         ('MDBList', mdblist_rating, (mdblist_key, tmdb, imdb)),
+  167:         ('OMDb', omdb_rating, (omdb_key, imdb, title, year)),
+  178:             if (window.getProperty('TerrorLite.IMDb.Request') == marker
+  180:                 window.setProperty(RATING_PROP, found)
+  182:                 log('IMDb rating available via {} (film TMDb id {})'.format(name, tmdb or 'unavailable'))
+  184:     log('IMDb rating unavailable from configured providers (TMDb id {})'.format(tmdb or 'unavailable'))
+
+### skin.terror.lite/shortcuts/livetv.DATA.xml (2 matching lines)
+    9: 		<action>ActivateWindow(RadioChannels)</action>
+   17: 		<action>ActivateWindow(TVChannels)</action>
+
+### skin.terror.lite/shortcuts/mainmenu.DATA.xml (1 matching lines)
+   41: 		<action>ActivateWindow(TVChannels)</action>
+
+### skin.terror.lite/shortcuts/overrides.xml (18 matching lines)
+   66: 			<shortcut label="$ADDON[script.extendedinfo 32047]" condition="System.HasAddon(script.extendedinfo)" icon="logos/trakt-logo.png" widget="trakt" widgetType="movies" widgetTarget="video">plugin://script.extendedinfo?info=trendingmovies</shortcut>
+   67: 			<shortcut label="$ADDON[script.extendedinfo 32042]" condition="System.HasAddon(script.extendedinfo)" icon="logos/tmdb-logo.png" widget="tmdb" widgetType="movies" widgetTarget="video">plugin://script.extendedinfo?info=incinemamovies</shortcut>
+   68: 			<shortcut label="$ADDON[script.extendedinfo 32043]" condition="System.HasAddon(script.extendedinfo)" icon="logos/tmdb-logo.png" widget="tmdb" widgetType="movies" widgetTarget="video">plugin://script.extendedinfo?info=upcomingmovies</shortcut>
+   69: 			<shortcut label="$ADDON[script.extendedinfo 32044]" condition="System.HasAddon(script.extendedinfo)" icon="logos/tmdb-logo.png" widget="tmdb" widgetType="movies" widgetTarget="video">plugin://script.extendedinfo?info=popularmovies</shortcut>
+   70: 			<shortcut label="$ADDON[script.extendedinfo 32046]" condition="System.HasAddon(script.extendedinfo)" icon="logos/tmdb-logo.png" widget="tmdb" widgetType="movies" widgetTarget="video">plugin://script.extendedinfo?info=topratedmovies</shortcut>
+   82: 			<shortcut label="$ADDON[script.extendedinfo 32032]" condition="System.HasAddon(script.extendedinfo)" icon="logos/trakt-logo.png" widget="trakt" widgetType="tvshows" widgetTarget="video">plugin://script.extendedinfo?info=trendingshows</shortcut>
+   83: 			<shortcut label="$ADDON[script.extendedinfo 32041]" condition="System.HasAddon(script.extendedinfo)" icon="logos/tmdb-logo.png" widget="tmdb" widgetType="tvshows" widgetTarget="video">plugin://script.extendedinfo?info=populartvshows</shortcut>
+   84: 			<shortcut label="$ADDON[script.extendedinfo 32040]" condition="System.HasAddon(script.extendedinfo)" icon="logos/tmdb-logo.png" widget="tmdb" widgetType="tvshows" widgetTarget="video">plugin://script.extendedinfo?info=topratedtvshows</shortcut>
+   85: 			<shortcut label="$ADDON[script.extendedinfo 32039]" condition="System.HasAddon(script.extendedinfo)" icon="logos/tmdb-logo.png" widget="tmdb" widgetType="tvshows" widgetTarget="video">plugin://script.extendedinfo?info=onairtvshows</shortcut>
+   86: 			<shortcut label="$ADDON[script.extendedinfo 32038]" condition="System.HasAddon(script.extendedinfo)" icon="logos/tmdb-logo.png" widget="tmdb" widgetType="tvshows" widgetTarget="video">plugin://script.extendedinfo?info=airingtodaytvshows</shortcut>
+  105: 			<shortcut label="$ADDON[script.extendedinfo 32028]" condition="System.HasAddon(script.extendedinfo)" icon="logos/trakt-logo.png" widget="trakt" widgetType="tvshows" widgetTarget="video">plugin://script.extendedinfo?info=airingepisodes</shortcut>
+  106: 			<shortcut label="$ADDON[script.extendedinfo 32029]" condition="System.HasAddon(script.extendedinfo)" icon="logos/trakt-logo.png" widget="trakt" widgetType="tvshows" widgetTarget="video">plugin://script.extendedinfo?info=premiereepisodes</shortcut>
+  109: 			<shortcut label="$LOCALIZE[19287]" condition="System.HasPVRAddon" icon="logos/kodi.png" widget="pvr" widgetType="pvr" widgetTarget="pvr">pvr://channels/tv/*</shortcut>
+  110: 			<shortcut label="$LOCALIZE[31440]" condition="System.HasPVRAddon" icon="logos/kodi.png" widget="pvr" widgetType="pvr" widgetTarget="pvr">pvr://channels/tv/*?view=lastplayed</shortcut>
+  111: 			<shortcut label="$ADDON[script.skin.helper.widgets 32020]" condition="System.HasAddon(script.skin.helper.widgets)" icon="logos/shs-logo.png" widget="pvr" widgetType="pvr" widgetTarget="pvr">plugin://script.skin.helper.widgets/?action=channels&amp;mediatype=pvr&amp;reload=$INFO[Window(Home).Property(widgetreload2)]</shortcut>
+  112: 			<shortcut label="$ADDON[script.skin.helper.widgets 32069]" condition="System.HasAddon(script.skin.helper.widgets)" icon="logos/shs-logo.png" widget="pvr" widgetType="pvr" widgetTarget="pvr">plugin://script.skin.helper.widgets/?action=lastchannels&amp;mediatype=pvr&amp;reload=$INFO[Window(Home).Property(widgetreload2)]</shortcut>
+  435: 	<propertydefault labelID="plugin.video.filmpalast.ex" property="widgetName.2">TMDb Helper - Diese Woche im Trend</propertydefault>
+  438: 	<propertydefault labelID="plugin.video.filmpalast.ex" property="widgetPath.2">plugin://plugin.video.themoviedb.helper/?info=trending_week&amp;tmdb_type=tv&amp;reload=%24INFO%5BWindow%28Home%29.Property%28TMDbHelper.Widgets.Reload%29%5D&amp;widget=true</propertydefault>
+
+### skin.terror.lite/shortcuts/template.xml (11 matching lines)
+  285: 				<value condition="!String.IsEmpty(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.VideoResolution)">$INFO[Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.VideoResolution]p.png</value>
+  286: 				<value condition="!String.IsEmpty(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.Property(VideoResolution))">$INFO[Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.Property(VideoResolution)]p.png</value>
+  287: 				<value condition="String.IsEmpty(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.Property(VideoResolution)) + String.IsEmpty(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.TVShowTitle) + [!String.IsEmpty(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.Trailer) | String.Contains(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id
+ 1478: 				<value condition="!String.IsEmpty(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.VideoResolution)">$INFO[Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.VideoResolution]p.png</value>
+ 1479: 				<value condition="!String.IsEmpty(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.Property(VideoResolution))">$INFO[Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.Property(VideoResolution)]p.png</value>
+ 1480: 				<value condition="String.IsEmpty(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.Property(VideoResolution)) + String.IsEmpty(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.TVShowTitle) + [!String.IsEmpty(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id]).ListItem.Trailer) | String.Contains(Container($SKINSHORTCUTS[idprefix]$SKINSHORTCUTS[id
+ 2889: 				<property name="Label3">$INFO[Pvr.BackendChannels] $LOCALIZE[19019]</property>
+ 2891: 				<visible>PVR.HasTVChannels</visible>
+ 2901: 				<visible>!PVR.HasTVChannels</visible>
+ 3101: 				<property name="Label3">$INFO[Pvr.BackendChannels] $LOCALIZE[19019]</property>
+ 3103: 				<visible>PVR.HasTVChannels</visible>
