@@ -1,0 +1,39 @@
+name: Build TerrorLite 1.1.24 Cinema Logo TEST
+on:
+  push:
+    branches: [terrorlite-glossy-logos-test]
+    paths:
+      - tools/build_terrorlite_cinema_logos.py
+      - .github/workflows/build-terrorlite-cinema-logos.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: terrorlite-glossy-logos-test
+          fetch-depth: 0
+      - name: Install Pillow for high-quality logo assets
+        run: python3 -m pip install --break-system-packages 'pillow==12.3.0'
+      - name: Build exact base and logo update in isolated branch
+        run: |
+          python3 tools/build_terrorlite_glossy_logos.py
+          python3 tools/build_terrorlite_cinema_logos.py
+      - name: Upload installable test ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: TerrorLite-1.1.24-Cinema-Logos-TEST
+          path: test-builds/skin.terror.lite-1.1.24-CINEMA-LOGOS-TEST.zip
+          retention-days: 30
+          if-no-files-found: error
+          compression-level: 0
+      - name: Commit test ZIP only; do not publish to production
+        run: |
+          git config user.name 'Barclay test bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add test-builds/skin.terror.lite-1.1.24-CINEMA-LOGOS-TEST.zip development/terrorlite-glossy/cinema-build-report.txt
+          git commit -m 'Build TerrorLite mockup-style icon-forward test [skip ci]' || exit 0
+          git push origin HEAD:terrorlite-glossy-logos-test
