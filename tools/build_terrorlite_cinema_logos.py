@@ -159,7 +159,7 @@ def audio_plate(kind,label=None):
         tx(d,(139,24,345,108),label or '2.0',70,'FFFFFF')
         tx(d,(72,125,311,159),'CHANNELS',28,'6BD9F9')
     else:
-        im=technical_plate(kind,label or '',"AFDDF3")
+        return technical_plate(kind,label or '',"AFDDF3")
     return image_bytes(im)
 
 def media_dict():
