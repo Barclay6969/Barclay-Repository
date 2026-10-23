@@ -1,0 +1,9 @@
+Base: test-builds/skin.terror.lite-1.1.24-CINEMA-LOGOS-TEST.zip
+Test: test-builds/skin.terror.lite-1.1.25-ICON-PREMIUM-TEST.zip
+Updated logo art: 73
+TMDb IMDb Trakt card widths: 155 -> 220 Kodi px
+Ratings calculation expressions, conditional visibility and sources: UNCHANGED
+Filmpalast, Widgets, IMDb bridge and selectors: byte-identical to base
+ZIP CRC: OK
+Bytes: 9967080
+SHA256: a7ffb63f22a1434b13949ce1c4bd901335093d732bb076a06b39762f2d5be42c
