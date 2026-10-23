@@ -1,0 +1,38 @@
+name: Extract relevant TerrorLite 1.1.22 XML for test build
+on:
+  push:
+    branches: [terrorlite-glossy-logos-test]
+    paths:
+      - '.github/workflows/extract-terrorlite-icon-xml.yml'
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract selected XML only to isolated test branch
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          from pathlib import Path
+          src='zips/skin.terror.lite/skin.terror.lite-1.1.22.zip'
+          wanted=['DialogVideoInfo.xml','Includes.xml','Includes_CommonValues.xml','Includes_Variables.xml','Includes_MediaFlags.xml','Includes_InfoPanel.xml','Includes_Variables_Colors.xml']
+          root=Path('development/terrorlite-glossy/reference')
+          root.mkdir(parents=True,exist_ok=True)
+          with ZipFile(src) as z:
+            for fname in wanted:
+              key=f'skin.terror.lite/16x9/{fname}'
+              if key in z.namelist():
+                out=root / fname
+                out.write_bytes(z.read(key))
+                print(out)
+          PY
+      - name: Commit reference files on test branch
+        run: |
+          git config user.name 'Barclay test bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add development/terrorlite-glossy/reference/
+          git commit -m 'Extract unchanged TerrorLite XML for isolated badge test [skip ci]' || exit 0
+          git push origin HEAD:terrorlite-glossy-logos-test
