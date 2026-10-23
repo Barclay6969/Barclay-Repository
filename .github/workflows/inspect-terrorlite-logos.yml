@@ -1,0 +1,57 @@
+name: Inspect TerrorLite metadata badge wiring (test branch)
+on:
+  push:
+    branches: [terrorlite-glossy-logos-test]
+    paths:
+      - '.github/workflows/inspect-terrorlite-logos.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect 1.1.22 skin ZIP without modifying it
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          from pathlib import Path
+          import re
+          src=Path('zips/skin.terror.lite/skin.terror.lite-1.1.22.zip')
+          out=Path('development/terrorlite-glossy/audit.txt')
+          out.parent.mkdir(parents=True,exist_ok=True)
+          pattern=re.compile(r'(?i)trakt|imdb|tmdb|ratings|rating|fsk|mpaa|video.?codec|audio.?codec|aspect.?ratio|video.?resolution|resolution|media.?flag|h\\.264|aac|dolby|dts|stereomode|channels')
+          lines=[]
+          def emit(v=''):lines.append(str(v))
+          with ZipFile(src) as z:
+            emit('ZIP MEMBERS COUNT: '+str(len(z.namelist())))
+            emit('BADGE / LOGO / MEDIA PATHS:')
+            for x in z.infolist():
+              if re.search(r'(?i)(flag|rating|codec|fsk|imdb|tmdb|trakt|mpaa|video|audio|resolution|aspect|media/.*(1080|2160|720|4k|dts|dolby|aac|stereo))',x.filename):
+                emit(f'{x.filename} {x.file_size}')
+            emit('RELEVANT XML OR SKIN SCRIPT CONTEXT:')
+            for info in z.infolist():
+              if not info.filename.lower().endswith(('.xml','.py','.txt','.inc')):
+                continue
+              if info.file_size>800000:continue
+              try:s=z.read(info.filename).decode('utf-8',errors='replace').splitlines()
+              except Exception:continue
+              matches=[i for i,ln in enumerate(s) if pattern.search(ln)]
+              if matches:
+                emit('\n### '+info.filename+' ('+str(len(matches))+' matching lines)')
+                if len(matches)>120: emit('Showing first 120 of '+str(len(matches)))
+                for i in matches[:120]:
+                  emit(f'{i+1:5}: '+s[i][:380])
+          out.write_text('\n'.join(lines),encoding='utf-8')
+          print('Audit report',len(lines),'lines')
+          PY
+      - name: Commit inspection report only on test branch
+        shell: bash
+        run: |
+          git config user.name 'Barclay test bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add development/terrorlite-glossy/audit.txt
+          git commit -m 'Inspect TerrorLite badge references [skip ci]' || exit 0
+          git push origin HEAD:terrorlite-glossy-logos-test
