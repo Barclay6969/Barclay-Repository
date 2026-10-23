@@ -596,7 +596,7 @@
 - Add option to play YouTube error notification video upon playback failure</news></extension>
 </addon>
 
-<addon id="skin.terror.lite" version="1.1.22" name="T[COLOR yellow]e[/COLOR]rror L[COLOR yellow]i[/COLOR]TE Omega (Modded by Kusi)" provider-name="Modded by Kusi">
+<addon id="skin.terror.lite" version="1.1.26" name="T[COLOR yellow]e[/COLOR]rror L[COLOR yellow]i[/COLOR]TE Omega (Modded by Kusi)" provider-name="Modded by Kusi">
 	<requires>
 		<import addon="xbmc.gui" version="5.17.0" />
 		<import addon="script.skinshortcuts" version="2.0.3" />
