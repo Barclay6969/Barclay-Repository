@@ -62,9 +62,13 @@ jobs:
               assert ET.fromstring(meta).get('version') == '1.1.27'
               changes[addon] = meta
 
+              # Cache all entries before writing: writestr updates ZipInfo offsets.
+              import copy
+              entries = [(copy.copy(member), original.read(member.filename))
+                         for member in original.infolist()]
               with ZipFile(target, 'w') as output:
-                  for member in original.infolist():
-                      output.writestr(member, changes.get(member.filename, original.read(member.filename)))
+                  for member, data in entries:
+                      output.writestr(member, changes.get(member.filename, data))
 
               with ZipFile(target) as output:
                   assert output.testzip() is None
