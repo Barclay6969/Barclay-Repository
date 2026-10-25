@@ -1,0 +1,150 @@
+name: Publish Terror-Lite 1.1.28 cover format fix
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-terror-1-1-28.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Barclay Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build proven 1.1.28 ZIP from official 1.1.27
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from copy import copy
+          import re
+          import hashlib
+          import xml.etree.ElementTree as ET
+          
+          source = Path('zips/skin.terror.lite/skin.terror.lite-1.1.27.zip')
+          target = Path('zips/skin.terror.lite/skin.terror.lite-1.1.28.zip')
+          base = 'skin.terror.lite/'
+          xml_path = base+'shortcuts/template.xml'
+          overrides_path = base+'shortcuts/overrides.xml'
+          addon_path = base+'addon.xml'
+          
+          with ZipFile(source) as src:
+              assert src.testzip() is None
+              original = {info.filename: src.read(info.filename) for info in src.infolist()}
+              template = original[xml_path].decode('utf-8-sig')
+              assert '<propertyGroup name="widget1Common">' in template
+              assert '<propertyGroup name="extendedCompactPanel2Common">' in template
+              sections = re.split(r'(?=\t<propertyGroup name="[^"]+">)',template)
+              expected_groups = ['widget1Common','widget2Common','panelCommon','panel2Common','extendedPanelCommon','extendedPanel2Common',
+                                 'compactPanelCommon','compactPanel2Common','extendedCompactPanelCommon','extendedCompactPanel2Common']
+              stats={}
+              for j,sec in enumerate(sections):
+                  match = re.match(r'\t<propertyGroup name="([^"]+)">',sec)
+                  if not match or match.group(1) not in expected_groups:
+                      continue
+                  name=match.group(1)
+                  suffix = '.2' if name in ['widget2Common'] or '2Common' in name else ''
+                  widgettype='widgetType'+suffix
+                  widgetart='widgetArt'+suffix
+                  poster_pat=re.compile(r'(?m)^(?P<indent>[ \t]*)<property name="(?P<name>[^"]+)" tag="property" attribute="name\|'+re.escape(widgetart)+r'" value="Poster">(?P<value>[^\r\n<]*)</property>(?P<eol>\r?\n)')
+                  count=[0]
+                  def replicate(m):
+                      count[0]+=1
+                      insert = ('%s<property name="%s" tag="property" attribute="name|%s" value="favourite">%s</property>%s'
+                               %(m.group('indent'),m.group('name'),widgettype,m.group('value'),m.group('eol')))
+                      return insert+m.group(0)
+                  sec = poster_pat.sub(replicate, sec)
+                  if name in ['widget1Common','widget2Common']:
+                      p=f'\t\t<property name="aspect" tag="property" attribute="name|{widgettype}" value="pvr">keep</property>'
+                      if p not in sec: raise AssertionError((name, 'missing aspect pvr'))
+                      sec=sec.replace(p,f'\t\t<property name="aspect" tag="property" attribute="name|{widgettype}" value="favourite">keep</property>\n'+p,1)
+                      p=f'\t\t<property name="widgetsquare" tag="property" attribute="name|{widgetart}" value="Square Poster'
+                      if p not in sec: raise AssertionError((name, 'missing widget square'))
+                      sec=sec.replace(p,f'\t\t<property name="widgetsquare" tag="property" attribute="name|{widgettype}" value="favourite">false</property>\n'+p,1)
+                  stats[name]=count[0]
+                  sections[j]=sec
+              assert set(stats)==set(expected_groups)
+              assert all((v==14 if 'Panel' in k or k=='panelCommon' else v>=4) for k,v in stats.items()), stats
+              patched_t=''.join(sections).encode('utf-8')
+              assert original[xml_path].startswith(b'<?xml version="1.0"')
+              ET.fromstring(patched_t)
+          
+              overrides=original[overrides_path]
+              for a in [b'widgetArt',b'widgetArt.2']:
+                  old=b'<propertyfallback property="'+a+b'" attribute="widgetType'+(b'.2' if a.endswith(b'.2') else b'')+b'" value="favourite">Square Poster</propertyfallback>'
+                  new=old.replace(b'Square Poster',b'Poster')
+                  assert overrides.count(old)==1, (a, overrides.count(old))
+                  overrides=overrides.replace(old,new,1)
+              ET.fromstring(overrides)
+          
+              addon=original[addon_path]
+              assert addon.count(b'version="1.1.27"') == 1
+              addon=addon.replace(b'version="1.1.27"',b'version="1.1.28"',1)
+              assert addon.count(b'<news>')==1
+              addon=addon.replace(b'<news>',b'<news>1.1.28 TEST: Kodi favorites use proportional portrait poster artwork in Panel, Extended Panel, Compact Panel and Extended Compact Panel (widget rows 1 and 2), with aspect-keeping textures and existing square widget values migrated visually. All non-favorites and existing menus unchanged. ',1)
+              meta=ET.fromstring(addon)
+              assert meta.get('version')=='1.1.28'
+              changed={xml_path:patched_t,overrides_path:overrides,addon_path:addon}
+          
+              with ZipFile(target, 'w') as dst:
+                  for member in src.infolist():
+                      dst.writestr(copy(member),changed.get(member.filename,original[member.filename]))
+          
+          with ZipFile(target) as z:
+              assert z.testzip() is None
+              assert z.namelist()==list(original)
+              for path, data in original.items():
+                  assert z.read(path)==changed.get(path,data), path
+              assert len(z.namelist())==1026
+              assert ET.fromstring(z.read(addon_path)).get('version')=='1.1.28'
+              root=ET.fromstring(z.read(xml_path))
+              for name in expected_groups:
+                  group=root.find(f'./propertyGroup[@name="{name}"]')
+                  assert group is not None
+                  props=group.findall('property')
+                  for prop in [p for p in props if p.get('attribute','').startswith('name|widgetArt') and p.get('value')=='Poster']:
+                      idx=props.index(prop)
+                      assert idx>0
+                      prior=props[idx-1]
+                      assert prior.get('name')==prop.get('name') and prior.get('value')=='favourite', (name,prop.get('name'))
+                      assert prior.get('attribute','').startswith('name|widgetType')
+                      assert prior.text==prop.text
+              print('Stats:',stats)
+              print('Modified files:',list(changed))
+              print('Unchanged members:',len(original)-len(changed))
+              print('Members:',len(z.namelist()),'version:',meta.get('version'))
+              print('Output:',target,target.stat().st_size)
+              print('SHA256:',hashlib.sha256(target.read_bytes()).hexdigest())
+          PY
+
+      - name: Rebuild and verify Kodi repository catalogue
+        run: |
+          python3 tools/make_repo.py
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          import hashlib
+          data=Path('zips/addons.xml').read_bytes()
+          assert Path('zips/addons.xml.md5').read_text().strip()==hashlib.md5(data).hexdigest()
+          matches=[a for a in ET.fromstring(data) if a.get('id')=='skin.terror.lite']
+          assert len(matches)==1 and matches[0].get('version')=='1.1.28'
+          print('Kodi catalogue: Terror-Lite 1.1.28')
+          PY
+
+      - name: Commit verified release and Kodi catalogue
+        shell: bash
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.28.zip zips/addons.xml zips/addons.xml.md5
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release Terror-Lite 1.1.28 favourites cover proportions [skip ci]'
+          git push
