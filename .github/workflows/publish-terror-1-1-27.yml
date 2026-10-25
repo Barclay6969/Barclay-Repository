@@ -1,0 +1,104 @@
+name: Publish Terror-Lite 1.1.27 favorites widget
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-terror-1-1-27.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Barclay Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build verified 1.1.27 ZIP from 1.1.26
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import xml.etree.ElementTree as ET
+          import hashlib
+          import subprocess
+
+          source = Path('zips/skin.terror.lite/skin.terror.lite-1.1.26.zip')
+          target = Path('zips/skin.terror.lite/skin.terror.lite-1.1.27.zip')
+          addon = 'skin.terror.lite/addon.xml'
+          overrides = 'skin.terror.lite/shortcuts/overrides.xml'
+
+          # Require the exact 1.1.26 ZIP used for the successful Kodi test.
+          source_sha = subprocess.check_output(['git', 'hash-object', str(source)], text=True).strip()
+          assert source_sha == 'd4fcae3ae913b7b261674473d3e6175fbfcccba9', source_sha
+
+          old = (b'\t\t<node label="1036">\r\n'
+                 b'\t\t\t<shortcut label="1036" type="32010" condition="System.HasAddon(script.skin.helper.widgets)"')
+          new = (b'\t\t<node label="1036">\r\n'
+                 b'\t\t\t<!-- Omega native favourites widget; no Skin Helper Widgets required. -->\r\n'
+                 b'\t\t\t<shortcut label="Meine Favoriten (Kodi Omega)" icon="Favorites.png" widget="addon" widgetType="favourite">favourites://</shortcut>\r\n'
+                 b'\t\t\t<shortcut label="1036" type="32010" condition="System.HasAddon(script.skin.helper.widgets)"')
+          changes = {}
+          with ZipFile(source) as original:
+              assert original.testzip() is None
+              xml = original.read(overrides)
+              assert xml.count(old) == 1
+              patched = xml.replace(old, new, 1)
+              ET.fromstring(patched)
+              assert patched.count(b'Meine Favoriten (Kodi Omega)') == 1
+              changes[overrides] = patched
+
+              meta = original.read(addon)
+              assert meta.count(b'version="1.1.26"') == 1
+              assert meta.count(b'<news>') == 1
+              meta = meta.replace(b'version="1.1.26"', b'version="1.1.27"', 1)
+              meta = meta.replace(b'<news>',
+                  b'<news>1.1.27 TEST: Added native Kodi Omega favourites:// widget choice to Favourites widget group with no Skin Helper Widgets dependency; all other widgets, shortcuts, artwork and settings unchanged. ', 1)
+              assert ET.fromstring(meta).get('version') == '1.1.27'
+              changes[addon] = meta
+
+              with ZipFile(target, 'w') as output:
+                  for member in original.infolist():
+                      output.writestr(member, changes.get(member.filename, original.read(member.filename)))
+
+              with ZipFile(target) as output:
+                  assert output.testzip() is None
+                  assert output.namelist() == original.namelist()
+                  assert len(output.namelist()) == 1026
+                  for name in original.namelist():
+                      assert output.read(name) == changes.get(name, original.read(name)), name
+
+          print('Release ZIP:', target)
+          print('ZIP size:', target.stat().st_size)
+          print('SHA256:', hashlib.sha256(target.read_bytes()).hexdigest())
+          print('Changed files:', ', '.join(changes))
+          PY
+
+      - name: Regenerate Kodi add-on catalogue and MD5
+        run: |
+          python3 tools/make_repo.py
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          import hashlib
+          from pathlib import Path
+          data = Path('zips/addons.xml').read_bytes()
+          assert Path('zips/addons.xml.md5').read_text().strip() == hashlib.md5(data).hexdigest()
+          matches = [a for a in ET.fromstring(data) if a.get('id') == 'skin.terror.lite']
+          assert len(matches) == 1
+          assert matches[0].get('version') == '1.1.27'
+          print('Kodi catalogue now lists Terror-Lite', matches[0].get('version'))
+          PY
+
+      - name: Commit release ZIP and Kodi catalogue
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.27.zip zips/addons.xml zips/addons.xml.md5
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release Terror-Lite 1.1.27 with native favorites widget [skip ci]'
+          git push
