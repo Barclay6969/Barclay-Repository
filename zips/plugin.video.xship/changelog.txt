@@ -1,3 +1,8 @@
+2026.10.26.166
+- MegaKino: Domain aktualisiert und Wiedergabe der Quellen korrigiert.
+- GXPlayer-HLS ohne Dateiendung wird über InputStream Adaptive abgespielt.
+- Automatische Domain-Erkennung und Cache-Abgleich verbessert.
+
 2026.10.20.164
 - GEZ-KiNO ergänzt: Fehlt ein Film im Katalog, sucht xShip zusätzlich direkt in MediathekViewWeb und bietet passende Mediathek-Streams zur Wiedergabe an.
 
