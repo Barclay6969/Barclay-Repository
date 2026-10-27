@@ -1,0 +1,143 @@
+name: Publish TerrorLite 1.1.29 Versions fix
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-terror-1-1-29.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Barclay Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Package verified native Kodi Versions button in TerrorLite 1.1.29
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from copy import copy
+          from xml.etree import ElementTree as ET
+          import re
+          import hashlib
+
+          source=Path('zips/skin.terror.lite/skin.terror.lite-1.1.28.zip')
+          target=Path('zips/skin.terror.lite/skin.terror.lite-1.1.29.zip')
+          target.parent.mkdir(parents=True,exist_ok=True)
+          base='skin.terror.lite/'
+          xml_path=base+'16x9/DialogAddonInfo.xml'
+          addon_path=base+'addon.xml'
+
+          with ZipFile(source) as src:
+            assert src.testzip() is None, 'Source ZIP corrupt'
+            original={info.filename:src.read(info.filename) for info in src.infolist()}
+            assert len(original)==1026, 'Unexpected skin file count'
+            data=original[xml_path].decode('utf-8-sig')
+            original_tree=ET.fromstring(data)
+            menu=original_tree.find('.//control[@type="grouplist"][@id="9000"]')
+            assert menu is not None
+            menu_ids=[c.get('id') for c in menu.findall('control')]
+            assert menu_ids==['9','8','201','200','12','6','7','13','10'],menu_ids
+            assert all(c.findtext('height')=='66' for c in menu.findall('control'))
+            assert menu.findtext('height')=='594'
+
+            update_match=re.search(r'<control type="button" id="8">.*?</control>',data,re.S)
+            assert update_match
+            update_control=update_match.group()
+            assert update_control.count('<label>24069</label>')==1
+            data=data[:update_match.start()]+update_control.replace('<label>24069</label>','<label>24138</label>')+data[update_match.end():]
+
+            height_pattern=re.compile(r'(<control type="(?:button|radiobutton)" id="(?:9|8|201|200|12|6|7|13|10)">\s*<description>[^<]+</description>\s*<width>356</width>\s*)<height>66</height>')
+            data,n=height_pattern.subn(r'\g<1><height>62</height>',data)
+            assert n==9,('Existing controls resized',n)
+
+            group_pattern=re.compile(r'(<control type="grouplist" id="9000">\s*<left>58</left>\s*<top>387</top>\s*<width>356</width>\s*)<height>594</height>')
+            data,n=group_pattern.subn(r'\g<1><height>624</height>',data)
+            assert n==1,('Menu capacity adjusted',n)
+
+            marker='\t\t\t\t\t<control type="button" id="7">'
+            assert data.count(marker)==1
+            versions_button=(
+              '\t\t\t\t\t<control type="button" id="14">\n'
+              '\t\t\t\t\t\t<description>Select Addon Version button</description>\n'
+              '\t\t\t\t\t\t<width>356</width>\n'
+              '\t\t\t\t\t\t<height>62</height>\n'
+              '\t\t\t\t\t\t<label>24069</label>\n'
+              '\t\t\t\t\t\t<font>font15</font>\n'
+              '\t\t\t\t\t\t<visible>!Window.IsActive(1112)</visible>\n'
+              '\t\t\t\t\t</control>\n'
+            )
+            data=data.replace(marker,versions_button+marker,1)
+            new_xml=data.encode('utf-8')
+            tree=ET.fromstring(new_xml)
+            new_menu=tree.find('.//control[@type="grouplist"][@id="9000"]')
+            ids=[c.get('id') for c in new_menu.findall('control')]
+            assert ids==['9','8','201','200','12','6','14','7','13','10'],ids
+            assert new_menu.find('control[@id="14"]').findtext('label')=='24069'
+            assert new_menu.find('control[@id="8"]').findtext('label')=='24138'
+            assert new_menu.findtext('height')=='624'
+            assert all(c.findtext('height')=='62' for c in new_menu.findall('control'))
+            assert 10*62<=624
+            assert 387+624<=1020,'Menu exceeds the panel height'
+
+            addon=original[addon_path]
+            assert addon.count(b'version="1.1.28"')==1
+            addon=addon.replace(b'version="1.1.28"',b'version="1.1.29"',1)
+            assert addon.count(b'<news>')==1
+            addon=addon.replace(b'<news>',b'<news>1.1.29 TEST: Restore native add-on Versions button (Kodi control ID 14), correct Update button label, and fit all 10 add-on actions within the panel. ',1)
+            assert ET.fromstring(addon).get('version')=='1.1.29'
+            changed={xml_path:new_xml,addon_path:addon}
+            with ZipFile(target,'w') as dst:
+              for info in src.infolist():
+                dst.writestr(copy(info),changed.get(info.filename,original[info.filename]))
+
+          with ZipFile(target) as test:
+            assert test.testzip() is None,'Test ZIP CRC failed'
+            assert test.namelist()==list(original)
+            assert all(test.read(path)==changed.get(path,value) for path,value in original.items())
+            assert ET.fromstring(test.read(xml_path)).find('.//control[@id="14"]') is not None
+            assert ET.fromstring(test.read(addon_path)).get('version')=='1.1.29'
+          print('PASS: native Kodi Versions button ID 14 restored with localized label 24069')
+          print('PASS: Update button ID 8 corrected to localization 24138')
+          print('PASS: all 10 controls fit in the original TerrorLite dialog without clipping')
+          print('PASS: XML, add-on manifest, ZIP integrity and all 1026 archive entries verified')
+          print('Unchanged members:',len(original)-len(changed))
+          print('Output:',target,'size:',target.stat().st_size)
+          print('SHA256:',hashlib.sha256(target.read_bytes()).hexdigest())
+          assert hashlib.sha256(target.read_bytes()).hexdigest()=='d6cb8a6d7b7c03a6d66201bf752d1cf1ad613fe2a7e035c856c6b4769e371a34','Released archive must be byte-for-byte identical to the tested version'
+          PY
+
+      - name: Rebuild and validate repository catalogue
+        run: |
+          python3 tools/make_repo.py
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          import hashlib
+          manifest=Path('zips/addons.xml').read_bytes()
+          assert Path('zips/addons.xml.md5').read_text().strip()==hashlib.md5(manifest).hexdigest(), 'Index MD5 mismatch'
+          addons=list(ET.fromstring(manifest))
+          skins=[a for a in addons if a.get('id')=='skin.terror.lite']
+          assert len(skins)==1 and skins[0].get('version')=='1.1.29', 'Skin update is missing from repository index'
+          for id in ('plugin.video.xship','plugin.video.serienstream','plugin.video.youtube','plugin.video.filmpalast.ex','repository.barclay'):
+            assert any(a.get('id')==id for a in addons), f'Missing repository add-on {id}'
+          print('PASS: Barclay Repository advertises TerrorLite 1.1.29, preserves addons, and MD5 matches')
+          PY
+
+      - name: Commit final skin 1.1.29 and repository catalogue to main
+        shell: bash
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.29.zip zips/addons.xml zips/addons.xml.md5
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release TerrorLite 1.1.29 addon Versions selector [skip ci]'
+          git push
