@@ -1,0 +1,32 @@
+name: Inspect Terror-Lite addon version button
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/inspect-terror-versions.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect current addon details screen in TerrorLite 1.1.28
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          from xml.etree import ElementTree as ET
+          z='zips/skin.terror.lite/skin.terror.lite-1.1.28.zip'
+          with ZipFile(z) as f:
+            print('Zip entry count:',len(f.namelist()))
+            paths=[p for p in f.namelist() if p.endswith('/DialogAddonInfo.xml')]
+            print('Matches:',paths)
+            assert len(paths)==1
+            raw=f.read(paths[0])
+            print('XML length:',len(raw))
+            print(raw.decode('utf-8-sig')[:32000])
+            root=ET.fromstring(raw)
+            print('Version button id14 nodes:',[(x.tag,x.attrib) for x in root.iter() if x.attrib.get('id')=='14'])
+          PY
