@@ -1,0 +1,54 @@
+name: Inspect TerrorLite 1.1.29 controls
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/inspect-terror-controls.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect Kodi skin XML in existing released archive
+        run: |
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          import re
+          p='zips/skin.terror.lite/skin.terror.lite-1.1.29.zip'
+          with ZipFile(p) as z:
+            names=z.namelist()
+            print('FILES OF INTEREST')
+            for n in names:
+              if n.lower().endswith('.xml') and any(t in n.lower() for t in ['settings', 'videoosd', 'includes', 'home', 'dialogpvr', 'dialogseekbar', 'defaults']):
+                print(n)
+            for term in ['FileManager','filemanager','widgetInfo','WidgetInfo','widgetOpacity','WidgetOpacity','AutoScroll','autoscroll','GlobalWidget','Global widget','Case on widget','OpenFileManager','ActivateWindow(filemanager','VideoOSD']:
+              matches=[]
+              for n in names:
+                if not n.lower().endswith(('.xml','.py','.po')):continue
+                if n.endswith('.po'):continue
+                s=z.read(n).decode('utf-8-sig','replace')
+                if term.lower() in s.lower():
+                  matches.append(n)
+              print('TERM',repr(term),'FILES',matches[:32])
+            for n in names:
+              if n.endswith(('/VideoOSD.xml','/Settings.xml','/SkinSettings.xml','/SettingsCategory.xml','/SettingsSystemInfo.xml')):
+                s=z.read(n).decode('utf-8-sig','replace')
+                print('===== FULL',n,len(s),'=====')
+                print(s[:25000])
+                print('===== END',n,'=====')
+            for n in names:
+              if not n.lower().endswith('.xml'):continue
+              s=z.read(n).decode('utf-8-sig','replace')
+              lines=s.splitlines()
+              inds=[i for i,l in enumerate(lines) if re.search('FileManager|filemanager|widgetOpacity|WidgetOpacity|autoscroll|GlobalWidget|WidgetInfo|Case on widget|Opacity',l,re.I)]
+              if inds and not n.endswith(('/VideoOSD.xml','/Settings.xml','/SkinSettings.xml','/SettingsCategory.xml','/SettingsSystemInfo.xml')):
+                print('----- MATCH CONTEXT',n,'-----')
+                seen=set()
+                for i in inds[:20]:
+                  for j in range(max(0,i-5),min(len(lines),i+7)):
+                    if j not in seen:
+                      seen.add(j);print(f'{j+1:04} {lines[j][:240]}')
+          PY
