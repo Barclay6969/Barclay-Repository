@@ -1,0 +1,121 @@
+name: Publish TerrorLite 1.1.32 widget opacity 75%
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-terror-1-1-32.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Barclay Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build and verify TerrorLite 1.1.32
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from copy import copy
+          from xml.etree import ElementTree as ET
+          import hashlib
+
+          folder = Path('zips/skin.terror.lite')
+          source = folder/'skin.terror.lite-1.1.31.zip'
+          target = folder/'skin.terror.lite-1.1.32.zip'
+          base = 'skin.terror.lite/'
+          homepath = base+'16x9/Home.xml'
+          addonpath = base+'addon.xml'
+          optionspath = base+'16x9/Includes_Select.xml'
+
+          with ZipFile(source) as z:
+              assert z.testzip() is None, '1.1.31 source ZIP corrupt'
+              infos=z.infolist()
+              original={i.filename:z.read(i.filename) for i in infos}
+              assert len(infos)==1027, len(infos)
+
+              home=original[homepath].decode('utf-8-sig')
+              original_default='<onload condition="!Skin.HasSetting(TerrorLite.WidgetDefaults1130Applied)">Skin.SetString(Widget.Trans,65)</onload>'
+              revised_default=original_default.replace('Widget.Trans,65','Widget.Trans,75')
+              assert home.count(original_default)==1,'Missing original 1.1.30 widget default'
+              home=home.replace(original_default,revised_default,1)
+              original_marker='<onload condition="!Skin.HasSetting(TerrorLite.WidgetDefaults1130Applied)">Skin.SetBool(TerrorLite.WidgetDefaults1130Applied)</onload>'
+              assert home.count(original_marker)==1,'Missing original 1.1.30 per-profile marker'
+              migration=(
+                  '\n\t<!-- 1.1.32: apply the new 75 percent opacity exactly once per Kodi profile,\n'
+                  '\t     including customers already updated to TerrorLite 1.1.30/1.1.31. -->\n'
+                  '\t<onload condition="!Skin.HasSetting(TerrorLite.WidgetOpacity1132Applied)">Skin.SetString(Widget.Trans,75)</onload>\n'
+                  '\t<onload condition="!Skin.HasSetting(TerrorLite.WidgetOpacity1132Applied)">Skin.SetBool(TerrorLite.WidgetOpacity1132Applied)</onload>'
+              )
+              home=home.replace(original_marker,original_marker+migration,1)
+              root=ET.fromstring(home)
+              assert len([x for x in root.findall('onload') if x.text=='Skin.SetString(Widget.Trans,75)'])==2
+              assert len([x for x in root.findall('onload') if x.text=='Skin.SetBool(TerrorLite.WidgetOpacity1132Applied)'])==1
+              assert 'Widget.Trans,65' not in home, 'Old 65% setting remains in Home'
+              assert 'Skin.SetString(Widget.Trans,75)' in original[optionspath].decode('utf-8-sig'), '75% is not an available UI option'
+
+              addon=original[addonpath]
+              assert addon.count(b'version="1.1.31"')==1
+              addon=addon.replace(b'version="1.1.31"',b'version="1.1.32"',1)
+              assert addon.count(b'<news>')==1
+              addon=addon.replace(
+                  b'<news>',
+                  b'<news>1.1.32: Widget opacity default increased from 65 to 75 percent and applied once on update for existing Kodi profiles. All other settings and PVR subtitle fixes retained. ',
+                  1
+              )
+              assert ET.fromstring(addon).get('version')=='1.1.32'
+              changed={homepath:home.encode('utf-8'),addonpath:addon}
+
+              with ZipFile(target,'w') as out:
+                  for info in infos:
+                      out.writestr(copy(info),changed.get(info.filename,original[info.filename]))
+
+          with ZipFile(target) as z:
+              assert z.testzip() is None, 'Output ZIP CRC failed'
+              assert z.namelist()==[i.filename for i in infos], 'Skin member count/order changed'
+              for path,old in original.items():
+                  assert z.read(path)==changed.get(path,old),f'Unexpected change: {path}'
+              assert ET.fromstring(z.read(addonpath)).get('version')=='1.1.32'
+              assert z.read(base+'resources/lib/pvr_subtitles_default.py')==original[base+'resources/lib/pvr_subtitles_default.py']
+          print('PASS: Widget opacity is 75% on new installs and on existing clients via a one-time profile migration')
+          print('PASS: Previous subtitle handling, PVR controls, ratings, artwork, menu and other settings unchanged')
+          print('PASS: Original ZIP members preserved; only Home.xml and addon.xml modified')
+          print('PASS: XML, ZIP CRC and manifest checks')
+          print('OUTPUT:',target,'bytes:',target.stat().st_size)
+          print('SHA256:',hashlib.sha256(target.read_bytes()).hexdigest())
+          PY
+
+      - name: Rebuild and verify Kodi repository index
+        run: |
+          python3 tools/make_repo.py
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          import hashlib
+          manifest=Path('zips/addons.xml').read_bytes()
+          assert Path('zips/addons.xml.md5').read_text().strip()==hashlib.md5(manifest).hexdigest(), 'Index checksum mismatch'
+          addons=list(ET.fromstring(manifest))
+          skin=[x for x in addons if x.get('id')=='skin.terror.lite']
+          assert len(skin)==1 and skin[0].get('version')=='1.1.32'
+          for addon in ('plugin.video.xship','plugin.video.serienstream','plugin.video.youtube','plugin.video.filmpalast.ex','repository.barclay'):
+              assert any(x.get('id')==addon for x in addons),f'Missing existing addon: {addon}'
+          print('PASS: Barclay Repo advertises TerrorLite 1.1.32; existing add-ons preserved')
+          PY
+
+      - name: Commit ZIP and index
+        shell: bash
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.32.zip zips/addons.xml zips/addons.xml.md5
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release TerrorLite 1.1.32 widget opacity 75 percent [skip ci]'
+          git push
