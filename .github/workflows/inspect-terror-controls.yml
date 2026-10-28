@@ -12,43 +12,42 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect Kodi skin XML in existing released archive
+      - name: Inspect controls and settings defaults
         run: |
           python3 - <<'PY'
           from zipfile import ZipFile
+          from xml.etree import ElementTree as ET
           import re
           p='zips/skin.terror.lite/skin.terror.lite-1.1.29.zip'
           with ZipFile(p) as z:
-            names=z.namelist()
-            print('FILES OF INTEREST')
-            for n in names:
-              if n.lower().endswith('.xml') and any(t in n.lower() for t in ['settings', 'videoosd', 'includes', 'home', 'dialogpvr', 'dialogseekbar', 'defaults']):
-                print(n)
-            for term in ['FileManager','filemanager','widgetInfo','WidgetInfo','widgetOpacity','WidgetOpacity','AutoScroll','autoscroll','GlobalWidget','Global widget','Case on widget','OpenFileManager','ActivateWindow(filemanager','VideoOSD']:
-              matches=[]
-              for n in names:
-                if not n.lower().endswith(('.xml','.py','.po')):continue
-                if n.endswith('.po'):continue
-                s=z.read(n).decode('utf-8-sig','replace')
-                if term.lower() in s.lower():
-                  matches.append(n)
-              print('TERM',repr(term),'FILES',matches[:32])
-            for n in names:
-              if n.endswith(('/VideoOSD.xml','/Settings.xml','/SkinSettings.xml','/SettingsCategory.xml','/SettingsSystemInfo.xml')):
-                s=z.read(n).decode('utf-8-sig','replace')
-                print('===== FULL',n,len(s),'=====')
-                print(s[:25000])
-                print('===== END',n,'=====')
-            for n in names:
-              if not n.lower().endswith('.xml'):continue
-              s=z.read(n).decode('utf-8-sig','replace')
-              lines=s.splitlines()
-              inds=[i for i,l in enumerate(lines) if re.search('FileManager|filemanager|widgetOpacity|WidgetOpacity|autoscroll|GlobalWidget|WidgetInfo|Case on widget|Opacity',l,re.I)]
-              if inds and not n.endswith(('/VideoOSD.xml','/Settings.xml','/SkinSettings.xml','/SettingsCategory.xml','/SettingsSystemInfo.xml')):
-                print('----- MATCH CONTEXT',n,'-----')
+            def content(name):
+              return z.read('skin.terror.lite/'+name).decode('utf-8-sig','replace')
+            for name in ['16x9/Includes_LiveTV.xml','16x9/Defaults.xml','16x9/Includes_Select.xml','16x9/custom_1129_Select.xml','16x9/Home.xml','addon.xml']:
+              data=content(name)
+              if name.endswith(('Includes_LiveTV.xml','Defaults.xml')):
+                print('=== WHOLE '+name+' ===')
+                print(data[:45000])
+              else:
+                print('=== EXCERPTS '+name+' ===')
+                a=data.splitlines()
+                find=re.compile(r'widget|Opacity|[dD]efault|[oO]nload|Skin.Set|Glass|Case|Info|SetFocus',re.I)
+                matches=[i for i,l in enumerate(a) if find.search(l)]
                 seen=set()
-                for i in inds[:20]:
-                  for j in range(max(0,i-5),min(len(lines),i+7)):
+                for i in matches[:50]:
+                  for j in range(max(0,i-3),min(len(a),i+5)):
                     if j not in seen:
-                      seen.add(j);print(f'{j+1:04} {lines[j][:240]}')
+                      seen.add(j)
+                      print(f'{j+1:04}: {a[j][:270]}')
+            name='16x9/SkinSettings.xml'
+            data=content(name)
+            a=data.splitlines()
+            print('=== WIDGETS PANEL of '+name+' ===')
+            j=data.find('<control type="grouplist" id="9008">')
+            print('WIDGET GROUP ID 9008 position',j)
+            if j!=-1:print(data[j:j+10000])
+            for token in ['WidgetOpacity','GlobalWidget','widgetInfo','widgetinfo','AutoScrollListWidget','AutoScrollWidget','Glass','WidgetBackground','infoCase','CaseWidget']:
+              print('=== TOKEN',token,'===')
+              for i,l in enumerate(a):
+                if token.lower() in l.lower():
+                  for x in a[max(0,i-5):i+8]:print(x[:270])
           PY
