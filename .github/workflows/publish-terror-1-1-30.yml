@@ -59,19 +59,19 @@ jobs:
               # Locate the existing System Information tile by its unique label
               # and retain the archive's original newline convention.
               import re
-              newline = '\\r\\n' if '\\r\\n' in settings else '\\n'
-              matches=list(re.finditer(r'<item>[\\s\\S]*?<label>10511</label>[\\s\\S]*?<onclick>ActivateWindow\\(SystemInfo\\)</onclick>[\\s\\S]*?</item>',settings))
+              newline = '\r\n' if '\r\n' in settings else '\n'
+              matches=list(re.finditer(r'<item>(?:(?!<item>).)*?<label>10511</label>(?:(?!<item>).)*?<onclick>ActivateWindow\(SystemInfo\)</onclick>(?:(?!<item>).)*?</item>',settings,re.S))
               assert len(matches)==1, f'Expected one SystemInfo tile, got {len(matches)}'
               match=matches[0]
               # Match starts at the item tag, so indentation on the preceding
               # line remains unchanged; indent the following lines identically.
-              indent='\\t'*5
+              indent='\t'*5
               tile=(
                   '<item>'+newline+
-                  indent+'\\t<label>7</label>'+newline+
-                  indent+'\\t<property name="description">7</property>'+newline+
-                  indent+'\\t<onclick>ActivateWindow(FileManager)</onclick>'+newline+
-                  indent+'\\t<icon>views/settings/filemanager.png</icon>'+newline+
+                  indent+'\t<label>7</label>'+newline+
+                  indent+'\t<property name="description">7</property>'+newline+
+                  indent+'\t<onclick>ActivateWindow(FileManager)</onclick>'+newline+
+                  indent+'\t<icon>views/settings/filemanager.png</icon>'+newline+
                   indent+'</item>'+newline+
                   indent
               )
