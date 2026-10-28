@@ -56,24 +56,26 @@ jobs:
               assert ET.fromstring(video) is not None
 
               settings = original[settings_path].decode('utf-8-sig')
-              old_tile = (
-                  '\t\t\t\t\t<item>\n'
-                  '\t\t\t\t\t\t<label>10511</label>\n'
-                  '\t\t\t\t\t\t<property name="description">31405</property>\n'
-                  '\t\t\t\t\t\t<onclick>ActivateWindow(SystemInfo)</onclick>\n'
-                  '\t\t\t\t\t\t<icon>views/settings/systeminfo.png</icon>\n'
-                  '\t\t\t\t\t</item>'
+              # Locate the existing System Information tile by its unique label
+              # and retain the archive's original newline convention.
+              import re
+              newline = '\\r\\n' if '\\r\\n' in settings else '\\n'
+              matches=list(re.finditer(r'<item>[\\s\\S]*?<label>10511</label>[\\s\\S]*?<onclick>ActivateWindow\\(SystemInfo\\)</onclick>[\\s\\S]*?</item>',settings))
+              assert len(matches)==1, f'Expected one SystemInfo tile, got {len(matches)}'
+              match=matches[0]
+              # Match starts at the item tag, so indentation on the preceding
+              # line remains unchanged; indent the following lines identically.
+              indent='\\t'*5
+              tile=(
+                  '<item>'+newline+
+                  indent+'\\t<label>7</label>'+newline+
+                  indent+'\\t<property name="description">7</property>'+newline+
+                  indent+'\\t<onclick>ActivateWindow(FileManager)</onclick>'+newline+
+                  indent+'\\t<icon>views/settings/filemanager.png</icon>'+newline+
+                  indent+'</item>'+newline+
+                  indent
               )
-              assert settings.count(old_tile) == 1
-              file_manager_tile = (
-                  '\t\t\t\t\t<item>\n'
-                  '\t\t\t\t\t\t<label>7</label>\n'
-                  '\t\t\t\t\t\t<property name="description">7</property>\n'
-                  '\t\t\t\t\t\t<onclick>ActivateWindow(FileManager)</onclick>\n'
-                  '\t\t\t\t\t\t<icon>views/settings/filemanager.png</icon>\n'
-                  '\t\t\t\t\t</item>\n'
-              )
-              settings = settings.replace(old_tile,file_manager_tile+old_tile,1)
+              settings=settings[:match.start()]+tile+settings[match.start():]
               # 11 tiles use the existing six-column layout. Make the two
               # focused layouts reference the panel, not its parent group.
               for comparator in ('Integer.IsLessOrEqual','Integer.IsGreater'):
