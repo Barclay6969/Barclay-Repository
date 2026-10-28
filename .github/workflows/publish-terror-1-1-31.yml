@@ -1,0 +1,195 @@
+name: Publish TerrorLite 1.1.31 PVR subtitle defaults
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-terror-1-1-31.yml'
+      - 'tools/terror_lite_pvr_subtitles_default.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Barclay Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify scoped PVR subtitle monitor using Kodi mock
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import ast
+          import sys
+          import types
+          import runpy
+          from pathlib import Path
+
+          path=Path('tools/terror_lite_pvr_subtitles_default.py')
+          code=path.read_text(encoding='utf-8')
+          ast.parse(code)
+          assert 'showSubtitles(False)' in code
+          assert 'VideoPlayer.Content(livetv)' in code
+          assert 'VideoPlayer.SubtitlesEnabled' in code
+          assert 'getSkinDir() != SKIN_ID' in code
+          assert 'Settings.SetSettingValue' not in code
+          assert 'onAVChange' not in code
+
+          state={'time':0.0,'tick':0,'channel':'A','enabled':True,'calls':[],'skin':'skin.terror.lite'}
+          homeprops={}
+          class FakeTime:
+              @staticmethod
+              def monotonic():
+                  return state['time']
+          class FakeMonitor:
+              def abortRequested(self):
+                  return state['tick'] >= 20
+              def waitForAbort(self,secs):
+                  state['time'] += secs
+                  state['tick'] += 1
+                  tick=state['tick']
+                  if tick == 4:
+                      # Manually enable subtitles on A; skin must not turn off again.
+                      state['enabled']=True
+                  if tick == 7:
+                      state['channel']='B';state['enabled']=True
+                  if tick == 12:
+                      state['channel']=None;state['enabled']=True
+                  if tick == 15:
+                      state['channel']='C';state['enabled']=True
+                  return False
+          class FakePlayer:
+              def showSubtitles(self,enabled):
+                  state['calls'].append((state['channel'],enabled))
+                  state['enabled']=enabled
+          class FakeHome:
+              def getProperty(self,name):return homeprops.get(name,'')
+              def setProperty(self,name,val):homeprops[name]=val
+              def clearProperty(self,name):homeprops.pop(name,None)
+          xbmc=types.ModuleType('xbmc')
+          xbmc.Monitor=FakeMonitor
+          xbmc.Player=FakePlayer
+          xbmc.getSkinDir=lambda:state['skin']
+          xbmc.getCondVisibility=lambda cond:(
+              state['channel'] is not None if cond=='VideoPlayer.Content(livetv)'
+              else state['enabled'] if cond=='VideoPlayer.SubtitlesEnabled'
+              else False
+          )
+          xbmc.getInfoLabel=lambda label:(
+              state['channel'] if label=='VideoPlayer.ChannelName' and state['channel'] else
+              '1' if label=='VideoPlayer.ChannelNumberLabel' and state['channel'] else ''
+          )
+          xbmc.log=lambda *args:None
+          xbmc.LOGWARNING=2
+          xbmcgui=types.ModuleType('xbmcgui')
+          xbmcgui.Window=lambda _id:FakeHome()
+          sys.modules.update({'xbmc':xbmc,'xbmcgui':xbmcgui,'time':FakeTime})
+          runpy.run_path(str(path),run_name='__main__')
+          assert state['calls']==[('A',False),('B',False),('C',False)],state['calls']
+          assert not homeprops,homeprops
+          print('PASS: PVR channel A/B/C each default subtitles to OFF exactly once')
+          print('PASS: manual re-enabling on same channel is preserved')
+          print('PASS: other video playback is left untouched; daemon lock cleared')
+          PY
+
+      - name: Package and validate TerrorLite 1.1.31 ZIP
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from copy import copy
+          from xml.etree import ElementTree as ET
+          import hashlib
+
+          source=Path('zips/skin.terror.lite/skin.terror.lite-1.1.30.zip')
+          target=Path('zips/skin.terror.lite/skin.terror.lite-1.1.31.zip')
+          base='skin.terror.lite/'
+          homepath=base+'16x9/Home.xml'
+          addonpath=base+'addon.xml'
+          monitorpath=base+'resources/lib/pvr_subtitles_default.py'
+          monitor=Path('tools/terror_lite_pvr_subtitles_default.py').read_bytes()
+
+          with ZipFile(source) as z:
+              assert z.testzip() is None,'Source ZIP corrupt'
+              infos=z.infolist()
+              original={i.filename:z.read(i.filename) for i in infos}
+              assert len(infos)==1026,len(infos)
+              assert monitorpath not in original, 'Monitor must be a new file'
+              home=original[homepath].decode('utf-8-sig')
+              anchor='<onload>Skin.SetBool(SkinInfo.Service.Online)</onload>'
+              assert home.count(anchor)==1,'Expected existing skin info startup command'
+              hook=(
+                  '<!-- Start a once-per-skin background monitor to switch PVR subtitles off at channel tune. -->\n'
+                  '\t<onload condition="String.IsEmpty(Window(Home).Property(TerrorLite.PVRSubtitleDefaultsRunning))">'
+                  'RunScript(special://skin/resources/lib/pvr_subtitles_default.py)</onload>\n\t'
+              )
+              home=home.replace(anchor,anchor+'\n\t'+hook,1)
+              assert ET.fromstring(home) is not None
+              assert home.count('RunScript(special://skin/resources/lib/pvr_subtitles_default.py)')==1
+
+              addon=original[addonpath]
+              assert addon.count(b'version="1.1.30"')==1
+              addon=addon.replace(b'version="1.1.30"',b'version="1.1.31"',1)
+              assert addon.count(b'<news>')==1
+              addon=addon.replace(
+                  b'<news>',
+                  b'<news>1.1.31: On each Live TV PVR channel tune, default subtitles to OFF via a lightweight skin-owned monitor. Films, series, Kodi global preferences and manually re-enabled channel subtitles are unchanged. ',
+                  1
+              )
+              assert ET.fromstring(addon).get('version')=='1.1.31'
+              changed={
+                  homepath:home.encode('utf-8'),
+                  addonpath:addon,
+                  monitorpath:monitor,
+              }
+              with ZipFile(target,'w') as out:
+                  for info in infos:
+                      out.writestr(copy(info),changed.get(info.filename,original[info.filename]))
+                  out.writestr(monitorpath,monitor)
+
+          with ZipFile(target) as z:
+              assert z.testzip() is None
+              assert z.namelist()==[i.filename for i in infos]+[monitorpath]
+              assert len(z.namelist())==1027
+              for p,data in original.items():
+                  assert z.read(p)==changed.get(p,data),p
+              assert z.read(monitorpath)==monitor
+              assert ET.fromstring(z.read(addonpath)).get('version')=='1.1.31'
+              assert 'PVRSubtitleDefaultsRunning' in z.read(homepath).decode('utf-8')
+          print('PASS: 1.1.31 skin addon ZIP integrity, XML, Python and source preservation')
+          print('PASS: 1024 of 1026 existing ZIP entries unchanged; 1 Python added')
+          print('Output:',target,'size:',target.stat().st_size)
+          print('SHA256:',hashlib.sha256(target.read_bytes()).hexdigest())
+          PY
+
+      - name: Rebuild and validate Kodi repository index
+        run: |
+          python3 tools/make_repo.py
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          import hashlib
+          xml=Path('zips/addons.xml').read_bytes()
+          assert Path('zips/addons.xml.md5').read_text().strip()==hashlib.md5(xml).hexdigest()
+          addons=list(ET.fromstring(xml))
+          skins=[a for a in addons if a.get('id')=='skin.terror.lite']
+          assert len(skins)==1 and skins[0].get('version')=='1.1.31'
+          for id in ('plugin.video.xship','plugin.video.serienstream','plugin.video.youtube','plugin.video.filmpalast.ex','repository.barclay'):
+              assert any(a.get('id')==id for a in addons), id
+          print('PASS: TerrorLite 1.1.31 indexed with existing add-ons intact')
+          PY
+
+      - name: Commit ZIP and repository index
+        shell: bash
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.31.zip zips/addons.xml zips/addons.xml.md5
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release TerrorLite 1.1.31 PVR subtitles off by default [skip ci]'
+          git push
