@@ -1,0 +1,187 @@
+name: Publish TerrorLite 1.1.30 PVR, File Manager and widget defaults
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-terror-1-1-30.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Barclay Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build TerrorLite 1.1.30 from published 1.1.29
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from copy import copy
+          import hashlib
+          import xml.etree.ElementTree as ET
+
+          base = 'skin.terror.lite/'
+          source = Path('zips/skin.terror.lite/skin.terror.lite-1.1.29.zip')
+          target = Path('zips/skin.terror.lite/skin.terror.lite-1.1.30.zip')
+          video_path = base + '16x9/VideoOSD.xml'
+          settings_path = base + '16x9/Settings.xml'
+          home_path = base + '16x9/Home.xml'
+          addon_path = base + 'addon.xml'
+          icon_path = base + 'media/views/settings/filemanager.png'
+
+          with ZipFile(source) as src:
+              assert src.testzip() is None, '1.1.29 source archive failed CRC'
+              infos = src.infolist()
+              original = {i.filename:src.read(i.filename) for i in infos}
+              assert len(infos) == 1026, f'Unexpected source archive size: {len(infos)}'
+              assert icon_path in original, 'Existing File Manager tile artwork is missing'
+
+              video = original[video_path].decode('utf-8-sig')
+              old_focus = '<onload condition="VideoPlayer.Content(livetv)">SetFocus(808)</onload>'
+              assert video.count(old_focus) == 1
+              new_focus = (
+                  '<!-- Live TV: start on Pause (ID 812), fallback to Guide only if pause is unavailable. -->\n'
+                  '\t<onload condition="VideoPlayer.Content(livetv) + Player.PauseEnabled">SetFocus(812)</onload>\n'
+                  '\t<onload condition="VideoPlayer.Content(livetv) + !Player.PauseEnabled">SetFocus(808)</onload>'
+              )
+              video = video.replace(old_focus,new_focus,1)
+              assert ET.fromstring(video) is not None
+
+              settings = original[settings_path].decode('utf-8-sig')
+              old_tile = (
+                  '\t\t\t\t\t<item>\n'
+                  '\t\t\t\t\t\t<label>10511</label>\n'
+                  '\t\t\t\t\t\t<property name="description">31405</property>\n'
+                  '\t\t\t\t\t\t<onclick>ActivateWindow(SystemInfo)</onclick>\n'
+                  '\t\t\t\t\t\t<icon>views/settings/systeminfo.png</icon>\n'
+                  '\t\t\t\t\t</item>'
+              )
+              assert settings.count(old_tile) == 1
+              file_manager_tile = (
+                  '\t\t\t\t\t<item>\n'
+                  '\t\t\t\t\t\t<label>7</label>\n'
+                  '\t\t\t\t\t\t<property name="description">7</property>\n'
+                  '\t\t\t\t\t\t<onclick>ActivateWindow(FileManager)</onclick>\n'
+                  '\t\t\t\t\t\t<icon>views/settings/filemanager.png</icon>\n'
+                  '\t\t\t\t\t</item>\n'
+              )
+              settings = settings.replace(old_tile,file_manager_tile+old_tile,1)
+              # 11 tiles use the existing six-column layout. Make the two
+              # focused layouts reference the panel, not its parent group.
+              for comparator in ('Integer.IsLessOrEqual','Integer.IsGreater'):
+                  old = f'<focusedlayout width="{"360" if comparator.endswith("LessOrEqual") else "300"}" height="410" condition="{comparator}(Container(50).NumItems,10)">'
+                  new = old.replace('Container(50)','Container(9000)')
+                  assert settings.count(old)==1, f'Expected focused layout not found: {old}'
+                  settings = settings.replace(old,new,1)
+              settings_root=ET.fromstring(settings)
+              panel=settings_root.find('.//control[@type="panel"][@id="9000"]')
+              assert panel is not None
+              items=panel.find('content').findall('item')
+              assert len(items)==11, len(items)
+              manager=[x for x in items if x.findtext('onclick')=='ActivateWindow(FileManager)']
+              assert len(manager)==1 and manager[0].findtext('icon')=='views/settings/filemanager.png'
+              assert all('Container(9000)' in x.get('condition','') for x in panel.findall('focusedlayout'))
+
+              home = original[home_path].decode('utf-8-sig')
+              old_marker = (
+                  '\t<onload condition="!Skin.HasSetting(TerrorOmega.Preferences112Applied)">Skin.SetBool(TerrorOmega.Preferences112Applied)</onload>'
+              )
+              assert home.count(old_marker)==1
+              migration = (
+                  '\n\t<!-- TerrorLite 1.1.30: apply requested widget defaults once per Kodi profile,\n'
+                  '\t     including existing installations; users can customize afterwards. -->\n'
+                  '\t<onload condition="!Skin.HasSetting(TerrorLite.WidgetDefaults1130Applied)">Skin.SetString(Widget.Trans,65)</onload>\n'
+                  '\t<onload condition="!Skin.HasSetting(TerrorLite.WidgetDefaults1130Applied)">Skin.Reset(Enable.GlobalWidgetBack)</onload>\n'
+                  '\t<onload condition="!Skin.HasSetting(TerrorLite.WidgetDefaults1130Applied)">Skin.Reset(Enable.ListWidgetAutoscroll)</onload>\n'
+                  '\t<onload condition="!Skin.HasSetting(TerrorLite.WidgetDefaults1130Applied)">Skin.SetString(Widget.CaseInfo,Glass)</onload>\n'
+                  '\t<onload condition="!Skin.HasSetting(TerrorLite.WidgetDefaults1130Applied)">Skin.SetBool(TerrorLite.WidgetDefaults1130Applied)</onload>'
+              )
+              home=home.replace(old_marker,old_marker+migration,1)
+              home_root=ET.fromstring(home)
+              migration_calls=[n.text for n in home_root.findall('onload') if n.get('condition','').find('TerrorLite.WidgetDefaults1130Applied')!=-1]
+              assert migration_calls == [
+                  'Skin.SetString(Widget.Trans,65)',
+                  'Skin.Reset(Enable.GlobalWidgetBack)',
+                  'Skin.Reset(Enable.ListWidgetAutoscroll)',
+                  'Skin.SetString(Widget.CaseInfo,Glass)',
+                  'Skin.SetBool(TerrorLite.WidgetDefaults1130Applied)'
+              ], migration_calls
+
+              # Verify these are the exact widget setting names used by the UI.
+              skinsettings=original[base+'16x9/SkinSettings.xml']
+              options=original[base+'16x9/Includes_Select.xml']
+              assert b'Skin.ToggleSetting(Enable.GlobalWidgetBack)' in skinsettings
+              assert b'Skin.ToggleSetting(Enable.ListWidgetAutoscroll)' in skinsettings
+              assert b'Skin.SetString(Widget.Trans,65)' in options
+              assert b'Skin.SetString(Widget.CaseInfo,Glass)' in options
+
+              addon=original[addon_path]
+              assert addon.count(b'version="1.1.29"') == 1
+              addon=addon.replace(b'version="1.1.29"',b'version="1.1.30"',1)
+              assert addon.count(b'<news>') == 1
+              addon=addon.replace(b'<news>',b'<news>1.1.30: Live-TV OSD initially focuses Pause; File Manager restored in system settings using existing tile artwork; widget opacity 65%, global backgrounds OFF, automatic scroll OFF and Glass case become one-time per-profile upgrade defaults. ',1)
+              assert ET.fromstring(addon).get('version')=='1.1.30'
+
+              changed={
+                  video_path:video.encode('utf-8'),
+                  settings_path:settings.encode('utf-8'),
+                  home_path:home.encode('utf-8'),
+                  addon_path:addon
+              }
+              with ZipFile(target,'w') as dst:
+                  for info in infos:
+                      dst.writestr(copy(info),changed.get(info.filename,original[info.filename]))
+
+          with ZipFile(target) as verify:
+              assert verify.testzip() is None, 'Output archive ZIP CRC failed'
+              assert verify.namelist()==[i.filename for i in infos]
+              for filename,old_data in original.items():
+                  assert verify.read(filename)==changed.get(filename,old_data), f'Unexpected modification {filename}'
+              root=ET.fromstring(verify.read(video_path))
+              assert any(n.text=='SetFocus(812)' for n in root.findall('onload'))
+              assert ET.fromstring(verify.read(settings_path)).find('.//item/onclick[.="ActivateWindow(FileManager)"]') is not None
+              assert ET.fromstring(verify.read(home_path)) is not None
+              assert ET.fromstring(verify.read(addon_path)).get('version')=='1.1.30'
+          print('PASS: Live TV pause focus ID 812; fallback to previous guide when Pause unavailable')
+          print('PASS: file manager tile with existing artwork; 11 system settings entries and correct focus layouts')
+          print('PASS: widget profile upgrade defaults: 65% / global OFF / auto-scroll OFF / Glass')
+          print('PASS: unchanged skin entries:',len(original)-len(changed),'of',len(original))
+          print('PASS: archive CRC and XML validation')
+          print('SHA256:',hashlib.sha256(target.read_bytes()).hexdigest())
+          print('Output:',target,'bytes:',target.stat().st_size)
+          PY
+
+      - name: Rebuild and verify Barclay Kodi repository catalogue
+        run: |
+          python3 tools/make_repo.py
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          import hashlib
+          data=Path('zips/addons.xml').read_bytes()
+          assert Path('zips/addons.xml.md5').read_text().strip()==hashlib.md5(data).hexdigest()
+          addons=list(ET.fromstring(data))
+          skins=[a for a in addons if a.get('id')=='skin.terror.lite']
+          assert len(skins)==1 and skins[0].get('version')=='1.1.30'
+          for id in ('plugin.video.xship','plugin.video.serienstream','plugin.video.youtube','plugin.video.filmpalast.ex','repository.barclay'):
+              assert any(a.get('id')==id for a in addons), f'Missing repo add-on: {id}'
+          print('PASS: TerrorLite 1.1.30 correctly indexed and existing add-ons preserved')
+          PY
+
+      - name: Commit verified skin archive and updated repo index
+        shell: bash
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.30.zip zips/addons.xml zips/addons.xml.md5
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release TerrorLite 1.1.30 PVR pause focus, File Manager and widget defaults [skip ci]'
+          git push
