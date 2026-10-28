@@ -12,35 +12,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Identify PVR focus and widget values
+      - name: Identify included PVR OSD controls and file manager icons
         run: |
           python3 - <<'PY'
           from zipfile import ZipFile
           from xml.etree import ElementTree as ET
           p='zips/skin.terror.lite/skin.terror.lite-1.1.29.zip'
           with ZipFile(p) as z:
-            base='skin.terror.lite/'
-            s=z.read(base+'16x9/Includes_LiveTV.xml').decode('utf-8-sig')
-            root=ET.fromstring(s)
-            include=root.find('./include[@name="PVRVideoOSD"]')
-            print('PVRVideoOSD exists',include is not None)
-            if include is not None:
-              import xml.dom.minidom
-              print(ET.tostring(include,encoding='unicode')[:25000])
-            else:
-              for line in s.splitlines():
-                if '808' in line or 'PVRVideoOSD' in line:print(line)
-            for name in ['16x9/Includes_Select.xml','16x9/Variables_Widgets.xml','16x9/Variables.xml','16x9/Includes_Widgets.xml']:
-              s=z.read(base+name).decode('utf-8-sig')
-              print('==========',name)
-              for token in ['SelectWidgetOpacity','SelectWidgetCaseInfo','WidgetTransLabelVar','WidgetCaseInfoVar','WidgetCaseInfo','WidgetOpacity','widgetOpacity','widgetInfo']:
-                start=0
-                while True:
-                  i=s.lower().find(token.lower(),start)
-                  if i<0:break
-                  print('TOKEN',token,'at',i)
-                  print(s[max(0,i-250):i+750])
-                  start=i+len(token)
-                  if start>120000:break
-                  if token.lower() in ('widgetinfo','widgetopacity'):break
+            print('SETTINGS ICONS')
+            for n in z.namelist():
+              if 'views/settings/' in n.lower():print(n)
+            for n in z.namelist():
+              if not n.endswith('.xml') or '/16x9/' not in n:continue
+              s=z.read(n).decode('utf-8-sig','replace')
+              if 'PVRVideoOSD' in s or 'id="808"' in s:
+                print('MATCH FILE',n)
+                root=ET.fromstring(s)
+                for include in root.iter('include'):
+                  if include.get('name')=='PVRVideoOSD':
+                    print('PVRVideoOSD INCLUDE:')
+                    print(ET.tostring(include,encoding='unicode')[:45000])
+                lines=s.splitlines()
+                for i,l in enumerate(lines):
+                  if 'id="808"' in l or ('PVRVideoOSD' in l and 'name=' not in l):
+                    print('NEAR',i+1, '\\n'.join(lines[max(0,i-7):i+15]))
           PY
