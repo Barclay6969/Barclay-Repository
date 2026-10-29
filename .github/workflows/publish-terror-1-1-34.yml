@@ -1,0 +1,113 @@
+name: Publish TerrorLite 1.1.34 Kodi splash fix
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-terror-1-1-34.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Barclay Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build and validate TerrorLite 1.1.34
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from copy import copy
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          import hashlib
+          import xml.etree.ElementTree as ET
+
+          folder=Path('zips/skin.terror.lite')
+          source=folder/'skin.terror.lite-1.1.33.zip'
+          dest=folder/'skin.terror.lite-1.1.34.zip'
+          addon='skin.terror.lite/addon.xml'
+          startup='skin.terror.lite/16x9/Startup.xml'
+          helper='skin.terror.lite/resources/lib/splash_cleanup.py'
+          video='skin.terror.lite/extras/intro-omega.mp4'
+          helper_bytes=Path('tools/terror_lite_splash_cleanup.py').read_bytes()
+          compile(helper_bytes,helper,'exec')
+          with ZipFile(source) as z:
+              assert z.testzip() is None, 'Source ZIP CRC failed'
+              infos=z.infolist()
+              old={info.filename:z.read(info.filename) for info in infos}
+              assert len(old)==len(infos), 'Duplicate ZIP entries'
+              assert helper not in old, 'Splash cleanup already included'
+              assert video in old, 'V8 intro video missing'
+              assert ET.fromstring(old[addon]).get('version')=='1.1.33'
+              startup_xml=old[startup].decode('utf-8-sig')
+              anchor='<onload condition="System.HasAddon(script.artistslideshow)">RunScript(script.artistslideshow,daemon=True)</onload>'
+              assert startup_xml.count(anchor)==1, 'Expected start hook not found'
+              hook=('<!-- TerrorLite 1.1.34: disable independent Kodi splash; effective from NEXT process start. -->\n'
+                    '\t<onload>RunScript(special://skin/resources/lib/splash_cleanup.py)</onload>')
+              startup_xml=startup_xml.replace(anchor,anchor+'\n\t'+hook,1)
+              assert ET.fromstring(startup_xml) is not None
+              addon_xml=old[addon].decode('utf-8-sig')
+              assert addon_xml.count('version="1.1.33"')==1
+              addon_xml=addon_xml.replace('version="1.1.33"','version="1.1.34"',1)
+              assert addon_xml.count('<news>')==1
+              addon_xml=addon_xml.replace('<news>',
+                  '<news>1.1.34: Prevent the native Kodi splash logo before the KODI BUILD V8 intro. '
+                  'Set advancedsettings.xml splash=false automatically on first run; preserve all other '
+                  'settings and backup the original configuration and any home/media/Splash.png. '
+                  'Change takes effect after a full Kodi restart; intro ON/OFF switch unchanged. ',1)
+              assert ET.fromstring(addon_xml).get('version')=='1.1.34'
+              changed={startup:startup_xml.encode('utf-8'),addon:addon_xml.encode('utf-8')}
+              with ZipFile(dest,'w') as out:
+                  for info in infos:
+                      out.writestr(copy(info),changed.get(info.filename,old[info.filename]))
+                  out.writestr(helper,helper_bytes,compress_type=ZIP_DEFLATED)
+          with ZipFile(dest) as z:
+              assert z.testzip() is None, 'Released ZIP CRC failed'
+              assert z.namelist()==[info.filename for info in infos]+[helper]
+              assert ET.fromstring(z.read(addon)).get('version')=='1.1.34'
+              assert ET.fromstring(z.read(startup)) is not None
+              assert z.read(video)==old[video], 'V8 intro must not change'
+              for k,v in old.items():
+                  assert z.read(k)==changed.get(k,v), 'Unexpected modified skin file: '+k
+              assert z.read(helper)==helper_bytes
+          print('PASS: Intro video intact; original skin content preserved except Startup.xml and addon.xml')
+          print('PASS: Native Kodi splash disabled by idempotent, backed-up startup helper')
+          print('PASS: ZIP CRC, XML and Python syntax')
+          print('OUTPUT:',dest,'BYTES:',dest.stat().st_size)
+          print('SHA256:',hashlib.sha256(dest.read_bytes()).hexdigest())
+          PY
+
+      - name: Rebuild and verify Barclay Repository index
+        shell: bash
+        run: |
+          python3 tools/make_repo.py
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          import hashlib
+          xml=Path('zips/addons.xml').read_bytes()
+          assert hashlib.md5(xml).hexdigest()==Path('zips/addons.xml.md5').read_text().strip()
+          entries=list(ET.fromstring(xml))
+          skin=[x for x in entries if x.get('id')=='skin.terror.lite']
+          assert len(skin)==1 and skin[0].get('version')=='1.1.34'
+          for required in ('plugin.video.xship','plugin.video.serienstream',
+                           'plugin.video.filmpalast.ex','repository.barclay'):
+              assert any(x.get('id')==required for x in entries),required
+          print('PASS: TerrorLite 1.1.34 published in index; all existing addons preserved')
+          PY
+
+      - name: Publish release and index
+        shell: bash
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.34.zip zips/addons.xml zips/addons.xml.md5
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release TerrorLite 1.1.34 hide Kodi native splash [skip ci]'
+          git push
