@@ -542,7 +542,7 @@ def PLAYVIDEO(url):
                 height, selected['speed'] * 8 / 1000000), time=4000)
         xbmc.log('[FilmPalast] Auto-Hoster selected: {} / {} / {:.1f} Mbit/s'.format(
             selected['hoster'], selected['format'], selected['speed'] * 8 / 1000000), xbmc.LOGINFO)
-        play_resolved_video(selected['stream'], already_resolved=True)
+        play_resolved_video(selected['stream'], already_resolved=True, hoster=selected['hoster'])
         return
     choices = manual_choices(videos, results)
     index = xbmcgui.Dialog().select('FilmPalast: Hoster wählen', [item['label'] for item in choices])
@@ -552,7 +552,7 @@ def PLAYVIDEO(url):
     selected = choices[index]
     xbmc.log('[FilmPalast] Manual hoster selected: {} / probe={}'.format(
         selected['hoster'], 'confirmed' if selected['resolved'] else 'unconfirmed'), xbmc.LOGINFO)
-    play_resolved_video(selected['url'], already_resolved=selected['resolved'])
+    play_resolved_video(selected['url'], already_resolved=selected['resolved'], hoster=selected['hoster'])
 
 def get_video_sources(data):
     # Extract video sources from page data
@@ -642,7 +642,19 @@ def prepare_trakt_ids(params):
     xbmc.executebuiltin('RunScript("{}",{})'.format(script, owner))
     xbmc.log('[FilmPalast] Trakt bridge: {} IDs supplied ({})'.format(media_type, ','.join(sorted(ids))), xbmc.LOGINFO)
 
-def play_resolved_video(url, already_resolved=False):
+def apply_source_display(listitem, params, hoster):
+    """Match xShip's OSD title without changing metadata or Trakt inputs."""
+    title = urllib.parse.unquote_plus(str(params.get('title') or '')).strip()
+    if title in ('None', 'null'):
+        title = ''
+    hoster = html.unescape(str(hoster or '')).strip().upper()
+    provenance = ' @ '.join(part for part in (hoster, 'FILMPALAST') if part)
+    display_title = (title + ' | ' if title else '') + provenance
+    listitem.setLabel(display_title)
+    listitem.getVideoInfoTag().setTitle(display_title)
+
+
+def play_resolved_video(url, already_resolved=False, hoster=''):
     # Resolve and play the video URL
     stream_url = url if already_resolved else (_resolveVoeDirect(url, {'source': urlparse(str(url)).netloc}) or resolveUrl(url))
     if stream_url:
@@ -670,6 +682,7 @@ def play_resolved_video(url, already_resolved=False):
                 art.setdefault('icon', art.get('poster', art.get('thumb', '')))
                 listitem.setArt(art)
             prepare_trakt_ids(metadata)
+            apply_source_display(listitem, metadata, hoster)
             result = xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
             if buffered is not None:
                 buffered.wait()

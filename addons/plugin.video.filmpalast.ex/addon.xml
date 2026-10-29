@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.13" provider-name="Barclay (Kusi)">
+<addon id="plugin.video.filmpalast.ex" name="FilmPalastEx Kodi19+" version="0.6.14" provider-name="Barclay (Kusi)">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.resolveurl" version="5.1.192"/>
@@ -16,7 +16,10 @@
         <summary lang="de">FilmPalast.to FiLME &amp; SERiEN sofort &amp; kostenlos online ansehen!</summary>
         <summary lang="en">FilmPalast.to MOViS &amp; SERiES, watch online instantly free!</summary>
         <description lang="en">FilmPalastEx - Based on FilmPalast plugin by Lary_Loose</description>
-		<news lang="de">0.6.13 (2026-10-15)
+		<news lang="de">0.6.14 (2026-10-29)
+- Wiedergabebalken: Filmname mit Hoster und Anbieter, wie in xShip.
+
+0.6.13 (2026-10-15)
 - FilmPalast-Direktplayer im TMDb Helper auf Priorität 800 gesetzt.
 - Bereits installierte FilmPalast-Player werden automatisch auf Priorität 800 aktualisiert.
 
@@ -98,7 +101,10 @@
 - Autor: Barclay (Kusi); ursprüngliche Credits erhalten.
 - TMDbHelper-Player unter players/filmpalast_barclay_trakt.json.
 </news>
-<news lang="en">0.6.13 (2026-10-15)
+<news lang="en">0.6.14 (2026-10-29)
+- Playback OSD: show selected host and provider alongside the movie title.
+
+0.6.13 (2026-10-15)
 - Lowered FilmPalast Direct player precedence in TMDb Helper to priority 800.
 - Previously installed FilmPalast Direct players are migrated automatically.
 

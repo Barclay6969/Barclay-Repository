@@ -1,4 +1,4 @@
-name: Publish FilmPalast 0.6.13 TMDb Native
+name: Publish FilmPalast 0.6.14 Quellenanzeige
 on:
   push:
     branches:
@@ -21,7 +21,7 @@ jobs:
           folder=pathlib.Path('addons/plugin.video.filmpalast.ex')
           root=ET.parse(folder/'addon.xml').getroot()
           assert root.attrib['id']=='plugin.video.filmpalast.ex'
-          assert root.attrib['version']=='0.6.13'
+          assert root.attrib['version']=='0.6.14'
           settings=ET.parse(folder/'resources/settings.xml')
           assert len(settings.findall(".//setting[@id='tmdbNativeInfo']"))==1
           for name in ('default.py','tmdb_native.py','service.py'):
@@ -30,7 +30,7 @@ jobs:
           assert "filmpalast.barclay.native_info_queue_0611" in script
           assert "xbmcplugin.endOfDirectory(pluginhandle, succeeded=True, cacheToDisc=False)" in script
           assert "isFolder=(mode == 30)" in script
-          assert "play_resolved_video(selected['stream'], already_resolved=True)" in script
+          assert "play_resolved_video(selected['stream'], already_resolved=True, hoster=selected['hoster'])" in script
           bridge=(folder/'tmdb_native.py').read_text(encoding='utf-8')
           assert "item.setPath(forced_url)" in bridge
           assert "ensure_native_player()" in bridge
@@ -46,7 +46,7 @@ jobs:
           assert "popup_for_new_version()" in (folder/'service.py').read_text(encoding='utf-8')
           assert len(ET.parse(folder/'addon.xml').findall("extension[@point='xbmc.service']")) == 1
           assert 'filmpalast.tmdb.native.play_scope' not in bridge
-          out=pathlib.Path('zips/plugin.video.filmpalast.ex/plugin.video.filmpalast.ex-0.6.13.zip')
+          out=pathlib.Path('zips/plugin.video.filmpalast.ex/plugin.video.filmpalast.ex-0.6.14.zip')
           out.parent.mkdir(parents=True,exist_ok=True)
           with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as archive:
               for file in folder.rglob('*'):
@@ -54,7 +54,7 @@ jobs:
                       archive.write(file,'plugin.video.filmpalast.ex/'+str(file.relative_to(folder)))
           with zipfile.ZipFile(out) as archive:
               assert archive.testzip() is None
-              assert ET.fromstring(archive.read('plugin.video.filmpalast.ex/addon.xml')).attrib['version']=='0.6.13'
+              assert ET.fromstring(archive.read('plugin.video.filmpalast.ex/addon.xml')).attrib['version']=='0.6.14'
               assert archive.read('plugin.video.filmpalast.ex/default.py')==(folder/'default.py').read_bytes()
           (out.parent/'changelog.txt').write_bytes((folder/'changelog.txt').read_bytes())
           print('Verified ZIP',out,'size',out.stat().st_size,'sha256',hashlib.sha256(out.read_bytes()).hexdigest())
@@ -72,15 +72,14 @@ jobs:
           assert hashlib.md5(z.read_bytes()).hexdigest()==pathlib.Path('zips/addons.xml.md5').read_text().strip()
           root=ET.fromstring(z.read_bytes())
           versions={addon.get('id'):addon.get('version') for addon in root}
-          assert versions['plugin.video.filmpalast.ex']=='0.6.13'
-          assert versions['plugin.video.xship'] in ('2026.10.13.157','2026.10.13.156')
+          assert versions['plugin.video.filmpalast.ex']=='0.6.14'
           print('Repository index validated', versions['plugin.video.filmpalast.ex'])
           PY
       - name: Commit Kodi package and index to current branch
         run: |
           git config user.name 'Barclay Repo Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add zips/plugin.video.filmpalast.ex/plugin.video.filmpalast.ex-0.6.13.zip zips/plugin.video.filmpalast.ex/changelog.txt zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
+          git add zips/plugin.video.filmpalast.ex/plugin.video.filmpalast.ex-0.6.14.zip zips/plugin.video.filmpalast.ex/changelog.txt zips/addons.xml zips/addons.xml.md5 zips/repository.barclay
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Package FilmPalast 0.6.13 TMDb Native [skip ci]'
+          git commit -m 'Package FilmPalast 0.6.14 Quellenanzeige [skip ci]'
           git push
