@@ -1,0 +1,106 @@
+name: Build TerrorLite 1.1.35 trailer local test (no release)
+on:
+  push:
+    branches: [fix/terrorlite-trailer-20261031]
+    paths: ['.github/workflows/build-terror-trailer-test.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/terrorlite-trailer-20261031
+          fetch-depth: 0
+      - name: Patch ONLY trailer fallback and version, validate output
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from copy import copy
+          from pathlib import Path
+          from zipfile import ZipFile
+          import hashlib
+          import xml.etree.ElementTree as ET
+
+          base='skin.terror.lite/'
+          source=Path('zips/skin.terror.lite/skin.terror.lite-1.1.34.zip')
+          target=Path('test-builds/skin.terror.lite-1.1.35-trailer-test.zip')
+          dialog=base+'16x9/DialogVideoInfo.xml'
+          addon=base+'addon.xml'
+          with ZipFile(source) as z:
+              assert z.testzip() is None,'Corrupt 1.1.34 archive'
+              infos=z.infolist()
+              old={x.filename:z.read(x.filename) for x in infos}
+              assert len(old)==len(infos),'Duplicate source paths'
+              assert ET.fromstring(old[addon]).get('version')=='1.1.34'
+              doc=old[dialog].decode('utf-8-sig')
+              start=doc.index('<control type="button" id="911">')
+              stop=doc.index('</control>',start)+len('</control>')
+              prev=doc[start:stop]
+              assert '<description>Search Trailer</description>' in prev
+              assert 'RunScript(script.extendedinfo,info=youtubebrowser' in prev
+              assert prev.count('<onclick>Action(close)</onclick>')==1
+              assert prev.count('<onclick>RunScript(script.extendedinfo,info=youtubebrowser,id=$INFO[ListItem.Title] $INFO[ListItem.Year])</onclick>')==1
+              assert prev.count('<visible>System.hasAddon(script.extendedinfo) + String.IsEqual(ListItem.DBType,movie) + !Control.IsVisible(11)</visible>')==1
+
+              next=prev.replace(
+                  '<onclick>RunScript(script.extendedinfo,info=youtubebrowser,id=$INFO[ListItem.Title] $INFO[ListItem.Year])</onclick>',
+                  '<onclick condition="System.HasAddon(plugin.video.youtube)">ActivateWindow(Videos,&quot;plugin://plugin.video.youtube/kodion/search/query/?q=$INFO[ListItem.Title] $INFO[ListItem.Year] Trailer&quot;,return)</onclick>\n'
+                  '\t\t\t\t\t\t<onclick condition="!System.HasAddon(plugin.video.youtube)">InstallAddon(plugin.video.youtube)</onclick>'
+              )
+              next=next.replace(
+                  '<visible>System.hasAddon(script.extendedinfo) + String.IsEqual(ListItem.DBType,movie) + !Control.IsVisible(11)</visible>',
+                  '<visible>String.IsEqual(ListItem.DBType,movie) + !Control.IsVisible(11)</visible>'
+              )
+              assert next!=prev
+              doc=doc[:start]+next+doc[stop:]
+              root=ET.fromstring(doc)
+              native=[n for n in root.iter('control') if n.get('id')=='11' and n.get('type')=='button']
+              search=[n for n in root.iter('control') if n.get('id')=='911' and n.get('type')=='button']
+              assert len(native)==len(search)==1
+              assert 'ListItem.Trailer' in native[0].findtext('visible','')
+              assert search[0].findtext('visible')=='String.IsEqual(ListItem.DBType,movie) + !Control.IsVisible(11)'
+              cmds=[c.text or '' for c in search[0].findall('onclick')]
+              assert len(cmds)==3 and 'script.extendedinfo' not in str(cmds)
+              assert any('plugin.video.youtube/kodion/search/query/' in c for c in cmds)
+              assert any('InstallAddon(plugin.video.youtube)' in c for c in cmds)
+
+              manifest=old[addon]
+              assert manifest.count(b'version="1.1.34"')==1
+              manifest=manifest.replace(b'version="1.1.34"',b'version="1.1.35"',1)
+              manifest=manifest.replace(
+                  b'<news>',
+                  b'<news>1.1.35 TEST: Restore trailer search fallback for TMDb Helper movies lacking ListItem.Trailer, using the YouTube add-on without ExtendedInfo; direct trailer playback unchanged. ',1)
+              assert ET.fromstring(manifest).get('version')=='1.1.35'
+              changed={dialog:doc.encode('utf-8'),addon:manifest}
+              target.parent.mkdir(exist_ok=True)
+              with ZipFile(target,'w') as out:
+                  for x in infos:
+                      out.writestr(copy(x),changed.get(x.filename,old[x.filename]))
+
+          with ZipFile(target) as z:
+              assert z.testzip() is None
+              assert z.namelist()==[x.filename for x in infos]
+              for name,val in old.items():
+                  assert z.read(name)==changed.get(name,val),'Unexpected modification '+name
+              assert ET.fromstring(z.read(addon)).get('version')=='1.1.35'
+              assert z.read(base+'extras/intro-omega.mp4')==old[base+'extras/intro-omega.mp4']
+          print('PASS: Test 1.1.35 ZIP CRC, XML, native trailer preserved, no ExtendedInfo dependency')
+          print('PASS: Exactly two XML files changed, all other contents byte-identical')
+          print('Output:',target,'bytes:',target.stat().st_size)
+          print('SHA256:',hashlib.sha256(target.read_bytes()).hexdigest())
+          PY
+
+      - name: Commit local test ZIP to test branch only
+        shell: bash
+        run: |
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add test-builds/skin.terror.lite-1.1.35-trailer-test.zip
+          git diff --cached --quiet && exit 0
+          git commit -m "Local test: TerrorLite trailer fallback 1.1.35 [skip ci]"
+          git push origin HEAD:fix/terrorlite-trailer-20261031
