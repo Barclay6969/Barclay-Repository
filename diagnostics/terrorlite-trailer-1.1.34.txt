@@ -1,0 +1,728 @@
+TerrorLite 1.1.34 Trailer Diagnostics
+Source: zips/skin.terror.lite/skin.terror.lite-1.1.34.zip
+Archive files: 1030
+Archive CRC: None
+
+XML with trailer-related terms:
+  skin.terror.lite/16x9/DialogVideoInfo.xml (4 matched lines)
+  skin.terror.lite/16x9/Includes_LiveBG.xml (10 matched lines)
+  skin.terror.lite/16x9/Includes_Select.xml (2 matched lines)
+  skin.terror.lite/16x9/Variables.xml (1 matched lines)
+  skin.terror.lite/16x9/Variables_Widgets.xml (1 matched lines)
+  skin.terror.lite/16x9/View_53_ShowCase.xml (14 matched lines)
+  skin.terror.lite/16x9/custom_1119_ExtrasDialog.xml (4 matched lines)
+  skin.terror.lite/16x9/script-skinshortcuts-includes.xml (17 matched lines)
+
+====== skin.terror.lite/16x9/DialogVideoInfo.xml ======
+0758 						<onclick condition="System.HasAddon(script.extendedinfo)">SetFocus(90050)</onclick>
+0759 						<visible>!String.IsEmpty(ListItem.Cast)</visible>
+0760 					</control>
+0761 					<control type="button" id="908">
+0762 						<description>Special Features</description>
+0763 						<font>IconMediumMD</font>
+0764 						<width>65</width>
+0765 						<texturenofocus />
+0766 						<include>ButtonInfoDialogsCommonValues</include>
+0767 						<label></label>
+0768 						<onclick>Dialog.Close(MovieInformation)</onclick>
+0769 						<onclick>RunScript(plugin.video.specialfeatures,listitem)</onclick>
+0770 						<visible>System.HasAddon(plugin.video.specialfeatures) + String.IsEqual(Window(home).Property(SpecialFeatures.Visible),true)</visible>
+0771 					</control>
+0772 					<control type="button" id="11">
+0773 						<description>Play Trailer</description>
+0774 						<font>IconMediumMD</font>
+0775 						<width>65</width>
+0776 						<texturenofocus />
+0777 						<include>ButtonInfoDialogsCommonValues</include>
+0778 						<label></label>
+0779 						<visible>!String.IsEmpty(ListItem.Trailer) + ![String.StartsWith(Container.FolderPath,plugin://) + String.Contains(Container.FolderPath,trailer)]</visible>
+0780 					</control>
+0781 					<control type="button" id="911">
+0782 						<description>Search Trailer</description>
+0783 						<font>IconMediumMD</font>
+0784 						<width>65</width>
+0785 						<texturenofocus />
+0786 						<include>ButtonInfoDialogsCommonValues</include>
+0787 						<label></label>
+0788 						<onclick>Action(close)</onclick>
+0789 						<onclick>RunScript(script.extendedinfo,info=youtubebrowser,id=$INFO[ListItem.Title] $INFO[ListItem.Year])</onclick>
+0790 						<visible>System.hasAddon(script.extendedinfo) + String.IsEqual(ListItem.DBType,movie) + !Control.IsVisible(11)</visible>
+0791 					</control>
+0792 					<control type="togglebutton" id="7">
+0793 						<description>Set rating</description>
+0794 						<font>IconMediumMD</font>
+0795 						<width>65</width>
+0796 						<include>ButtonInfoDialogsCommonValues</include>
+0797 						<texturenofocus />
+0798 						<alttexturenofocus />
+0799 						<label></label>
+0800 						<altlabel></altlabel>
+0801 						<usealttexture>!String.IsEmpty(ListItem.UserRating)</usealttexture>
+0802 					</control>
+0803 					<control type="button" id="10">
+0804 						<description>Get Thumb</description>
+
+====== skin.terror.lite/16x9/Includes_LiveBG.xml ======
+0384 		<value>$INFO[Container(9031).ListItem(5).Icon]</value>
+0385 	</variable>
+0386 	<variable name="Case10Var">
+0387 		<value condition="!String.IsEmpty(Container(9031).ListItem(6).Art(tvshow.poster))">$INFO[Container(9031).ListItem(6).Art(tvshow.poster)]</value>
+0388 		<value condition="!String.IsEmpty(Container(9031).ListItem(6).Art(poster))">$INFO[Container(9031).ListItem(6).Art(poster)]</value>
+0389 		<value>$INFO[Container(9031).ListItem(6).Icon]</value>
+0390 	</variable>
+0391 	<variable name="ResCase1Var">
+0392 		<value condition="String.IsEqual(Container(9031).ListItem(0).DBTYPE,tvshow)">$VAR[CaseTypePathVar]tvseries.png</value>
+0393 		<value condition="Container(9031).ListItem(0).IsCollection">$VAR[CaseTypePathVar]set.png</value>
+0394 		<value condition="Container(9031).ListItem(0).IsStereoscopic">$VAR[CaseTypePathVar]3d.png</value>
+0395 		<value condition="String.Contains(Container(9031).ListItem(0).Filename,hddvd)">$VAR[CaseTypePathVar]hddvd.png</value>
+0396 		<value condition="String.Contains(Container(9031).ListItem(0).Filename,hdtv) | String.Contains(Container(9031).ListItem(0).Filename,hd tv)">$VAR[CaseTypePathVar]hdtv.png</value>
+0397 		<value condition="String.Contains(Container(9031).ListItem(0).Filename,webdl) | String.Contains(Container(9031).ListItem(0).Filename,web-dl) | String.Contains(Container(9031).ListItem(0).ListItem.Filename,webrip)">$VAR[CaseTypePathVar]webdl.png</value>
+0398 		<value condition="!String.IsEmpty(Container(9031).ListItem(0).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(0).VideoResolution]p.png</value>
+0399 		<value>$VAR[CaseTypePathVar]trailer.png</value>
+0400 	</variable>
+0401 	<variable name="ResCase2Var">
+0402 		<value condition="String.IsEqual(Container(9031).ListItem(1).DBTYPE,tvshow)">$VAR[CaseTypePathVar]tvseries.png</value>
+0403 		<value condition="Container(9031).ListItem(1).IsCollection">$VAR[CaseTypePathVar]set.png</value>
+0404 		<value condition="Container(9031).ListItem(1).IsStereoscopic">$VAR[CaseTypePathVar]3d.png</value>
+0405 		<value condition="String.Contains(Container(9031).ListItem(1).Filename,hddvd)">$VAR[CaseTypePathVar]hddvd.png</value>
+0406 		<value condition="String.Contains(Container(9031).ListItem(1).Filename,hdtv) | String.Contains(Container(9031).ListItem(1).Filename,hd tv)">$VAR[CaseTypePathVar]hdtv.png</value>
+0407 		<value condition="String.Contains(Container(9031).ListItem(1).Filename,webdl) | String.Contains(Container(9031).ListItem(1).Filename,web-dl) | String.Contains(Container(9031).ListItem(1).ListItem.Filename,webrip)">$VAR[CaseTypePathVar]webdl.png</value>
+0408 		<value condition="!String.IsEmpty(Container(9031).ListItem(1).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(1).VideoResolution]p.png</value>
+0409 		<value>$VAR[CaseTypePathVar]trailer.png</value>
+0410 	</variable>
+0411 	<variable name="ResCase3Var">
+0412 		<value condition="String.IsEqual(Container(9031).ListItem(2).DBTYPE,tvshow)">$VAR[CaseTypePathVar]tvseries.png</value>
+0413 		<value condition="Container(9031).ListItem(2).IsCollection">$VAR[CaseTypePathVar]set.png</value>
+0414 		<value condition="Container(9031).ListItem(2).IsStereoscopic">$VAR[CaseTypePathVar]3d.png</value>
+0415 		<value condition="String.Contains(Container(9031).ListItem(2).Filename,hddvd)">$VAR[CaseTypePathVar]hddvd.png</value>
+0416 		<value condition="String.Contains(Container(9031).ListItem(2).Filename,hdtv) | String.Contains(Container(9031).ListItem(2).Filename,hd tv)">$VAR[CaseTypePathVar]hdtv.png</value>
+0417 		<value condition="String.Contains(Container(9031).ListItem(2).Filename,webdl) | String.Contains(Container(9031).ListItem(2).Filename,web-dl) | String.Contains(Container(9031).ListItem(2).ListItem.Filename,webrip)">$VAR[CaseTypePathVar]webdl.png</value>
+0418 		<value condition="!String.IsEmpty(Container(9031).ListItem(2).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(2).VideoResolution]p.png</value>
+0419 		<value>$VAR[CaseTypePathVar]trailer.png</value>
+0420 	</variable>
+0421 	<variable name="ResCase4Var">
+0422 		<value condition="String.IsEqual(Container(9031).ListItem(9).DBTYPE,tvshow)">$VAR[CaseTypePathVar]tvseries.png</value>
+0423 		<value condition="Container(9031).ListItem(9).IsCollection">$VAR[CaseTypePathVar]set.png</value>
+0424 		<value condition="Container(9031).ListItem(9).IsStereoscopic">$VAR[CaseTypePathVar]3d.png</value>
+0425 		<value condition="String.Contains(Container(9031).ListItem(9).Filename,hddvd)">$VAR[CaseTypePathVar]hddvd.png</value>
+0426 		<value condition="String.Contains(Container(9031).ListItem(9).Filename,hdtv) | String.Contains(Container(9031).ListItem(9).Filename,hd tv)">$VAR[CaseTypePathVar]hdtv.png</value>
+0427 		<value condition="String.Contains(Container(9031).ListItem(9).Filename,webdl) | String.Contains(Container(9031).ListItem(9).Filename,web-dl) | String.Contains(Container(9031).ListItem(9).ListItem.Filename,webrip)">$VAR[CaseTypePathVar]webdl.png</value>
+0428 		<value condition="!String.IsEmpty(Container(9031).ListItem(9).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(9).VideoResolution]p.png</value>
+0429 		<value>$VAR[CaseTypePathVar]trailer.png</value>
+0430 	</variable>
+0431 	<variable name="ResCase5Var">
+0432 		<value condition="String.IsEqual(Container(9031).ListItem(7).DBTYPE,tvshow)">$VAR[CaseTypePathVar]tvseries.png</value>
+0433 		<value condition="Container(9031).ListItem(7).IsCollection">$VAR[CaseTypePathVar]set.png</value>
+0434 		<value condition="Container(9031).ListItem(7).IsStereoscopic">$VAR[CaseTypePathVar]3d.png</value>
+0435 		<value condition="String.Contains(Container(9031).ListItem(7).Filename,hddvd)">$VAR[CaseTypePathVar]hddvd.png</value>
+0436 		<value condition="String.Contains(Container(9031).ListItem(7).Filename,hdtv) | String.Contains(Container(9031).ListItem(7).Filename,hd tv)">$VAR[CaseTypePathVar]hdtv.png</value>
+0437 		<value condition="String.Contains(Container(9031).ListItem(7).Filename,webdl) | String.Contains(Container(9031).ListItem(7).Filename,web-dl) | String.Contains(Container(9031).ListItem(7).ListItem.Filename,webrip)">$VAR[CaseTypePathVar]webdl.png</value>
+0438 		<value condition="!String.IsEmpty(Container(9031).ListItem(7).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(7).VideoResolution]p.png</value>
+0439 		<value>$VAR[CaseTypePathVar]trailer.png</value>
+0440 	</variable>
+0441 	<variable name="ResCase6Var">
+0442 		<value condition="String.IsEqual(Container(9031).ListItem(3).DBTYPE,tvshow)">$VAR[CaseTypePathVar]tvseries.png</value>
+0443 		<value condition="Container(9031).ListItem(3).IsCollection">$VAR[CaseTypePathVar]set.png</value>
+0444 		<value condition="Container(9031).ListItem(3).IsStereoscopic">$VAR[CaseTypePathVar]3d.png</value>
+0445 		<value condition="String.Contains(Container(9031).ListItem(3).Filename,hddvd)">$VAR[CaseTypePathVar]hddvd.png</value>
+0446 		<value condition="String.Contains(Container(9031).ListItem(3).Filename,hdtv) | String.Contains(Container(9031).ListItem(3).Filename,hd tv)">$VAR[CaseTypePathVar]hdtv.png</value>
+0447 		<value condition="String.Contains(Container(9031).ListItem(3).Filename,webdl) | String.Contains(Container(9031).ListItem(3).Filename,web-dl) | String.Contains(Container(9031).ListItem(3).ListItem.Filename,webrip)">$VAR[CaseTypePathVar]webdl.png</value>
+0448 		<value condition="!String.IsEmpty(Container(9031).ListItem(3).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(3).VideoResolution]p.png</value>
+0449 		<value>$VAR[CaseTypePathVar]trailer.png</value>
+0450 	</variable>
+0451 	<variable name="ResCase7Var">
+0452 		<value condition="String.IsEqual(Container(9031).ListItem(8).DBTYPE,tvshow)">$VAR[CaseTypePathVar]tvseries.png</value>
+0453 		<value condition="Container(9031).ListItem(8).IsCollection">$VAR[CaseTypePathVar]set.png</value>
+0454 		<value condition="Container(9031).ListItem(8).IsStereoscopic">$VAR[CaseTypePathVar]3d.png</value>
+0455 		<value condition="String.Contains(Container(9031).ListItem(8).Filename,hddvd)">$VAR[CaseTypePathVar]hddvd.png</value>
+0456 		<value condition="String.Contains(Container(9031).ListItem(8).Filename,hdtv) | String.Contains(Container(9031).ListItem(8).Filename,hd tv)">$VAR[CaseTypePathVar]hdtv.png</value>
+0457 		<value condition="String.Contains(Container(9031).ListItem(8).Filename,webdl) | String.Contains(Container(9031).ListItem(8).Filename,web-dl) | String.Contains(Container(9031).ListItem(8).ListItem.Filename,webrip)">$VAR[CaseTypePathVar]webdl.png</value>
+0458 		<value condition="!String.IsEmpty(Container(9031).ListItem(8).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(8).VideoResolution]p.png</value>
+0459 		<value>$VAR[CaseTypePathVar]trailer.png</value>
+0460 	</variable>
+0461 	<variable name="ResCase8Var">
+0462 		<value condition="String.IsEqual(Container(9031).ListItem(4).DBTYPE,tvshow)">$VAR[CaseTypePathVar]tvseries.png</value>
+0463 		<value condition="Container(9031).ListItem(4).IsCollection">$VAR[CaseTypePathVar]set.png</value>
+0464 		<value condition="Container(9031).ListItem(4).IsStereoscopic">$VAR[CaseTypePathVar]3d.png</value>
+0465 		<value condition="String.Contains(Container(9031).ListItem(4).Filename,hddvd)">$VAR[CaseTypePathVar]hddvd.png</value>
+0466 		<value condition="String.Contains(Container(9031).ListItem(4).Filename,hdtv) | String.Contains(Container(9031).ListItem(4).Filename,hd tv)">$VAR[CaseTypePathVar]hdtv.png</value>
+0467 		<value condition="String.Contains(Container(9031).ListItem(4).Filename,webdl) | String.Contains(Container(9031).ListItem(4).Filename,web-dl) | String.Contains(Container(9031).ListItem(4).ListItem.Filename,webrip)">$VAR[CaseTypePathVar]webdl.png</value>
+0468 		<value condition="!String.IsEmpty(Container(9031).ListItem(4).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(4).VideoResolution]p.png</value>
+0469 		<value>$VAR[CaseTypePathVar]trailer.png</value>
+0470 	</variable>
+0471 	<variable name="ResCase9Var">
+0472 		<value condition="String.IsEqual(Container(9031).ListItem(5).DBTYPE,tvshow)">$VAR[CaseTypePathVar]tvseries.png</value>
+0473 		<value condition="Container(9031).ListItem(5).IsCollection">$VAR[CaseTypePathVar]set.png</value>
+0474 		<value condition="Container(9031).ListItem(5).IsStereoscopic">$VAR[CaseTypePathVar]3d.png</value>
+0475 		<value condition="String.Contains(Container(9031).ListItem(5).Filename,hddvd)">$VAR[CaseTypePathVar]hddvd.png</value>
+0476 		<value condition="String.Contains(Container(9031).ListItem(5).Filename,hdtv) | String.Contains(Container(9031).ListItem(5).Filename,hd tv)">$VAR[CaseTypePathVar]hdtv.png</value>
+0477 		<value condition="String.Contains(Container(9031).ListItem(5).Filename,webdl) | String.Contains(Container(9031).ListItem(5).Filename,web-dl) | String.Contains(Container(9031).ListItem(5).ListItem.Filename,webrip)">$VAR[CaseTypePathVar]webdl.png</value>
+0478 		<value condition="!String.IsEmpty(Container(9031).ListItem(5).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(5).VideoResolution]p.png</value>
+0479 		<value>$VAR[CaseTypePathVar]trailer.png</value>
+0480 	</variable>
+0481 	<variable name="ResCase10Var">
+0482 		<value condition="String.IsEqual(Container(9031).ListItem(6).DBTYPE,tvshow)">$VAR[CaseTypePathVar]tvseries.png</value>
+0483 		<value condition="Container(9031).ListItem(6).IsCollection">$VAR[CaseTypePathVar]set.png</value>
+0484 		<value condition="Container(9031).ListItem(6).IsStereoscopic">$VAR[CaseTypePathVar]3d.png</value>
+0485 		<value condition="String.Contains(Container(9031).ListItem(6).Filename,hddvd)">$VAR[CaseTypePathVar]hddvd.png</value>
+0486 		<value condition="String.Contains(Container(9031).ListItem(6).Filename,hdtv) | String.Contains(Container(9031).ListItem(6).Filename,hd tv)">$VAR[CaseTypePathVar]hdtv.png</value>
+0487 		<value condition="String.Contains(Container(9031).ListItem(6).Filename,webdl) | String.Contains(Container(9031).ListItem(6).Filename,web-dl) | String.Contains(Container(9031).ListItem(6).ListItem.Filename,webrip)">$VAR[CaseTypePathVar]webdl.png</value>
+0488 		<value condition="!String.IsEmpty(Container(9031).ListItem(6).VideoResolution)">$VAR[CaseTypePathVar]$INFO[Container(9031).ListItem(6).VideoResolution]p.png</value>
+0489 		<value>$VAR[CaseTypePathVar]trailer.png</value>
+0490 	</variable>
+0491 </includes>
+
+====== skin.terror.lite/16x9/Includes_Select.xml ======
+0506 		<item>
+0507 			<label>$LOCALIZE[31472]</label>
+0508 			<onclick>Dialog.Close(1129)</onclick>
+0509 			<onclick>SendClick(videos,8)</onclick>
+0510 			<visible>Window.IsActive(videos)</visible>
+0511 		</item>
+0512 		<item>
+0513 			<label>$LOCALIZE[31456]</label>
+0514 			<onclick>Dialog.Close(1129)</onclick>
+0515 			<onclick condition="System.hasAddon(script.globalsearch)">RunScript(script.globalsearch)</onclick>
+0516 			<onclick condition="!System.hasAddon(script.globalsearch)">InstallAddon(script.globalsearch)</onclick>
+0517 		</item>
+0518 		<item>
+0519 			<label>$LOCALIZE[31457]</label>
+0520 			<onclick>Dialog.Close(1129)</onclick>
+0521 			<onclick condition="System.hasAddon(plugin.video.youtube)">ActivateWindow(videos,"plugin://plugin.video.youtube/kodion/search/list/",return)</onclick>
+0522 			<onclick condition="!System.hasAddon(plugin.video.youtube)">InstallAddon(plugin.video.youtube)</onclick>
+0523 		</item>
+0524 		<item>
+0525 			<label>$LOCALIZE[31458]</label>
+0526 			<onclick>Dialog.Close(1129)</onclick>
+0527 			<onclick condition="System.hasAddon(script.extendedinfo)">RunScript(script.extendedinfo,info=moviedbbrowser,search=True)</onclick>
+0528 			<onclick condition="!System.hasAddon(script.extendedinfo)">InstallAddon(script.extendedinfo)</onclick>
+0529 		</item>
+0530 	</include>
+0531 	<include name="SelectActorName">
+0532 		<item>
+0533 			<label>$LOCALIZE[31148]</label>
+0534 			<onclick>Dialog.Close(1129)</onclick>
+0535 			<onclick>SetProperty(DoAction,True,movieinformation)</onclick>
+0536 		</item>
+0537 		<item>
+
+====== skin.terror.lite/16x9/Variables.xml ======
+1027 	<variable name="LanguageFlagsLabelVar">
+1028 		<value condition="String.IsEqual(Skin.String(LanguageFlags),1)">$LOCALIZE[292]</value>
+1029 		<value condition="String.IsEqual(Skin.String(LanguageFlags),2)">$LOCALIZE[287]</value>
+1030 		<value condition="String.IsEqual(Skin.String(LanguageFlags),3)">$LOCALIZE[21475]</value>
+1031 		<value>$LOCALIZE[231]</value>
+1032 	</variable>
+1033 	<variable name="GlobalCaseVar">
+1034 		<value condition="String.IsEqual(ListItem.DBTYPE,tvshow) | String.IsEqual(ListItem.DBTYPE,season)">tvseries.png</value>
+1035 		<value condition="ListItem.IsCollection">set.png</value>
+1036 		<value condition="ListItem.IsStereoscopic">3d.png</value>
+1037 		<value condition="String.Contains(ListItem.Filename,hddvd)">hddvd.png</value>
+1038 		<value condition="String.Contains(ListItem.Filename,hdtv) | String.Contains(ListItem.Filename,hd tv)">hdtv.png</value>
+1039 		<value condition="String.Contains(ListItem.Filename,sdtv) | String.Contains(ListItem.Filename,sd tv)">sdtv.png</value>
+1040 		<value condition="String.Contains(ListItem.Filename,webdl) | String.Contains(ListItem.Filename,web-dl) | String.Contains(ListItem.Filename,webtv) | String.Contains(ListItem.Filename,web-tv) | String.Contains(ListItem.Filename,webrip)">webdl.png</value>
+1041 		<value condition="!String.IsEmpty(ListItem.VideoResolution)">$INFO[ListItem.VideoResolution]p.png</value>
+1042 		<value>trailers.png</value>
+1043 	</variable>
+1044 	<variable name="HomeNowPlayingThumbVar">
+1045 		<value condition="!String.IsEmpty(Player.Art(poster)) + [VideoPlayer.Content(movies) | VideoPlayer.Content(musicvideos)]">$INFO[Player.Art(poster)]</value>
+1046 		<value condition="!String.IsEmpty(Player.Art(tvshow.poster)) + VideoPlayer.Content(episodes)">$INFO[Player.Art(tvshow.poster)]</value>
+1047 		<value condition="VideoPlayer.Content(livetv) + !String.IsEmpty(VideoPlayer.Cover)">$INFO[VideoPlayer.Cover]</value>
+1048 		<value>$INFO[Player.Art(thumb)]</value>
+1049 	</variable>
+1050 	<!-- DialogInfos -->
+1051 	<variable name="DialogInfoBackgroundVar">
+1052 		<value condition="Skin.HasSetting(Enable.BlurredVideoInfo)">$INFO[Window(Home).Property(ImageFilterFIVE)]</value>
+1053 		<value>$INFO[ListItem.Art(fanart)]</value>
+1054 	</variable>
+1055 	<variable name="DialogInfoDimmerVar">
+1056 		<value condition="Skin.HasSetting(Enable.BlurredVideoInfo)">8FFFFFFF</value>
+1057 		<value condition="String.IsEmpty(Skin.String(DialogInfo.Dimmer))">D9FFFFFF</value>
+
+====== skin.terror.lite/16x9/Variables_Widgets.xml ======
+0131 		<value>$LOCALIZE[231]</value>
+0132 	</variable>
+0133 	<variable name="WidgetTransLabelVar">
+0134 		<value condition="!String.IsEmpty(Skin.String(Widget.Trans))">$INFO[Skin.String(Widget.Trans)]</value>
+0135 		<value>100</value>
+0136 	</variable>
+0137 	<variable name="HomeWidgetCaseVar">
+0138 		<value condition="String.IsEqual(Container(9000).ListItem.Property(WidgetType),tvshows)">tvseries.png</value>
+0139 		<value condition="Container.ListItem.IsCollection">set.png</value>
+0140 		<value condition="Container.ListItem.IsStereoscopic">3d.png</value>
+0141 		<value condition="String.Contains(Container.ListItem.Filename,hddvd)">hddvd.png</value>
+0142 		<value condition="String.Contains(Container.ListItem.Filename,hdtv) | String.Contains(Container.ListItem.Filename,hd tv)">hdtv.png</value>
+0143 		<value condition="String.Contains(Container.ListItem.Filename,webdl) | String.Contains(Container.ListItem.Filename,web-dl) | String.Contains(Container.ListItem.Filename,webtv) | String.Contains(Container.ListItem.Filename,web-tv)">webdl.png</value>
+0144 		<value condition="!String.IsEmpty(Container.ListItem.VideoResolution)">$INFO[Container.ListItem.VideoResolution]p.png</value>
+0145 		<value condition="!String.IsEmpty(Container.ListItem.Property(VideoResolution))">$INFO[Container.ListItem.Property(VideoResolution)]p.png</value>
+0146 		<value condition="String.IsEmpty(Container.ListItem.Property(VideoResolution)) + String.IsEmpty(Container.ListItem.TVShowTitle) + [!String.IsEmpty(Container.ListItem.Trailer) | String.Contains(Container.ListItem.FolderPath,extendedinfo)]">trailers.png</value>
+0147 		<value />
+0148 	</variable>
+0149 	<!-- Widget Artwork -->
+0150 	<variable name="HomeWidgetPosterVar">
+0151 		<value condition="!String.IsEmpty(Container.ListItem.Art(poster))">$INFO[Container.ListItem.Art(poster)]</value>
+0152 		<value condition="!String.IsEmpty(Container.ListItem.Art(tvshow.poster))">$INFO[Container.ListItem.Art(tvshow.poster)]</value>
+0153 		<value condition="!String.IsEmpty(Container.ListItem.Icon)">$INFO[Container.ListItem.Icon]</value>
+0154 		<value>$INFO[Container.ListItem.Art(thumb)]</value>
+0155 	</variable>
+0156 	<!-- Widget Labels -->
+0157 	<variable name="HomeWidgetTitleVar">
+0158 		<value condition="!String.IsEmpty(ListItem.AddonName)">$INFO[ListItem.AddonName]</value>
+0159 		<value condition="!String.IsEmpty(ListItem.Property(Label3)) + !String.IsEmpty(ListItem.Property(WeatherMultiFanart))">$INFO[ListItem.Label] $INFO[ListItem.Label2] $INFO[ListItem.Property(Label3)]$INFO[ListItem.Property(Label4), ]</value>
+0160 		<value condition="!String.IsEmpty(ListItem.Property(Label3)) + !String.IsEmpty(ListItem.Property(isSystemInfo))">$INFO[ListItem.Label2]  $INFO[ListItem.Property(Label3)]</value>
+0161 		<value condition="[!Integer.IsGreater(ListItem.Season,9) + !Integer.IsGreater(ListItem.Episode,9)] + !String.StartsWith(ListItem.Episode,S) + !String.IsEmpty(ListItem.Episode) + !String.IsEqual(ListItem.Label,ListItem.TVShowTitle)">$INFO[ListItem.Season,S0]$INFO[ListItem.Episode,E0] $INFO[ListItem.Title]</value>
+
+====== skin.terror.lite/16x9/View_53_ShowCase.xml ======
+0902 		<value>$INFO[ListItem(8).Icon]</value>
+0903 	</variable>
+0904 	<variable name="ShowcaseItem9Var">
+0905 		<value condition="!String.IsEmpty(ListItem(9).Art(poster))">$INFO[ListItem(9).Art(poster)]</value>
+0906 		<value condition="Container.Content(genres)">$INFO[ListItem(9).Label,special://skin/extras/moviegenres/default/,.jpg]</value>
+0907 		<value>$INFO[ListItem(9).Icon]</value>
+0908 	</variable>
+0909 	<variable name="ShowcaseRes-7Var">
+0910 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+0911 		<value condition="ListItem(-7).IsCollection">set.png</value>
+0912 		<value condition="ListItem(-7).IsStereoscopic">3d.png</value>
+0913 		<value condition="String.Contains(ListItem(-7).Filename,hddvd)">hddvd.png</value>
+0914 		<value condition="String.Contains(ListItem(-7).Filename,hdtv)">hdtv.png</value>
+0915 		<value condition="String.Contains(ListItem(-7).Filename,webdl) | String.Contains(ListItem(-7).Filename,web-dl)">webdl.png</value>
+0916 		<value condition="!String.IsEmpty(ListItem(-7).VideoResolution)">$INFO[ListItem(-7).VideoResolution]p.png</value>
+0917 		<value>trailer.png</value>
+0918 	</variable>
+0919 	<variable name="ShowcaseRes-6Var">
+0920 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+0921 		<value condition="ListItem(-6).IsCollection">set.png</value>
+0922 		<value condition="ListItem(-6).IsStereoscopic">3d.png</value>
+0923 		<value condition="String.Contains(ListItem(-6).Filename,hddvd)">hddvd.png</value>
+0924 		<value condition="String.Contains(ListItem(-6).Filename,hdtv)">hdtv.png</value>
+0925 		<value condition="String.Contains(ListItem(-6).Filename,webdl) | String.Contains(ListItem(-6).Filename,web-dl)">webdl.png</value>
+0926 		<value condition="!String.IsEmpty(ListItem(-6).VideoResolution)">$INFO[ListItem(-6).VideoResolution]p.png</value>
+0927 		<value>trailer.png</value>
+0928 	</variable>
+0929 	<variable name="ShowcaseRes-5Var">
+0930 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+0931 		<value condition="ListItem(-5).IsCollection">set.png</value>
+0932 		<value condition="ListItem(-5).IsStereoscopic">3d.png</value>
+0933 		<value condition="String.Contains(ListItem(-5).Filename,hddvd)">hddvd.png</value>
+0934 		<value condition="String.Contains(ListItem(-5).Filename,hdtv)">hdtv.png</value>
+0935 		<value condition="String.Contains(ListItem(-5).Filename,webdl) | String.Contains(ListItem(-5).Filename,web-dl)">webdl.png</value>
+0936 		<value condition="!String.IsEmpty(ListItem(-5).VideoResolution)">$INFO[ListItem(-5).VideoResolution]p.png</value>
+0937 		<value>trailer.png</value>
+0938 	</variable>
+0939 	<variable name="ShowcaseRes-4Var">
+0940 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+0941 		<value condition="ListItem(-4).IsCollection">set.png</value>
+0942 		<value condition="ListItem(-4).IsStereoscopic">3d.png</value>
+0943 		<value condition="String.Contains(ListItem(-4).Filename,hddvd)">hddvd.png</value>
+0944 		<value condition="String.Contains(ListItem(-4).Filename,hdtv)">hdtv.png</value>
+0945 		<value condition="String.Contains(ListItem(-4).Filename,webdl) | String.Contains(ListItem(-4).Filename,web-dl)">webdl.png</value>
+0946 		<value condition="!String.IsEmpty(ListItem(-4).VideoResolution)">$INFO[ListItem(-4).VideoResolution]p.png</value>
+0947 		<value>trailer.png</value>
+0948 	</variable>
+0949 	<variable name="ShowcaseRes-3Var">
+0950 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+0951 		<value condition="ListItem(-3).IsCollection">set.png</value>
+0952 		<value condition="ListItem(-3).IsStereoscopic">3d.png</value>
+0953 		<value condition="String.Contains(ListItem(-3).Filename,hddvd)">hddvd.png</value>
+0954 		<value condition="String.Contains(ListItem(-3).Filename,hdtv)">hdtv.png</value>
+0955 		<value condition="String.Contains(ListItem(-3).Filename,webdl) | String.Contains(ListItem(-3).Filename,web-dl)">webdl.png</value>
+0956 		<value condition="!String.IsEmpty(ListItem(-3).VideoResolution)">$INFO[ListItem(-3).VideoResolution]p.png</value>
+0957 		<value>trailer.png</value>
+0958 	</variable>
+0959 	<variable name="ShowcaseRes-2Var">
+0960 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+0961 		<value condition="ListItem(-2).IsCollection">set.png</value>
+0962 		<value condition="ListItem(-2).IsStereoscopic">3d.png</value>
+0963 		<value condition="String.Contains(ListItem(-2).Filename,hddvd)">hddvd.png</value>
+0964 		<value condition="String.Contains(ListItem(-2).Filename,hdtv)">hdtv.png</value>
+0965 		<value condition="String.Contains(ListItem(-2).Filename,webdl) | String.Contains(ListItem(-2).Filename,web-dl)">webdl.png</value>
+0966 		<value condition="!String.IsEmpty(ListItem(-2).VideoResolution)">$INFO[ListItem(-2).VideoResolution]p.png</value>
+0967 		<value>trailer.png</value>
+0968 	</variable>
+0969 	<variable name="ShowcaseRes-1Var">
+0970 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+0971 		<value condition="ListItem(-1).IsCollection">set.png</value>
+0972 		<value condition="ListItem(-1).IsStereoscopic">3d.png</value>
+0973 		<value condition="String.Contains(ListItem(-1).Filename,hddvd)">hddvd.png</value>
+0974 		<value condition="String.Contains(ListItem(-1).Filename,hdtv)">hdtv.png</value>
+0975 		<value condition="String.Contains(ListItem(-1).Filename,webdl) | String.Contains(ListItem(-1).Filename,web-dl)">webdl.png</value>
+0976 		<value condition="!String.IsEmpty(ListItem(-1).VideoResolution)">$INFO[ListItem(-1).VideoResolution]p.png</value>
+0977 		<value>trailer.png</value>
+0978 	</variable>
+0979 	<variable name="ShowcaseRes1Var">
+0980 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+0981 		<value condition="ListItem(1).IsCollection">set.png</value>
+0982 		<value condition="ListItem(1).IsStereoscopic">3d.png</value>
+0983 		<value condition="String.Contains(ListItem(1).Filename,hddvd)">hddvd.png</value>
+0984 		<value condition="String.Contains(ListItem(1).Filename,hdtv)">hdtv.png</value>
+0985 		<value condition="String.Contains(ListItem(1).Filename,webdl) | String.Contains(ListItem(1).Filename,web-dl)">webdl.png</value>
+0986 		<value condition="!String.IsEmpty(ListItem(1).VideoResolution)">$INFO[ListItem(1).VideoResolution]p.png</value>
+0987 		<value>trailer.png</value>
+0988 	</variable>
+0989 	<variable name="ShowcaseRes2Var">
+0990 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+0991 		<value condition="ListItem(2).IsCollection">set.png</value>
+0992 		<value condition="ListItem(2).IsStereoscopic">3d.png</value>
+0993 		<value condition="String.Contains(ListItem(2).Filename,hddvd)">hddvd.png</value>
+0994 		<value condition="String.Contains(ListItem(2).Filename,hdtv)">hdtv.png</value>
+0995 		<value condition="String.Contains(ListItem(2).Filename,webdl) | String.Contains(ListItem(2).Filename,web-dl)">webdl.png</value>
+0996 		<value condition="!String.IsEmpty(ListItem(2).VideoResolution)">$INFO[ListItem(2).VideoResolution]p.png</value>
+0997 		<value>trailer.png</value>
+0998 	</variable>
+0999 	<variable name="ShowcaseRes3Var">
+1000 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+1001 		<value condition="ListItem(3).IsCollection">set.png</value>
+1002 		<value condition="ListItem(3).IsStereoscopic">3d.png</value>
+1003 		<value condition="String.Contains(ListItem(3).Filename,hddvd)">hddvd.png</value>
+1004 		<value condition="String.Contains(ListItem(3).Filename,hdtv)">hdtv.png</value>
+1005 		<value condition="String.Contains(ListItem(3).Filename,webdl) | String.Contains(ListItem(3).Filename,web-dl)">webdl.png</value>
+1006 		<value condition="!String.IsEmpty(ListItem(3).VideoResolution)">$INFO[ListItem(3).VideoResolution]p.png</value>
+1007 		<value>trailer.png</value>
+1008 	</variable>
+1009 	<variable name="ShowcaseRes4Var">
+1010 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+1011 		<value condition="ListItem(4).IsCollection">set.png</value>
+1012 		<value condition="ListItem(4).IsStereoscopic">3d.png</value>
+1013 		<value condition="String.Contains(ListItem(4).Filename,hddvd)">hddvd.png</value>
+1014 		<value condition="String.Contains(ListItem(4).Filename,hdtv)">hdtv.png</value>
+1015 		<value condition="String.Contains(ListItem(4).Filename,webdl) | String.Contains(ListItem(4).Filename,web-dl)">webdl.png</value>
+1016 		<value condition="!String.IsEmpty(ListItem(4).VideoResolution)">$INFO[ListItem(4).VideoResolution]p.png</value>
+1017 		<value>trailer.png</value>
+1018 	</variable>
+1019 	<variable name="ShowcaseRes5Var">
+1020 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+1021 		<value condition="ListItem(5).IsCollection">set.png</value>
+1022 		<value condition="ListItem(5).IsStereoscopic">3d.png</value>
+1023 		<value condition="String.Contains(ListItem(5).Filename,hddvd)">hddvd.png</value>
+1024 		<value condition="String.Contains(ListItem(5).Filename,hdtv)">hdtv.png</value>
+1025 		<value condition="String.Contains(ListItem(5).Filename,webdl) | String.Contains(ListItem(5).Filename,web-dl)">webdl.png</value>
+1026 		<value condition="!String.IsEmpty(ListItem(5).VideoResolution)">$INFO[ListItem(5).VideoResolution]p.png</value>
+1027 		<value>trailer.png</value>
+1028 	</variable>
+1029 	<variable name="ShowcaseRes6Var">
+1030 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+1031 		<value condition="ListItem(6).IsCollection">set.png</value>
+1032 		<value condition="ListItem(6).IsStereoscopic">3d.png</value>
+1033 		<value condition="String.Contains(ListItem(6).Filename,hddvd)">hddvd.png</value>
+1034 		<value condition="String.Contains(ListItem(6).Filename,hdtv)">hdtv.png</value>
+1035 		<value condition="String.Contains(ListItem(6).Filename,webdl) | String.Contains(ListItem(6).Filename,web-dl)">webdl.png</value>
+1036 		<value condition="!String.IsEmpty(ListItem(6).VideoResolution)">$INFO[ListItem(6).VideoResolution]p.png</value>
+1037 		<value>trailer.png</value>
+1038 	</variable>
+1039 	<variable name="ShowcaseRes7Var">
+1040 		<value condition="Container.Content(tvshows) | Container.Content(seasons)">tvseries.png</value>
+1041 		<value condition="ListItem(7).IsCollection">set.png</value>
+1042 		<value condition="ListItem(7).IsStereoscopic">3d.png</value>
+1043 		<value condition="String.Contains(ListItem(7).Filename,hddvd)">hddvd.png</value>
+1044 		<value condition="String.Contains(ListItem(7).Filename,hdtv)">hdtv.png</value>
+1045 		<value condition="String.Contains(ListItem(7).Filename,webdl) | String.Contains(ListItem(7).Filename,web-dl)">webdl.png</value>
+1046 		<value condition="!String.IsEmpty(ListItem(7).VideoResolution)">$INFO[ListItem(7).VideoResolution]p.png</value>
+1047 		<value>trailer.png</value>
+1048 	</variable>
+1049 	<variable name="IconOverlay-1Var">
+1050 		<value condition="ListItem(-1).IsResumable + !String.IsEmpty(Window(Home).Property(Overlay.Resumable))">overlays/showcase/resumable.png</value>
+1051 		<value>$INFO[Window(Home).Property(Overlay.Path)]$INFO[ListItem(-1).Overlay]</value>
+1052 	</variable>
+1053 	<variable name="IconOverlay0Var">
+1054 		<value condition="ListItem.IsResumable + !String.IsEmpty(Window(Home).Property(Overlay.Resumable))">overlays/showcase/resumable.png</value>
+1055 		<value>$INFO[Window(Home).Property(Overlay.Path)]$INFO[ListItem.Overlay]</value>
+1056 	</variable>
+1057 	<variable name="IconOverlay1Var">
+1058 		<value condition="ListItem(1).IsResumable + !String.IsEmpty(Window(Home).Property(Overlay.Resumable))">overlays/showcase/resumable.png</value>
+1059 		<value>$INFO[Window(Home).Property(Overlay.Path)]$INFO[ListItem(1).Overlay]</value>
+1060 	</variable>
+1061 	<variable name="IconOverlay2Var">
+1062 		<value condition="ListItem(2).IsResumable + !String.IsEmpty(Window(Home).Property(Overlay.Resumable))">overlays/showcase/resumable.png</value>
+
+====== skin.terror.lite/16x9/custom_1119_ExtrasDialog.xml ======
+0122 			<control type="button" id="90209">
+0123 				<description>Extras button</description>
+0124 				<width>510</width>
+0125 				<textwidth>435</textwidth>
+0126 				<textoffsetx>45</textoffsetx>
+0127 				<texturefocus colordiffuse="$VAR[HighlightBarColor]" border="35,2,35,2">button_shutdown_focus.png</texturefocus>
+0128 				<texturenofocus border="35,2,35,2">button_shutdown_nofocus.png</texturenofocus>
+0129 				<onclick>Dialog.Close(1119)</onclick>
+0130 				<onclick condition="!Container.Content(tvshows)">RunScript(script.videoextras,display,"$INFO[ListItem.FilenameAndPath]")</onclick>
+0131 				<onclick condition="Container.Content(tvshows)">RunScript(script.videoextras,display,"$INFO[ListItem.Path]")</onclick>
+0132 				<label>$INFO[System.AddonTitle(script.videoextras)]</label>
+0133 				<visible>System.HasAddon(script.videoextras)</visible>
+0134 				<visible>[Container.Content(movies) | Container.Content(tvshows) | Container.Content(episodes) | Container.Content(musicvideos)]</visible>
+0135 			</control>
+0136 			<control type="button" id="90210">
+0137 				<description>Search YouTube button</description>
+0138 				<width>510</width>
+0139 				<textwidth>435</textwidth>
+0140 				<textoffsetx>45</textoffsetx>
+0141 				<texturefocus colordiffuse="$VAR[HighlightBarColor]" border="35,2,35,2">button_shutdown_focus.png</texturefocus>
+0142 				<texturenofocus border="35,2,35,2">button_shutdown_nofocus.png</texturenofocus>
+0143 				<onclick>Dialog.Close(all,true)</onclick>
+0144 				<onclick>ActivateWindow(videos,$ESCINFO[ListItem.Label,plugin://plugin.video.youtube/?path=/root/search&amp;feed=search&amp;search=],return)</onclick>
+0145 				<label>$INFO[System.AddonTitle(plugin.video.youtube)]</label>
+0146 				<visible>System.HasAddon(plugin.video.youtube) + [Container.Content(albums) | Container.Content(songs)]</visible>
+0147 			</control>
+0148 			<control type="button" id="90211">
+0149 				<description>Add album as startup playlist button</description>
+0150 				<width>510</width>
+0151 				<textwidth>435</textwidth>
+0152 				<textoffsetx>45</textoffsetx>
+0153 				<texturefocus colordiffuse="$VAR[HighlightBarColor]" border="35,2,35,2">button_shutdown_focus.png</texturefocus>
+0154 				<texturenofocus border="35,2,35,2">button_shutdown_nofocus.png</texturenofocus>
+0155 				<onclick>Dialog.Close(1119)</onclick>
+0156 				<onclick>Skin.SetString(Startup_Playlist_Path,RunScript(script.playalbum,albumid=$INFO[ListItem.DBID]))</onclick>
+0157 				<label>31089</label>
+0158 				<visible>!Skin.HasSetting(KioskMode.Enabled)</visible>
+0159 				<visible>System.HasAddon(script.playalbum) + Container.Content(albums)</visible>
+0160 			</control>
+0161 			<control type="button" id="90212">
+
+====== skin.terror.lite/16x9/script-skinshortcuts-includes.xml ======
+0035 			<property name="background">special://userdata/backgrounds/TV/</property>
+0036 			<property name="backgroundName">special://userdata/backgrounds/TV/</property>
+0037 			<onclick condition="String.IsEqual(ListItem.Property(path),ActivateWindow(1129))">SetProperty(CustomSelectSearch,True,Home)</onclick>
+0038 			<onclick condition="System.HasPVRAddon">ActivateWindow(TVChannels)</onclick>
+0039 			<property name="path">ActivateWindow(TVChannels)</property>
+0040 			<onclick condition="![System.HasPVRAddon]">ActivateWindow(addonbrowser,addons://repository.xbmc.org/xbmc.pvrclient,return)</onclick>
+0041 			<visible>String.IsEqual(System.ProfileName,Master user)</visible>
+0042 			<property name="submenuVisibility">color-orange-l-color-ive-t-color-orange-v-color</property>
+0043 			<property name="hasSubmenu">True</property>
+0044 			</item>
+0045 		<item id="3">
+0046 			<property name="id">$NUMBER[3]</property>
+0047 			<label>[COLOR=green]F[/COLOR]ilm-Tim[COLOR=green]e[/COLOR]</label>
+0048 			<label2>Benutzerdefinierter Eintrag</label2>
+0049 			<icon>DefaultAddSource.png</icon>
+0050 			<thumb>image://special%3a%2f%2fhome%2faddons%5cplugin.video.L0RE.cinetrailer%5cicon.png/</thumb>
+0051 			<property name="widgetName">Filme im Trend</property>
+0052 			<property name="widgetType">movies</property>
+0053 			<property name="widgetStyle">Extended Panel</property>
+0054 			<property name="widgetPanelInfo">Enabled</property>
+0055 			<property name="background">https://bladedesign.ch/dir/repo/INFINITY/Cinema/</property>
+0056 			<property name="backgroundName">https://bladedesign.ch/dir/repo/INFINITY/Cinema/</property>
+0057 			<property name="widgetCase">Glass</property>
+0058 			<onclick condition="String.IsEqual(ListItem.Property(path),ActivateWindow(1129))">SetProperty(CustomSelectSearch,True,Home)</onclick>
+0059 			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper",return)</onclick>
+0060 			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper",return)</property>
+0061 			<visible>String.IsEqual(System.ProfileName,Master user)</visible>
+0062 			<property name="submenuVisibility">plugin-video-themoviedb-helper</property>
+0063 			<property name="hasSubmenu">True</property>
+0064 			</item>
+0065 		<item id="4">
+0121 			<property name="background">special://userdata/backgrounds/Mediathek/</property>
+0122 			<property name="backgroundName">special://userdata/backgrounds/Mediathek/</property>
+0123 			<onclick condition="String.IsEqual(ListItem.Property(path),ActivateWindow(1129))">SetProperty(CustomSelectSearch,True,Home)</onclick>
+0124 			<onclick>ActivateWindow(Programs,"plugin://plugin.program.super.favourites/?label=Addons_Mediathek&amp;mode=400&amp;path=special%3A%2F%2Fuserdata%2Ffavoriten%2FSuper+Favourites%5CAddons_Mediathek&amp;image=special%3A%2F%2Fhome%2Faddons%5Cplugin.video.7tvneu%5Cicon.png&amp;fanart=special%3A%2F%2Fhome%2Faddons%5Cplugin.video.7tvneu%5Cfanart.jpg&amp;content_type=",return)</onclick>
+0125 			<property name="path">ActivateWindow(Programs,"plugin://plugin.program.super.favourites/?label=Addons_Mediathek&amp;mode=400&amp;path=special%3A%2F%2Fuserdata%2Ffavoriten%2FSuper+Favourites%5CAddons_Mediathek&amp;image=special%3A%2F%2Fhome%2Faddons%5Cplugin.video.7tvneu%5Cicon.png&amp;fanart=special%3A%2F%2Fhome%2Faddons%5Cplugin.video.7tvneu%5Cfanart.jpg&amp;content_type=",return)</property>
+0126 			<visible>String.IsEqual(System.ProfileName,Master user)</visible>
+0127 			<property name="submenuVisibility">color-cyan-m-color-ediathe-color-cyan-k-color</property>
+0128 			<property name="hasSubmenu">False</property>
+0129 			</item>
+0130 		<item id="7">
+0131 			<property name="id">$NUMBER[7]</property>
+0132 			<label>[COLOR=darkred]Y[/COLOR]outub[COLOR=darkred]e[/COLOR]</label>
+0133 			<label2>Benutzerdefinierte Einträge</label2>
+0134 			<icon>special://skin/extras/icons/DefaultTVShows.png</icon>
+0135 			<thumb />
+0136 			<property name="background">special://userdata/backgrounds/YouTube/</property>
+0137 			<property name="backgroundName">special://userdata/backgrounds/YouTube/</property>
+0138 			<onclick condition="String.IsEqual(ListItem.Property(path),ActivateWindow(1129))">SetProperty(CustomSelectSearch,True,Home)</onclick>
+0139 			<onclick>ActivateWindow(Videos,"plugin://plugin.video.youtube",return)</onclick>
+0140 			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.youtube",return)</property>
+0141 			<visible>String.IsEqual(System.ProfileName,Master user)</visible>
+0142 			<property name="submenuVisibility">plugin-video-youtube</property>
+0143 			<property name="hasSubmenu">True</property>
+0144 			</item>
+0145 		<item id="8">
+0146 			<property name="id">$NUMBER[8]</property>
+0147 			<label>[COLOR=darkblue]M[/COLOR]usi[COLOR=darkblue]k[/COLOR]</label>
+0148 			<label2>Programm</label2>
+0149 			<icon>DefaultAddSource.png</icon>
+0150 			<thumb>image://special%3a%2f%2fhome%2faddons%5cplugin.video.now_music%5cicon.png/</thumb>
+0151 			<property name="widgetName">Super Favourites - Addons_Musik</property>
+0152 			<property name="widgetType">picture</property>
+0153 			<property name="widgetStyle">Extended Compact Panel</property>
+0154 			<property name="widgetPanelInfo">Enabled</property>
+0155 			<property name="widgetCase">Glass</property>
+0156 			<property name="background">special://userdata/backgrounds/Musik/</property>
+0157 			<property name="backgroundName">special://userdata/backgrounds/Musik/</property>
+0439 		<item id="5">
+0440 			<property name="id">$NUMBER[5]</property>
+0441 			<property name="mainmenuid">5</property>
+0442 			<label>Favoriten Kids</label>
+0443 			<label2>Programm</label2>
+0444 			<icon>DefaultAddSource.png</icon>
+0445 			<thumb>image://C%3a%5cUsers%5cInspiron%5cAppData%5cRoaming%5cKodi%5caddons%5cplugin.program.super.favourites%5cicon.png/</thumb>
+0446 			<onclick>ActivateWindow(Programs,"plugin://plugin.program.super.favourites/?label=Favoriten_Kids&amp;mode=400&amp;path=special%3A%2F%2Fuserdata%2Ffavoriten%2FSuper+Favourites%5CFavoriten_Kids&amp;image=C%3A%5CUsers%5CInspiron%5CAppData%5CRoaming%5CKodi%5Caddons%5Cplugin.program.super.favourites%5Cicon.png&amp;fanart=C%3A%5CUsers%5CInspiron%5CAppData%5CRoaming%5CKodi%5Caddons%5Cplugin.program.super.favourites%5Cfanart.jpg&amp;content_type=",return)</onclick>
+0447 			<property name="path">ActivateWindow(Programs,"plugin://plugin.program.super.favourites/?label=Favoriten_Kids&amp;mode=400&amp;path=special%3A%2F%2Fuserdata%2Ffavoriten%2FSuper+Favourites%5CFavoriten_Kids&amp;image=C%3A%5CUsers%5CInspiron%5CAppData%5CRoaming%5CKodi%5Caddons%5Cplugin.program.super.favourites%5Cicon.png&amp;fanart=C%3A%5CUsers%5CInspiron%5CAppData%5CRoaming%5CKodi%5Caddons%5Cplugin.program.super.favourites%5Cfanart.jpg&amp;content_type=",return)</property>
+0448 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(9000).ListItem.Property(submenuVisibility),color-pink-f-color-avorite-color-pink-n-color)</visible>
+0449 			<property name="isSubmenu">True</property>
+0450 			</item>
+0451 		<item id="6">
+0452 			<property name="id">$NUMBER[6]</property>
+0453 			<property name="mainmenuid">5</property>
+0454 			<label>Favoriten YouTube</label>
+0455 			<label2>Programm</label2>
+0456 			<icon>DefaultAddSource.png</icon>
+0457 			<thumb>image://C%3a%5cUsers%5cInspiron%5cAppData%5cRoaming%5cKodi%5caddons%5cplugin.program.super.favourites%5cicon.png/</thumb>
+0458 			<onclick>ActivateWindow(Programs,"plugin://plugin.program.super.favourites/?label=Favoriten_YouTube&amp;mode=400&amp;path=special%3A%2F%2Fuserdata%2Ffavoriten%2FSuper+Favourites%5CFavoriten_YouTube&amp;image=C%3A%5CUsers%5CInspiron%5CAppData%5CRoaming%5CKodi%5Caddons%5Cplugin.program.super.favourites%5Cicon.png&amp;fanart=C%3A%5CUsers%5CInspiron%5CAppData%5CRoaming%5CKodi%5Caddons%5Cplugin.program.super.favourites%5Cfanart.jpg&amp;content_type=",return)</onclick>
+0459 			<property name="path">ActivateWindow(Programs,"plugin://plugin.program.super.favourites/?label=Favoriten_YouTube&amp;mode=400&amp;path=special%3A%2F%2Fuserdata%2Ffavoriten%2FSuper+Favourites%5CFavoriten_YouTube&amp;image=C%3A%5CUsers%5CInspiron%5CAppData%5CRoaming%5CKodi%5Caddons%5Cplugin.program.super.favourites%5Cicon.png&amp;fanart=C%3A%5CUsers%5CInspiron%5CAppData%5CRoaming%5CKodi%5Caddons%5Cplugin.program.super.favourites%5Cfanart.jpg&amp;content_type=",return)</property>
+0460 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(9000).ListItem.Property(submenuVisibility),color-pink-f-color-avorite-color-pink-n-color)</visible>
+0461 			<property name="isSubmenu">True</property>
+0462 			</item>
+0463 		<item id="1">
+0464 			<property name="id">$NUMBER[1]</property>
+0465 			<property name="mainmenuid">7</property>
+0466 			<label>$LOCALIZE[4]</label>
+0467 			<label2 />
+0468 			<icon>DefaultAddSource.png</icon>
+0469 			<thumb />
+0470 			<visible>[System.HasAddon(script.tv.show.next.aired)] + String.IsEqual(Container(9000).ListItem.Property(submenuVisibility),plugin-video-youtube)</visible>
+0471 			<onclick>RunAddon(script.tv.show.next.aired,return)</onclick>
+0472 			<property name="path">RunAddon(script.tv.show.next.aired,return)</property>
+0473 			<visible>String.IsEqual(System.ProfileName,Master user)</visible>
+0474 			<property name="isSubmenu">True</property>
+0475 			</item>
+0476 		<item id="2">
+0477 			<property name="id">$NUMBER[2]</property>
+0478 			<property name="mainmenuid">7</property>
+0479 			<label>$LOCALIZE[575]</label>
+0480 			<label2 />
+0481 			<icon>DefaultAddSource.png</icon>
+0482 			<thumb />
+0483 			<onclick>ActivateWindow(Videos,videodb://inprogresstvshows/,return)</onclick>
+0484 			<property name="path">ActivateWindow(Videos,videodb://inprogresstvshows/,return)</property>
+0485 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(9000).ListItem.Property(submenuVisibility),plugin-video-youtube)</visible>
+0486 			<property name="isSubmenu">True</property>
+0487 			</item>
+0488 		<item id="3">
+0489 			<property name="id">$NUMBER[3]</property>
+0490 			<property name="mainmenuid">7</property>
+0491 			<label>$LOCALIZE[31328]</label>
+0492 			<label2 />
+0493 			<icon>DefaultAddSource.png</icon>
+0494 			<thumb />
+0495 			<onclick>ActivateWindow(Videos,videodb://recentlyaddedepisodes/,return)</onclick>
+0496 			<property name="path">ActivateWindow(Videos,videodb://recentlyaddedepisodes/,return)</property>
+0497 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(9000).ListItem.Property(submenuVisibility),plugin-video-youtube)</visible>
+0498 			<property name="isSubmenu">True</property>
+0499 			</item>
+0500 		<item id="4">
+0501 			<property name="id">$NUMBER[4]</property>
+0502 			<property name="mainmenuid">7</property>
+0503 			<label>$LOCALIZE[135]</label>
+0504 			<label2 />
+0505 			<icon>DefaultAddSource.png</icon>
+0506 			<thumb />
+0507 			<onclick condition="Library.HasContent(TVShows)">ActivateWindow(Videos,videodb://tvshows/genres/,return)</onclick>
+0508 			<property name="path">ActivateWindow(Videos,videodb://tvshows/genres/,return)</property>
+0509 			<onclick condition="![Library.HasContent(TVShows)]">ActivateWindow(videos,files,return)</onclick>
+0510 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(9000).ListItem.Property(submenuVisibility),plugin-video-youtube)</visible>
+0511 			<property name="isSubmenu">True</property>
+0512 			</item>
+0513 		<item id="5">
+0514 			<property name="id">$NUMBER[5]</property>
+0515 			<property name="mainmenuid">7</property>
+0516 			<label>$LOCALIZE[652]</label>
+0517 			<label2 />
+0518 			<icon>DefaultAddSource.png</icon>
+0519 			<thumb />
+0520 			<onclick condition="Library.HasContent(TVShows)">ActivateWindow(Videos,videodb://tvshows/years/,return)</onclick>
+0521 			<property name="path">ActivateWindow(Videos,videodb://tvshows/years/,return)</property>
+0522 			<onclick condition="![Library.HasContent(TVShows)]">ActivateWindow(videos,files,return)</onclick>
+0523 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(9000).ListItem.Property(submenuVisibility),plugin-video-youtube)</visible>
+0524 			<property name="isSubmenu">True</property>
+0525 			</item>
+0526 		<item id="6">
+0527 			<property name="id">$NUMBER[6]</property>
+0528 			<property name="mainmenuid">7</property>
+0529 			<label>$LOCALIZE[344]</label>
+0530 			<label2 />
+0531 			<icon>DefaultAddSource.png</icon>
+0532 			<thumb />
+0533 			<onclick condition="Library.HasContent(TVShows)">ActivateWindow(Videos,videodb://tvshows/actors/,return)</onclick>
+0534 			<property name="path">ActivateWindow(Videos,videodb://tvshows/actors/,return)</property>
+0535 			<onclick condition="![Library.HasContent(TVShows)]">ActivateWindow(videos,files,return)</onclick>
+0536 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(9000).ListItem.Property(submenuVisibility),plugin-video-youtube)</visible>
+0537 			<property name="isSubmenu">True</property>
+0538 			</item>
+0539 		<item id="1">
+0540 			<property name="id">$NUMBER[1]</property>
+0541 			<property name="mainmenuid">8</property>
+0542 			<label>$LOCALIZE[133]</label>
+0543 			<label2 />
+0544 			<icon>DefaultAddSource.png</icon>
+0545 			<thumb />
+0546 			<onclick condition="Library.HasContent(Music)">ActivateWindow(Music,musicdb://artists/,return)</onclick>
+0547 			<property name="path">ActivateWindow(Music,musicdb://artists/,return)</property>
+0548 			<onclick condition="![Library.HasContent(Music)]">ActivateWindow(music,files)</onclick>
+0549 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(9000).ListItem.Property(submenuVisibility),color-darkblue-m-color-usi-color-darkblue-k-color)</visible>
+0550 			<property name="isSubmenu">True</property>
+0551 			</item>
+1150 						<param name="fallbackVisible">false</param>
+1151 						<param name="Aspect">stretch</param>
+1152 						<param name="Aligny">top</param>
+1153 						<param name="Diffuse" />
+1154 						<param name="Case">homewidgets/cases/glass/portrait.png</param>
+1155 						<param name="labelVisible">false</param>
+1156 						<param name="labelFocusVisible">false</param>
+1157 						<param name="isWeather">false</param>
+1158 						<param name="weatherTop" />
+1159 						<param name="weatherHeight" />
+1160 						<param name="weatherTop1" />
+1161 						<param name="weatherTop2" />
+1162 						<param name="weatherTop3" />
+1163 						<param name="weatherFont">font14</param>
+1164 						</include>
+1165 					<content target="videos" sortby="" sortorder="">plugin://plugin.video.themoviedb.helper/?info=trending_week&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(widgetreload-movies)]</content>
+1166 					</control>
+1167 				</control>
+1168 			</control>
+1169 		<control type="group">
+1170 			<visible>String.IsEqual(Container(9000).ListItem.Property(submenuVisibility),plugin-video-filmpalast-ex)</visible>
+1171 			<control type="group">
+1172 				<visible>Integer.IsGreater(Container(80114).NumItems,0)</visible>
+1173 				<control type="group">
+1174 					<visible>Control.HasFocus(80114)</visible>
+1175 					<animation effect="slide" end="0,950" condition="!String.IsEqual(Skin.String(MainMenu.Layout),vertical) + String.IsEqual(Skin.String(HorzMenu.Position),center)">Conditional</animation>
+1176 					<animation effect="slide" end="0,700" condition="!String.IsEqual(Skin.String(MainMenu.Layout),vertical) + String.IsEqual(Skin.String(HorzMenu.Position),high)">Conditional</animation>
+1177 					<animation effect="slide" end="0,677" condition="String.IsEqual(Skin.String(MainMenu.Layout),vertical)">Conditional</animation>
+1178 					<top>90</top>
+1179 					<left>40</left>
+1180 					<control type="group">
+1764 						<param name="fallbackVisible">false</param>
+1765 						<param name="Aspect">stretch</param>
+1766 						<param name="Aligny">top</param>
+1767 						<param name="Diffuse" />
+1768 						<param name="Case">homewidgets/cases/glass/portrait.png</param>
+1769 						<param name="labelVisible">false</param>
+1770 						<param name="labelFocusVisible">false</param>
+1771 						<param name="isWeather">false</param>
+1772 						<param name="weatherTop" />
+1773 						<param name="weatherHeight" />
+1774 						<param name="weatherTop1" />
+1775 						<param name="weatherTop2" />
+1776 						<param name="weatherTop3" />
+1777 						<param name="weatherFont">font12</param>
+1778 						</include>
+1779 					<content target="videos" sortby="" sortorder="">plugin://plugin.video.themoviedb.helper/?info=trending_week&amp;tmdb_type=tv&amp;reload=%24INFO%5BWindow%28Home%29.Property%28TMDbHelper.Widgets.Reload%29%5D&amp;widget=true</content>
+1780 					</control>
+1781 				</control>
+1782 			</control>
+1783 		</include>
+1784 	<include name="skinshortcuts-template-HorizontalNavigation2">
+1785 		<include condition="String.IsEqual(System.ProfileName,Master user)">skinshortcuts-template-HorizontalNavigation2-Master user</include>
+1786 		</include>
+1787 	<include name="skinshortcuts-template-HorizontalNavigation2-Master user">
+1788 		<onup condition="!String.IsEqual(Skin.String(MainMenu.Layout),vertical) + String.IsEqual(Skin.String(HorzMenu.Position),center)">9000</onup>
+1789 		<onup condition="!String.IsEqual(Skin.String(MainMenu.Layout),vertical) + String.IsEqual(Skin.String(HorzMenu.Position),high)">90010</onup>
+1790 		<onup condition="String.IsEqual(Skin.String(MainMenu.Layout),vertical) + Control.IsVisible(90010)">90010</onup>
+1791 		<onup condition="String.IsEqual(Skin.String(MainMenu.Layout),vertical) + !Control.IsVisible(90010) + [Control.IsVisible(9027) | System.HasMediaDVD]">9020</onup>
+1792 		<onup condition="String.IsEqual(Skin.String(MainMenu.Layout),vertical) + !Control.IsVisible(90010) + ![Control.IsVisible(9027) | System.HasMediaDVD]">9000</onup>
+1793 		<ondown condition="!String.IsEqual(Skin.String(MainMenu.Layout),vertical) + Control.IsVisible(90020) + String.IsEqual(Skin.String(HorzMenu.Position),center)">90020</ondown>
+1794 		<ondown condition="!String.IsEqual(Skin.String(MainMenu.Layout),vertical) + Control.IsVisible(90010) + String.IsEmpty(Skin.String(HorzMenu.Position))">90010</ondown>
+
+Valid XML: skin.terror.lite/addon.xml
+Valid XML: skin.terror.lite/16x9/DialogVideoInfo.xml
+
+Non-XML skin scripts with trailer references:
