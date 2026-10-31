@@ -1,0 +1,76 @@
+name: Diagnose TerrorLite trailer buttons (test branch only)
+on:
+  push:
+    branches: [fix/terrorlite-trailer-20261031]
+    paths: ['.github/workflows/inspect-terror-trailers.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/terrorlite-trailer-20261031
+      - name: Analyze shipped 1.1.34 XML without changing skin
+        run: |
+          python3 - <<'PY'
+          import re, zipfile, xml.etree.ElementTree as ET
+          from pathlib import Path
+          source=Path('zips/skin.terror.lite/skin.terror.lite-1.1.34.zip')
+          report=['TerrorLite 1.1.34 Trailer Diagnostics','Source: '+str(source)]
+          with zipfile.ZipFile(source) as z:
+              report += [f'Archive files: {len(z.namelist())}', 'Archive CRC: '+str(z.testzip()),'']
+              relevant=[n for n in z.namelist() if n.startswith('skin.terror.lite/16x9/') and n.lower().endswith('.xml')]
+              report.append('XML with trailer-related terms:')
+              matches=[]
+              for n in relevant:
+                  txt=z.read(n).decode('utf-8-sig','replace')
+                  ln=txt.splitlines()
+                  indexes=[i for i,v in enumerate(ln) if re.search(r'trailer|youtube|tmdbhelper',v,re.I)]
+                  if indexes:
+                      matches.append((n,ln,indexes))
+                      report.append(f'  {n} ({len(indexes)} matched lines)')
+              report.append('')
+              for n,ln,indexes in matches:
+                  report.append('====== '+n+' ======')
+                  slices=[]
+                  for i in indexes:
+                      # Include enclosing control and visibility around matching calls
+                      a=max(0,i-15);b=min(len(ln),i+16)
+                      if slices and a<=slices[-1][1]:
+                          slices[-1]=(slices[-1][0],max(b,slices[-1][1]))
+                      else:slices.append((a,b))
+                  limit=0
+                  for a,b in slices:
+                      for i in range(a,b):
+                          report.append(f'{i+1:04d} {ln[i]}')
+                          limit+=1
+                          if limit>250:break
+                      if limit>250:report.append('[truncated]');break
+                  report.append('')
+              for n in ('skin.terror.lite/addon.xml','skin.terror.lite/16x9/DialogVideoInfo.xml'):
+                  if n in z.namelist():
+                      body=z.read(n).decode('utf-8-sig','replace')
+                      try:ET.fromstring(body);report.append('Valid XML: '+n)
+                      except Exception as e:report.append('Invalid XML: '+n+': '+str(e))
+              report.append('')
+              report.append('Non-XML skin scripts with trailer references:')
+              for n in z.namelist():
+                  if n.startswith('skin.terror.lite/') and n.endswith('.py') and len(n)<200:
+                      t=z.read(n).decode('utf-8','replace')
+                      if 'trailer' in t.lower():
+                          report.append(n+': '+', '.join(x.strip() for x in t.splitlines() if 'trailer' in x.lower())[:1000])
+          path=Path('diagnostics/terrorlite-trailer-1.1.34.txt')
+          path.parent.mkdir(exist_ok=True)
+          path.write_text('\n'.join(report)+'\n',encoding='utf-8')
+          print('\n'.join(report)[:30000])
+          PY
+      - name: Save report on diagnostic branch (not published)
+        run: |
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add diagnostics/terrorlite-trailer-1.1.34.txt
+          git commit -m "Diagnostic: inspect current trailer logic [skip ci]"
+          git push origin HEAD:fix/terrorlite-trailer-20261031
