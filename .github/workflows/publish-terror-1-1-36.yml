@@ -1,0 +1,112 @@
+name: Publish TerrorLite 1.1.36 trailer and cast fixes
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-terror-1-1-36.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-terrorlite-1-1-36
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out official Barclay Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Import exact verified test ZIP and validate changes
+        shell: bash
+        run: |
+          git fetch --no-tags origin refs/heads/fix/terrorlite-trailer-20261031
+          git show FETCH_HEAD:test-builds/skin.terror.lite-1.1.36-trailer-cast-test.zip > zips/skin.terror.lite/skin.terror.lite-1.1.36.zip
+          test "$(git hash-object zips/skin.terror.lite/skin.terror.lite-1.1.36.zip)" = "21eff56d862b7214722928e7af997328e856e9cf"
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import xml.etree.ElementTree as ET
+          import hashlib
+
+          base = 'skin.terror.lite/'
+          folder = Path('zips/skin.terror.lite')
+          previous = folder/'skin.terror.lite-1.1.34.zip'
+          release = folder/'skin.terror.lite-1.1.36.zip'
+          dialog = base+'16x9/DialogVideoInfo.xml'
+          addon = base+'addon.xml'
+          helper = base+'resources/lib/cast_fallback.py'
+          with ZipFile(previous) as old, ZipFile(release) as new:
+              assert old.testzip() is None and new.testzip() is None, 'ZIP CRC failure'
+              oldnames, newnames = old.namelist(), new.namelist()
+              assert len(oldnames) == len(set(oldnames)), 'Duplicate old paths'
+              assert len(newnames) == len(set(newnames)), 'Duplicate new paths'
+              assert set(newnames) - set(oldnames) == {helper}, 'Unexpected added files'
+              assert set(oldnames) <= set(newnames), 'Original content removed'
+              changed = [name for name in oldnames if old.read(name) != new.read(name)]
+              assert set(changed) == {dialog, addon}, 'Unexpected modified paths: '+str(changed)
+              root = ET.fromstring(new.read(addon))
+              assert root.get('id')=='skin.terror.lite' and root.get('version')=='1.1.36'
+              assert ET.fromstring(old.read(addon)).get('version')=='1.1.34'
+              xml = ET.fromstring(new.read(dialog))
+              buttons = {x.get('id'): x for x in xml.iter('control')
+                         if x.get('type')=='button' and x.get('id') in ('11','910','911','9510')}
+              assert set(buttons) == {'11','910','911','9510'},buttons.keys()
+              assert 'ListItem.Trailer' in buttons['11'].findtext('visible','')
+              assert 'plugin.video.youtube' in ''.join(x.text or '' for x in buttons['911'].findall('onclick'))
+              assert buttons['910'].findtext('visible') == '!String.IsEmpty(ListItem.Cast)'
+              fallback = buttons['9510']
+              assert 'String.IsEmpty(ListItem.Cast)' in fallback.findtext('visible','')
+              assert 'plugin.video.themoviedb.helper' in fallback.findtext('visible','')
+              assert any('RunScript(special://skin/resources/lib/cast_fallback.py)' in (x.text or '') for x in fallback.findall('onclick'))
+              compile(new.read(helper), helper, 'exec')
+              assert new.read(base+'extras/intro-omega.mp4') == old.read(base+'extras/intro-omega.mp4')
+              for name in newnames:
+                  if name.endswith('.xml') and name.startswith(base+'16x9/'):
+                      ET.fromstring(new.read(name))
+              print('PASS: Exact tested ZIP, original design/settings/assets and trailer/native cast logic preserved')
+              print('PASS: Only DialogVideoInfo.xml, addon.xml and new cast_fallback.py differ from 1.1.34')
+              print('PASS: Every skin XML parsed, Python compiled, full ZIP CRC verified')
+              print('SHA256:',hashlib.sha256(release.read_bytes()).hexdigest())
+              print('Bytes:',release.stat().st_size)
+          PY
+
+      - name: Rebuild and verify official Kodi repository catalog
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          old=ET.parse('zips/addons.xml').getroot()
+          data={e.get('id'):(e.get('version'),ET.tostring(e)) for e in old}
+          assert data['skin.terror.lite'][0]=='1.1.34'
+          import subprocess
+          subprocess.run(['python3','tools/make_repo.py'],check=True)
+          import hashlib
+          new_data=Path('zips/addons.xml').read_bytes()
+          assert Path('zips/addons.xml.md5').read_text().strip()==hashlib.md5(new_data).hexdigest()
+          fresh=ET.fromstring(new_data)
+          updated={e.get('id'):(e.get('version'),ET.tostring(e)) for e in fresh}
+          assert len(fresh)==len(updated) and set(data)==set(updated), 'Repository add-on set changed'
+          assert updated['skin.terror.lite'][0]=='1.1.36'
+          for key in data:
+              if key!='skin.terror.lite':
+                  assert data[key]==updated[key], 'Existing add-on unexpectedly modified: '+key
+          print('PASS: Repository now advertises TerrorLite 1.1.36; all other add-ons and versions unchanged')
+          print('PASS: Kodi addons.xml and MD5 checksum match')
+          PY
+
+      - name: Publish release ZIP and Kodi index to main
+        shell: bash
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.36.zip zips/addons.xml zips/addons.xml.md5
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release TerrorLite 1.1.36 trailers and cast fixes [skip ci]'
+          git push
