@@ -1,0 +1,162 @@
+name: Build TerrorLite 1.1.36 trailers and actors local test (no release)
+on:
+  push:
+    branches: [fix/terrorlite-trailer-20261031]
+    paths: ['.github/workflows/build-terror-trailer-cast-test.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/terrorlite-trailer-20261031
+          fetch-depth: 0
+
+      - name: Test TMDb cast fallback helper without Kodi
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import ast,runpy,sys,types
+          from urllib.parse import urlsplit,parse_qs
+          from pathlib import Path
+          path=Path('tools/terror_lite_cast_fallback.py')
+          ast.parse(path.read_text(encoding='utf-8'))
+          def check(values,expected,available=True):
+              state={'calls':[],'sleep':[],'notifications':[]}
+              xbmc=types.ModuleType('xbmc')
+              xbmc.getInfoLabel=lambda n:values.get(n,'')
+              xbmc.getCondVisibility=lambda c: available and c=='System.HasAddon(plugin.video.themoviedb.helper)'
+              xbmc.executebuiltin=lambda x:state['calls'].append(x)
+              xbmc.sleep=lambda n:state['sleep'].append(n)
+              xbmc.log=lambda *a:None
+              xbmc.LOGWARNING=2
+              xbmcgui=types.ModuleType('xbmcgui')
+              class D:
+                  def notification(self,*a):state['notifications'].append(a)
+              xbmcgui.Dialog=D
+              sys.modules.update({'xbmc':xbmc,'xbmcgui':xbmcgui})
+              runpy.run_path(str(path),run_name='__main__')
+              if expected is None:
+                  assert not state['calls'] and state['notifications'],state
+                  return
+              assert len(state['calls'])==2,state
+              assert state['calls'][0]=='Dialog.Close(MovieInformation)',state
+              assert state['sleep']==[150],state
+              assert state['calls'][1].startswith('ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?')
+              assert state['calls'][1].endswith('",return)')
+              uri=state['calls'][1].split('"')[1]
+              actual={k:v[0] for k,v in parse_qs(urlsplit(uri).query).items()}
+              assert actual==expected,(actual,expected)
+          check({'ListItem.Property(TMDb_ID)':'550','ListItem.Title':'Fight Club','ListItem.Year':'1999','ListItem.DBType':'movie'}, {'info':'cast','tmdb_type':'movie','tmdb_id':'550'})
+          check({'ListItem.UniqueID(tmdb)':'1398','ListItem.DBType':'tvshow','ListItem.Title':'Breaking Bad'}, {'info':'cast','tmdb_type':'tv','tmdb_id':'1398'})
+          check({'ListItem.Property(IMDb_ID)':'tt0095016','ListItem.Title':'Die Hard','ListItem.Year':'1988'}, {'info':'cast','tmdb_type':'movie','imdb_id':'tt0095016'})
+          check({'ListItem.Title':'Léon & Co: Test/Film','ListItem.Year':'1994'}, {'info':'cast','tmdb_type':'movie','query':'Léon & Co: Test/Film','year':'1994'})
+          check({},None)
+          check({'ListItem.Title':'Any Film'},None,available=False)
+          print('PASS: TMDb id, alternate id, IMDb fallback, Unicode title/year and unavailable-data guards')
+          PY
+
+      - name: Patch ZIP 1.1.35 to 1.1.36 and validate all files
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          from copy import copy
+          import hashlib
+          import xml.etree.ElementTree as ET
+          base='skin.terror.lite/'
+          folder=Path('test-builds')
+          source=folder/'skin.terror.lite-1.1.35-trailer-test.zip'
+          dest=folder/'skin.terror.lite-1.1.36-trailer-cast-test.zip'
+          dialog=base+'16x9/DialogVideoInfo.xml'
+          addon=base+'addon.xml'
+          helper=base+'resources/lib/cast_fallback.py'
+          code=Path('tools/terror_lite_cast_fallback.py').read_bytes()
+          compile(code,helper,'exec')
+          with ZipFile(source) as z:
+              assert z.testzip() is None
+              infos=z.infolist()
+              original={x.filename:z.read(x.filename) for x in infos}
+              assert len(infos)==len(original),'Duplicate archive entries'
+              assert helper not in original
+              assert ET.fromstring(original[addon]).get('version')=='1.1.35'
+              doc=original[dialog].decode('utf-8-sig')
+              begin=doc.index('<control type="button" id="910">')
+              end=doc.index('</control>',begin)+len('</control>')
+              native=doc[begin:end]
+              assert '<description>Cast</description>' in native
+              assert '<visible>!String.IsEmpty(ListItem.Cast)</visible>' in native
+              assert '<onclick condition="!System.HasAddon(script.extendedinfo)">SetFocus(50)</onclick>' in native
+              assert '<onclick condition="System.HasAddon(script.extendedinfo)">SetFocus(90050)</onclick>' in native
+              assert 'id="9510"' not in doc
+              indent=doc[doc.rfind('\n',0,begin)+1:begin]
+              fallback=native.replace('id="910"','id="9510"',1)
+              fallback=fallback.replace('<description>Cast</description>','<description>Cast - TMDb Helper fallback</description>',1)
+              fallback=fallback.replace(
+                '<onclick condition="!System.HasAddon(script.extendedinfo)">SetFocus(50)</onclick>\n'+indent+'\t<onclick condition="System.HasAddon(script.extendedinfo)">SetFocus(90050)</onclick>',
+                '<onclick>RunScript(special://skin/resources/lib/cast_fallback.py)</onclick>',1
+              )
+              # Some XML uses slightly different whitespace; strip the two old actions structurally.
+              if 'SetFocus(90050)' in fallback:
+                  import re
+                  fallback=re.sub(r'^\s*<onclick condition="!System.HasAddon\(script.extendedinfo\)">SetFocus\(50\)</onclick>\s*', '\n'+indent+'\t',fallback,flags=re.M,count=1)
+                  fallback=re.sub(r'^\s*<onclick condition="System.HasAddon\(script.extendedinfo\)">SetFocus\(90050\)</onclick>\s*','\n'+indent+'\t',fallback,flags=re.M,count=1)
+                  fallback=fallback.replace('<visible>!String.IsEmpty(ListItem.Cast)</visible>','<onclick>RunScript(special://skin/resources/lib/cast_fallback.py)</onclick>\n'+indent+'\t<visible>!String.IsEmpty(ListItem.Cast)</visible>',1)
+              assert fallback.count('RunScript(special://skin/resources/lib/cast_fallback.py)')==1,fallback
+              assert 'SetFocus(50)' not in fallback and 'SetFocus(90050)' not in fallback
+              fallback=fallback.replace(
+                '<visible>!String.IsEmpty(ListItem.Cast)</visible>',
+                '<visible>System.HasAddon(plugin.video.themoviedb.helper) + String.IsEmpty(ListItem.Cast) + !String.IsEmpty(ListItem.Title) + [String.IsEqual(ListItem.DBType,movie) | String.IsEqual(ListItem.DBType,tvshow) | String.IsEqual(ListItem.DBType,episode) | Container.Content(movies) | Container.Content(tvshows)]</visible>',1
+              )
+              assert fallback!=native and doc[begin:end]==native
+              doc=doc[:end]+'\n'+indent+fallback+doc[end:]
+              root=ET.fromstring(doc)
+              native_nodes=[x for x in root.iter('control') if x.get('id')=='910']
+              fallback_nodes=[x for x in root.iter('control') if x.get('id')=='9510']
+              assert len(native_nodes)==len(fallback_nodes)==1
+              assert native_nodes[0].findtext('visible')=='!String.IsEmpty(ListItem.Cast)'
+              assert 'RunScript(special://skin/resources/lib/cast_fallback.py)' in [x.text for x in fallback_nodes[0].findall('onclick')]
+              assert 'String.IsEmpty(ListItem.Cast)' in fallback_nodes[0].findtext('visible','')
+              assert 'script.extendedinfo' not in fallback_nodes[0].findtext('visible','')
+              assert 'plugin.video.youtube/kodion/search/query/' in doc, 'Previous trailer fix not present'
+
+              manifest=original[addon]
+              assert manifest.count(b'version="1.1.35"')==1
+              manifest=manifest.replace(b'version="1.1.35"',b'version="1.1.36"',1)
+              manifest=manifest.replace(b'<news>',b'<news>1.1.36 TEST: Keep native actor list when supplied. If Kodi has no ListItem.Cast for a TMDb Helper movie, show Cast fallback and retrieve movie actors via TMDb Helper by ID or encoded title/year. Includes 1.1.35 trailer fallback. ',1)
+              assert ET.fromstring(manifest).get('version')=='1.1.36'
+              modified={dialog:doc.encode('utf-8'),addon:manifest}
+              with ZipFile(dest,'w') as out:
+                  for x in infos:
+                      out.writestr(copy(x),modified.get(x.filename,original[x.filename]))
+                  out.writestr(helper,code,compress_type=ZIP_DEFLATED)
+          with ZipFile(dest) as z:
+              assert z.testzip() is None,'New ZIP corrupt'
+              assert z.namelist()==[x.filename for x in infos]+[helper]
+              for name,contents in original.items():
+                  assert z.read(name)==modified.get(name,contents), 'Unintended change: '+name
+              assert z.read(helper)==code
+              assert ET.fromstring(z.read(addon)).get('version')=='1.1.36'
+              assert ET.fromstring(z.read(dialog)) is not None
+              assert z.read(base+'extras/intro-omega.mp4')==original[base+'extras/intro-omega.mp4']
+          print('PASS: Source 1.1.35 trailer fix retained without modification')
+          print('PASS: Native actor control untouched; supplementary button only for missing cast metadata')
+          print('PASS: Only two existing XML files modified; one small Python added, all other files identical')
+          print('PASS: Kodi XML, Python compilation, ZIP CRC and version')
+          print('Test output:',dest,'bytes:',dest.stat().st_size)
+          print('SHA256:',hashlib.sha256(dest.read_bytes()).hexdigest())
+          PY
+
+      - name: Save test ZIP on separate branch ONLY
+        shell: bash
+        run: |
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add test-builds/skin.terror.lite-1.1.36-trailer-cast-test.zip
+          git diff --cached --quiet && exit 0
+          git commit -m "Local test: TerrorLite 1.1.36 trailer and cast fallback [skip ci]"
+          git push origin HEAD:fix/terrorlite-trailer-20261031
