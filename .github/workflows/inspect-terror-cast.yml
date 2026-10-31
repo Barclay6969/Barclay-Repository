@@ -1,0 +1,54 @@
+name: Diagnose TerrorLite cast layout (test branch only)
+on:
+  push:
+    branches: [fix/terrorlite-trailer-20261031]
+    paths: ['.github/workflows/inspect-terror-cast.yml']
+permissions:
+  contents: write
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/terrorlite-trailer-20261031
+      - name: Examine actor visibility conditions and controls in test ZIP
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from xml.etree import ElementTree as ET
+          import re
+          z=Path('test-builds/skin.terror.lite-1.1.35-trailer-test.zip')
+          output=['Cast layout diagnosis - TerrorLite 1.1.35 TEST','ZIP exists: '+str(z.exists())]
+          with ZipFile(z) as f:
+              for name in ('16x9/DialogVideoInfo.xml','16x9/View_53_ShowCase.xml'):
+                  filename='skin.terror.lite/'+name
+                  text=f.read(filename).decode('utf-8-sig')
+                  lines=text.splitlines()
+                  output += ['','FILE '+filename+' lines '+str(len(lines))]
+                  for i,l in enumerate(lines):
+                      if re.search(r'cast|actor|90050|id="50"|container\.content|extendedinfo',l,re.I):
+                          lo=max(0,i-11);hi=min(len(lines),i+12)
+                          output.append('  HIT '+str(i+1))
+                          output += [f'{j+1:04d} '+lines[j] for j in range(lo,hi)]
+                  root=ET.fromstring(text)
+                  output.append('XML verified: '+str(root.tag))
+              for name in f.namelist():
+                  if name.endswith('.xml') and name.startswith('skin.terror.lite/16x9/') and not name.endswith(('DialogVideoInfo.xml','View_53_ShowCase.xml')):
+                      s=f.read(name).decode('utf-8-sig','replace')
+                      match=[line for line in s.splitlines() if re.search(r'ListItem.Cast|ListItem.Actor|90050|CastAndRole',line,re.I)]
+                      if match: output+=['','OTHER '+name]+match[:30]
+          d=Path('diagnostics/terrorlite-cast-1.1.35.txt')
+          d.parent.mkdir(exist_ok=True)
+          d.write_text('\n'.join(output)+'\n')
+          print('Saved cast diagnostics lines:',len(output))
+          PY
+      - name: Commit actor diagnosis on isolated test branch
+        run: |
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add diagnostics/terrorlite-cast-1.1.35.txt
+          git commit -m "Diagnostic: trace actor/cast controls [skip ci]"
+          git push origin HEAD:fix/terrorlite-trailer-20261031
