@@ -1,0 +1,43 @@
+name: Diagnose Terror Lite views
+on:
+  push:
+    branches:
+      - fix/terrorlite-listview-20261101
+    paths:
+      - .github/workflows/terror-lite-view-test.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read existing 1.1.36 view configuration
+        run: |
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          from xml.etree import ElementTree as ET
+          import re
+          src='zips/skin.terror.lite/skin.terror.lite-1.1.36.zip'
+          with ZipFile(src) as z:
+              a=z.namelist()
+              print('FILES',len(a))
+              for name in a:
+                  if not name.endswith('.xml'): continue
+                  raw=z.read(name).decode('utf-8-sig',errors='replace')
+                  if '/16x9/MyVideoNav.xml' in name or '/16x9/MyPrograms.xml' in name or '/16x9/MyVideos.xml' in name or '/16x9/MyMusicNav.xml' in name:
+                      print('WINDOW',name)
+                      print('HEAD',raw[:1500])
+                      print('VIEW TAGS',re.findall(r'<views>[^<]+</views>',raw)[:2])
+                      print('DEFAULT CONTROL',re.findall(r'<defaultcontrol[^>]*>[^<]*</defaultcontrol>',raw)[:2])
+                      print('ALL SETVIEWMODE',re.findall(r'.{0,90}(?:SetViewMode|TriPanel|ViewLock|View_55_Include).{0,140}',raw,re.I)[:15])
+                  if 'ViewLock' in raw or 'Enable_ViewLocking' in raw or 'SetViewMode(' in raw:
+                      lines=raw.splitlines()
+                      matches=[(i+1,s.strip()[:260]) for i,s in enumerate(lines) if re.search('Enable_ViewLocking|SetViewMode\\(|ShortcutView_55_Include|ViewLock',s,re.I)]
+                      if matches:
+                          print('REF',name,'COUNT',len(matches),'SAMPLES',matches[:15])
+              print('DONE')
+          PY
