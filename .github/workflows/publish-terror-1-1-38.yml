@@ -1,0 +1,138 @@
+name: Publish Terror Lite 1.1.38 permanent List fix
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-terror-1-1-38.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-terrorlite-1-1-38
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out official Barclay repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build byte-identical verified Terror Lite 1.1.38
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from xml.etree import ElementTree as ET
+          import hashlib
+          import subprocess
+
+          folder=Path('zips/skin.terror.lite')
+          src=folder/'skin.terror.lite-1.1.36.zip'
+          dst=folder/'skin.terror.lite-1.1.38.zip'
+          base='skin.terror.lite/'
+          assert subprocess.check_output(['git','hash-object',str(src)],text=True).strip()=='21eff56d862b7214722928e7af997328e856e9cf','Incorrect 1.1.36 source ZIP'
+          changed={}
+
+          with ZipFile(src) as z:
+              assert z.testzip() is None
+              names=z.namelist()
+              assert len(names)==1031 and len(set(names))==len(names)
+              assert ET.fromstring(z.read(base+'addon.xml')).get('version')=='1.1.36'
+
+              for fn in ('16x9/MyVideoNav.xml','16x9/MyPrograms.xml'):
+                  p=base+fn
+                  old=b'\t<defaultcontrol always="true">50</defaultcontrol>\r\n'
+                  new=(b'\t<defaultcontrol always="true">50</defaultcontrol>\n'
+                       b'\t<!-- TerrorLite: prefer the list on each media window open, without removing other view IDs. -->\n'
+                       b'\t<onload>Container.SetViewMode(50)</onload>\r\n')
+                  raw=z.read(p)
+                  assert raw.count(old)==1
+                  changed[p]=raw.replace(old,new,1)
+
+              p=base+'16x9/View_55_TriPanel.xml'
+              raw=z.read(p)
+              old=b'\t\t\t\t<control type="list" id="55">\r\n'
+              new=(b'\t\t\t\t<control type="list" id="55">\n'
+                   b'\t\t\t\t\t<!-- TerrorLite: immediately leave Three Panel and return to List when this view receives focus. -->\n'
+                   b'\t\t\t\t\t<onfocus>Container.SetViewMode(50)</onfocus>\r\n')
+              parts=raw.split(old)
+              assert len(parts)==4, 'Unexpected view layout'
+              changed[p]=parts[0]+new+parts[1]+old+parts[2]+new+parts[3]
+
+              p=base+'addon.xml'
+              raw=z.read(p)
+              assert raw.count(b'version="1.1.36"')==1
+              changed[p]=raw.replace(b'version="1.1.36"',b'version="1.1.38"',1)
+
+              with ZipFile(dst,'w') as out:
+                  for info in z.infolist():
+                      out.writestr(info,changed.get(info.filename,z.read(info.filename)))
+
+          expected_sha='778dc68ce05ac874c9cde169da3d8ad5dee7efac1bbfc6f143ae9efce1d2b418'
+          actual_sha=hashlib.sha256(dst.read_bytes()).hexdigest()
+          assert actual_sha==expected_sha, 'ZIP differs from user-tested 1.1.38: '+actual_sha
+          assert dst.stat().st_size==11860663
+          with ZipFile(src) as old, ZipFile(dst) as new:
+              assert new.testzip() is None
+              assert old.namelist()==new.namelist()
+              actual_changed={n for n in names if old.read(n)!=new.read(n)}
+              assert actual_changed==set(changed),'Unexpected files modified: '+str(actual_changed)
+              assert ET.fromstring(new.read(base+'addon.xml')).get('version')=='1.1.38'
+              for n in names:
+                  if n.startswith(base+'16x9/') and n.endswith('.xml'):
+                      ET.fromstring(new.read(n))
+              for fn in ('16x9/MyVideoNav.xml','16x9/MyPrograms.xml'):
+                  xml=ET.fromstring(new.read(base+fn))
+                  assert xml.findtext('views')==ET.fromstring(old.read(base+fn)).findtext('views'), 'Original view IDs changed'
+                  assert any((t.text or '')=='Container.SetViewMode(50)' for t in xml.findall('onload'))
+              assert new.read(base+'extras/intro-omega.mp4')==old.read(base+'extras/intro-omega.mp4')
+          print('PASS: Official release ZIP matches precisely the Kodi-tested version 1.1.38')
+          print('PASS: All 1,031 entries retained; only three skin XMLs plus addon.xml updated')
+          print('PASS: Original views/assets and Kodi XML validity preserved')
+          print('SHA256:',actual_sha)
+          PY
+
+      - name: Rebuild Kodi repository metadata and verify unrelated add-ons unchanged
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          import hashlib
+          import subprocess
+          before=ET.parse('zips/addons.xml').getroot()
+          baseline={e.get('id'):(e.get('version'), ET.tostring(e)) for e in before}
+          assert baseline['skin.terror.lite'][0]=='1.1.36'
+          subprocess.run(['python3','tools/make_repo.py'],check=True)
+          payload=Path('zips/addons.xml').read_bytes()
+          assert Path('zips/addons.xml.md5').read_text().strip()==hashlib.md5(payload).hexdigest()
+          after=ET.fromstring(payload)
+          updated={e.get('id'):(e.get('version'),ET.tostring(e)) for e in after}
+          assert len(before)==len(baseline)==len(after)==len(updated)
+          assert set(baseline)==set(updated)
+          assert updated['skin.terror.lite'][0]=='1.1.38'
+          for key in baseline:
+              if key!='skin.terror.lite':
+                  assert baseline[key]==updated[key], 'Another add-on changed: '+key
+          print('PASS: Kodi repository now advertises Terror Lite 1.1.38')
+          print('PASS: All other add-ons unchanged, addons.xml MD5 valid')
+          PY
+
+      - name: Commit tested ZIP and repository metadata to main
+        shell: bash
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.38.zip zips/addons.xml zips/addons.xml.md5
+          if git diff --cached --quiet; then
+            echo 'Release already published'
+            exit 0
+          fi
+          git commit -m 'Release Terror Lite 1.1.38 permanent List view fix [skip ci]'
+          git push origin HEAD:main
