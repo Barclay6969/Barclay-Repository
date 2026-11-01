@@ -1,43 +1,96 @@
-name: Diagnose Terror Lite views
+name: Test Terror Lite permanent List view
 on:
   push:
-    branches:
-      - fix/terrorlite-listview-20261101
-    paths:
-      - .github/workflows/terror-lite-view-test.yml
+    branches: [fix/terrorlite-listview-20261101]
+    paths: ['.github/workflows/terror-lite-view-test.yml']
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  inspect:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Read existing 1.1.36 view configuration
+        with:
+          persist-credentials: true
+      - name: Build and verify 1.1.37 List-only test
+        shell: bash
         run: |
           python3 - <<'PY'
+          from pathlib import Path
           from zipfile import ZipFile
           from xml.etree import ElementTree as ET
-          import re
-          src='zips/skin.terror.lite/skin.terror.lite-1.1.36.zip'
+          import hashlib, re
+
+          base='skin.terror.lite/'
+          root=Path('zips/skin.terror.lite')
+          src=root/'skin.terror.lite-1.1.36.zip'
+          dst=Path('test-builds/skin.terror.lite-1.1.37-LISTE-FIX-TEST.zip')
+          targets=[
+              base+'16x9/MyVideoNav.xml', # Film/video libraries, TMDb Helper and Filmpalast
+              base+'16x9/MyPrograms.xml', # Add-on navigation
+          ]
+          meta=base+'addon.xml'
+          dst.parent.mkdir(parents=True,exist_ok=True)
+
           with ZipFile(src) as z:
-              a=z.namelist()
-              print('FILES',len(a))
-              for name in a:
-                  if not name.endswith('.xml'): continue
-                  raw=z.read(name).decode('utf-8-sig',errors='replace')
-                  if '/16x9/MyVideoNav.xml' in name or '/16x9/MyPrograms.xml' in name or '/16x9/MyVideos.xml' in name or '/16x9/MyMusicNav.xml' in name:
-                      print('WINDOW',name)
-                      print('HEAD',raw[:1500])
-                      print('VIEW TAGS',re.findall(r'<views>[^<]+</views>',raw)[:2])
-                      print('DEFAULT CONTROL',re.findall(r'<defaultcontrol[^>]*>[^<]*</defaultcontrol>',raw)[:2])
-                      print('ALL SETVIEWMODE',re.findall(r'.{0,90}(?:SetViewMode|TriPanel|ViewLock|View_55_Include).{0,140}',raw,re.I)[:15])
-                  if 'ViewLock' in raw or 'Enable_ViewLocking' in raw or 'SetViewMode(' in raw:
-                      lines=raw.splitlines()
-                      matches=[(i+1,s.strip()[:260]) for i,s in enumerate(lines) if re.search('Enable_ViewLocking|SetViewMode\\(|ShortcutView_55_Include|ViewLock',s,re.I)]
-                      if matches:
-                          print('REF',name,'COUNT',len(matches),'SAMPLES',matches[:15])
-              print('DONE')
+              assert z.testzip() is None
+              names=z.namelist()
+              assert len(names) == len(set(names)) and len(names)>1000
+              assert all(n in names for n in targets+[meta])
+              assert ET.fromstring(z.read(meta)).get('version')=='1.1.36'
+              edited={}
+              for path in targets:
+                  original=z.read(path)
+                  tree=ET.fromstring(original)
+                  views=tree.find('views')
+                  assert views is not None and '50' in views.text.split(',') and '55' in views.text.split(',')
+                  assert tree.find('defaultcontrol').text.strip()=='50'
+                  new, count=re.subn(rb'<views>\s*[^<]+</views>',b'<views>50</views>',original,count=1)
+                  assert count==1 and ET.fromstring(new).find('views').text=='50'
+                  edited[path]=new
+                  print('FIX',path,'view 50 only, previous views:',views.text)
+              original=z.read(meta)
+              new, count=re.subn(rb'(<addon\b[^>]*\bversion=")1\.1\.36(")',rb'\g<1>1.1.37\2',original,count=1)
+              assert count==1 and ET.fromstring(new).get('version')=='1.1.37'
+              edited[meta]=new
+              with ZipFile(dst,'w') as out:
+                  for entry in z.infolist():
+                      out.writestr(entry,edited.get(entry.filename,z.read(entry.filename)))
+
+          with ZipFile(src) as old,ZipFile(dst) as test:
+              assert test.testzip() is None
+              assert test.namelist()==old.namelist()
+              changed={p for p in names if old.read(p)!=test.read(p)}
+              assert changed==set(targets+[meta]),('Unexpected changes:',changed)
+              for name in names:
+                  if name.startswith(base+'16x9/') and name.endswith('.xml'):
+                      ET.fromstring(test.read(name))
+              for p in targets:
+                  assert ET.fromstring(test.read(p)).findtext('views')=='50'
+                  assert ET.fromstring(test.read(p)).findtext('defaultcontrol')=='50'
+              assert ET.fromstring(test.read(meta)).get('version')=='1.1.37'
+          print('PASS: 1.1.37 ZIP integrity, all XML valid, original files/assets preserved')
+          print('PASS: Only 2 view definitions and addon version changed')
+          print('SHA256:',hashlib.sha256(dst.read_bytes()).hexdigest())
+          print('File:',dst,'bytes:',dst.stat().st_size)
           PY
+      - name: Save test ZIP on test branch only
+        shell: bash
+        run: |
+          git config user.name 'Barclay Repo Test Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add test-builds/skin.terror.lite-1.1.37-LISTE-FIX-TEST.zip
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add Terror Lite 1.1.37 permanent List test ZIP [skip ci]'
+          git push origin HEAD:fix/terrorlite-listview-20261101
+      - name: Upload installable ZIP test artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TerrorLite-1.1.37-Liste-Fix-Test
+          path: test-builds/skin.terror.lite-1.1.37-LISTE-FIX-TEST.zip
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
