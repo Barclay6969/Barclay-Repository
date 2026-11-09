@@ -1,11 +1,10 @@
-name: Build xShip 2026.08.18
+name: Build xShip 2026.08.18.1 local test
 
 on:
-  workflow_dispatch:
   pull_request:
     branches: [main]
     paths:
-      - '.release-xship-2026.08.18'
+      - '.release-xship-2026.08.18.1-localtest'
 
 permissions:
   contents: write
@@ -18,39 +17,75 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Build xShip 2026.08.18
+      - name: Build local test ZIP
         shell: bash
         run: |
           set -euo pipefail
           BASE='zips/plugin.video.xship/plugin.video.xship-2026.08.17.2.zip'
-          OUT='zips/plugin.video.xship/plugin.video.xship-2026.08.18.zip'
-          WORK="$RUNNER_TEMP/xship0818"
+          OUT='zips/plugin.video.xship/plugin.video.xship-2026.08.18.1-localtest.zip'
+          WORK="$RUNNER_TEMP/xship08181"
 
-          test -f "$BASE"
           rm -rf "$WORK"
           mkdir -p "$WORK"
           unzip -q "$BASE" -d "$WORK"
           ROOT="$WORK/plugin.video.xship"
-          test -f "$ROOT/addon.xml"
+          export ROOT
 
-          python3 tools/build_xship_2026_08_18.py "$ROOT" zips/addons.xml
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          root = Path(os.environ['ROOT'])
+          addon = root / 'addon.xml'
+          text = addon.read_text(encoding='utf-8')
+          text, n = re.subn(r'version="2026\.08\.17\.2"', 'version="2026.08.18.1"', text, count=1)
+          assert n == 1, 'addon.xml 17.2 version not found'
+          addon.write_text(text, encoding='utf-8')
+
+          candidates = []
+          for p in root.rglob('filmo.py'):
+              try:
+                  t = p.read_text(encoding='utf-8')
+              except Exception:
+                  continue
+              if "SITE_IDENTIFIER = 'filmo'" in t and 'def _mint(' in t:
+                  candidates.append((p, t))
+          assert len(candidates) == 1, 'expected one filmo.py, found %d' % len(candidates)
+          filmo, ftext = candidates[0]
+
+          lines = ftext.splitlines(True)
+          hits = 0
+          for i, line in enumerate(lines):
+              if "match = re.search(r'href=" in line and 'redirect_html' in line:
+                  new_line = line.replace("r'href=", "r'<a\\b[^>]*href=", 1)
+                  assert new_line != line
+                  lines[i] = new_line
+                  hits += 1
+          assert hits == 1, 'expected exactly one Filmo href fallback, found %d' % hits
+          filmo.write_text(''.join(lines), encoding='utf-8')
+
+          # Syntax check and regression check against the Edge HAR structure.
+          compile(filmo.read_text(encoding='utf-8'), str(filmo), 'exec')
+          sample = '<link rel="canonical" href="https://filmo.to/n/token"><a href="https://bysezejataos.com/d/n0ligjzogspc" target="_blank">open</a>'
+          m = re.search(r'<a\b[^>]*href=["\']([^"\']+)["\']', sample, re.I)
+          assert m and m.group(1) == 'https://bysezejataos.com/d/n0ligjzogspc'
+
+          # Crucial guard: the original helper methods must still exist.
+          patched = filmo.read_text(encoding='utf-8')
+          assert 'def _get(' in patched, '_get was lost'
+          assert 'def _request(' in patched, '_request was lost'
+          assert 'def _search(' in patched, '_search was lost'
+          print('Patched only:', filmo)
+          print('Preserved _get/_request/_search')
+          PY
 
           rm -f "$OUT"
           (cd "$WORK" && zip -qr "$GITHUB_WORKSPACE/$OUT" plugin.video.xship)
-
-          unzip -p "$OUT" plugin.video.xship/addon.xml | grep -q 'version="2026.08.18"'
-          unzip -p "$OUT" plugin.video.xship/changelog.txt | grep -q '2026.08.18'
-          test -s zips/addons.xml.md5
+          unzip -p "$OUT" plugin.video.xship/addon.xml | grep -q 'version="2026.08.18.1"'
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add "$OUT" zips/addons.xml zips/addons.xml.md5
-
-          if [ -n "${GITHUB_HEAD_REF:-}" ]; then
-            git rm -f .release-xship-2026.08.18
-            git commit -m 'Release xShip 2026.08.18 with Filmo BYSE support'
-            git push origin HEAD:"$GITHUB_HEAD_REF"
-          else
-            git commit -m 'Release xShip 2026.08.18 with Filmo BYSE support'
-            git push
-          fi
+          git add "$OUT"
+          git rm -f .release-xship-2026.08.18.1-localtest
+          git commit -m 'Build local xShip 2026.08.18.1 Filmo BYSE test ZIP'
+          git push origin HEAD:"$GITHUB_HEAD_REF"
