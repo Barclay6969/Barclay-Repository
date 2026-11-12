@@ -1,0 +1,120 @@
+name: Publish Terror Lite 1.1.39 with Kodi Cinema V7 intro
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-terror-1-1-39.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-terrorlite-1-1-39
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out official Barclay repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build the exact locally tested TerrorLite 1.1.39 ZIP
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from xml.etree import ElementTree as ET
+          import hashlib
+
+          folder = Path('zips/skin.terror.lite')
+          src = folder / 'skin.terror.lite-1.1.38.zip'
+          dst = folder / 'skin.terror.lite-1.1.39.zip'
+          intro = Path('.release-payload/terrorlite-kodi-cinema-v7.mp4')
+          base = 'skin.terror.lite/'
+          expected_source_sha = '778dc68ce05ac874c9cde169da3d8ad5dee7efac1bbfc6f143ae9efce1d2b418'
+          expected_intro_sha = '38ead9aa96696fa5cf43dc515229c5ae00838f26b3cc24a26ebaa1d243de543f'
+          expected_release_sha = '6491d6afa00e4bd5cf3d1ba238e73fb80d65b2c884ee2725478f7168125d3c25'
+
+          assert hashlib.sha256(src.read_bytes()).hexdigest() == expected_source_sha, 'Wrong official 1.1.38 ZIP'
+          assert hashlib.sha256(intro.read_bytes()).hexdigest() == expected_intro_sha, 'Wrong user-approved V7 MP4'
+          video = intro.read_bytes()
+          with ZipFile(src) as old:
+              assert old.testzip() is None
+              names = old.namelist()
+              assert len(names) == 1031 and len(set(names)) == len(names)
+              assert ET.fromstring(old.read(base+'addon.xml')).get('version') == '1.1.38'
+              assert b'PlayMedia(special://skin/extras/intro-omega.mp4)' in old.read(base+'16x9/Startup.xml')
+              assert b'Skin.HasSetting(Enable.StartupIntro)' in old.read(base+'16x9/Startup.xml')
+              old_meta = old.read(base+'addon.xml')
+              assert old_meta.count(b'version="1.1.38"') == 1
+              replacements = {
+                  base+'extras/intro-omega.mp4': video,
+                  base+'addon.xml': old_meta.replace(b'version="1.1.38"', b'version="1.1.39"', 1),
+              }
+              with ZipFile(dst, 'w') as new:
+                  for info in old.infolist():
+                      new.writestr(info, replacements.get(info.filename, old.read(info.filename)))
+
+          actual_sha = hashlib.sha256(dst.read_bytes()).hexdigest()
+          assert actual_sha == expected_release_sha, 'ZIP differs from tested 1.1.39: '+actual_sha
+          assert dst.stat().st_size == 12090784, 'Unexpected ZIP byte length'
+          with ZipFile(src) as old, ZipFile(dst) as new:
+              assert new.testzip() is None
+              assert old.namelist() == new.namelist()
+              changed = {n for n in names if old.read(n) != new.read(n)}
+              assert changed == set(replacements), 'Unexpected changes: '+str(changed)
+              assert new.read(base+'extras/intro-omega.mp4') == video
+              assert ET.fromstring(new.read(base+'addon.xml')).get('version') == '1.1.39'
+              for filename in names:
+                  if filename.startswith(base+'16x9/') and filename.endswith('.xml'):
+                      ET.fromstring(new.read(filename))
+          print('PASS: Byte-identical to the user-approved locally installed 1.1.39 test ZIP')
+          print('PASS: All 1,031 files retained, only intro video and addon version changed')
+          print('SHA256:', actual_sha)
+          PY
+
+      - name: Update only TerrorLite repository metadata
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          import hashlib
+          import subprocess
+
+          before = ET.parse('zips/addons.xml').getroot()
+          baseline = {entry.get('id'): (entry.get('version'), ET.tostring(entry)) for entry in before}
+          assert baseline['skin.terror.lite'][0] == '1.1.38', 'Unexpected pre-release version'
+          subprocess.run(['python3','tools/make_repo.py'],check=True)
+          payload = Path('zips/addons.xml').read_bytes()
+          assert Path('zips/addons.xml.md5').read_text().strip() == hashlib.md5(payload).hexdigest()
+          after = ET.fromstring(payload)
+          updated = {entry.get('id'): (entry.get('version'), ET.tostring(entry)) for entry in after}
+          assert len(before) == len(baseline) == len(after) == len(updated)
+          assert set(baseline) == set(updated)
+          assert updated['skin.terror.lite'][0] == '1.1.39'
+          for key in baseline:
+              if key != 'skin.terror.lite':
+                  assert baseline[key] == updated[key], 'Another addon changed: '+key
+          print('PASS: Repository advertises TerrorLite 1.1.39')
+          print('PASS: Other add-ons unchanged; checksum valid')
+          PY
+
+      - name: Commit and publish tested release
+        shell: bash
+        run: |
+          git config user.name 'Barclay Repo Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add zips/skin.terror.lite/skin.terror.lite-1.1.39.zip zips/addons.xml zips/addons.xml.md5
+          if git diff --cached --quiet; then
+            echo 'Release is already published'
+            exit 0
+          fi
+          git commit -m 'Release TerrorLite 1.1.39 with Kodi Cinema Magic V7 intro [skip ci]'
+          git push origin HEAD:main
