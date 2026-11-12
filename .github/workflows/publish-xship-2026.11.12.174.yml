@@ -1,0 +1,34 @@
+name: Publish xShip 2026.11.12.174 Trakt fix
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-xship-2026.11.12.174.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build verified Trakt fix and update Kodi index
+        run: python3 tools/publish_xship_2026_11_12_174.py
+      - name: Publish repository and GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "Barclay Repo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add zips/plugin.video.xship/plugin.video.xship-2026.11.12.174.zip zips/plugin.video.xship/changelog.txt zips/addons.xml zips/addons.xml.md5
+          if ! git diff --cached --quiet; then
+            git commit -m "Release xShip 2026.11.12.174: restore Trakt ratings for movies and episodes"
+            git push origin HEAD:main
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          Path('/tmp/xship-release-notes.md').write_text("Trakt-Bewertung nach Filmen und Serien wiederhergestellt.\n\nVollständige Wiedergabe-Metadaten und direkte IMDb-ID-Übergabe verbessern die Medienerkennung. Vom Benutzer in Kodi erfolgreich getestet. Changelog-Popup und Kodi-Repository aktualisiert.\n\nDie separat beobachteten Trakt-API-429-Fehler sind nicht Bestandteil dieser Korrektur.\n")
+          PY
+          if ! gh release view xship-2026.11.12.174 >/dev/null 2>&1; then
+            gh release create xship-2026.11.12.174 zips/plugin.video.xship/plugin.video.xship-2026.11.12.174.zip --target "$(git rev-parse HEAD)" --title "xShip 2026.11.12.174 – Trakt-Bewertung korrigiert" --notes-file /tmp/xship-release-notes.md
+          fi
