@@ -245,7 +245,7 @@
 - Gemeinsame Kontodaten für Neuinstallationen vorbelegt.
 - Domain-Fallback im Startdienst auf serienstream.to angepasst.</news></extension>
 </addon>
-<addon id="plugin.video.xship" version="2026.10.27.172" name="xShip" provider-name="Kusi (Barclay)">
+<addon id="plugin.video.xship" version="2026.11.12.174" name="xShip" provider-name="Kusi (Barclay)">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" />
@@ -277,7 +277,11 @@
       <screenshot>resources/media/screenshot-02.jpg</screenshot>
       <screenshot>resources/media/screenshot-04.jpg</screenshot>
     </assets>
-    <news>2026.10.27.172
+    <news>2026.11.12.174
+- Trakt-Bewertung nach Filmen und Serien wiederhergestellt.
+- Zuverlässigere Medienerkennung durch vollständige Metadaten und direkte IMDb-ID-Übergabe.
+
+2026.10.27.172
 - Neu: Hoster und Anbieter werden beim Abspielen im Titel angezeigt, auch beim Pausieren.
 - Bei einem Wiedergabestartfehler kehrt xShip zur vorhandenen Quellenliste zurück. Die zuletzt gewählte Quelle bleibt markiert; eine erneute Suche ist nicht nötig.
 

@@ -1,3 +1,7 @@
+2026.11.12.174
+- Trakt-Bewertung nach Filmen und Serien wiederhergestellt.
+- Zuverlässigere Medienerkennung durch vollständige Metadaten und direkte IMDb-ID-Übergabe.
+
 2026.10.27.172
 - Neu: Hoster und Anbieter werden beim Abspielen im Titel angezeigt, auch beim Pausieren.
 - Bei einem Wiedergabestartfehler kehrt xShip zur vorhandenen Quellenliste zurück. Die zuletzt gewählte Quelle bleibt markiert; eine erneute Suche ist nicht nötig.
